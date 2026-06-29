@@ -46,6 +46,7 @@ class DefaultMiPerfilComponent(
     override fun onNavigateSharing() = onOutput(MiPerfilComponent.Output.Sharing)
     override fun onNavigateSettings() = onOutput(MiPerfilComponent.Output.Settings)
     override fun onNavigateTherapyOffers() = onOutput(MiPerfilComponent.Output.TherapyOffers)
+    override fun onNavigateNoShowQueue() = onOutput(MiPerfilComponent.Output.NoShowQueue)
 
     override fun onLogout() {
         if (_state.value.isLoggingOut) return

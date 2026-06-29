@@ -47,6 +47,9 @@ private class FakeCompleteDataSource : DoctorAppointmentDataSource {
 
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
+
+    override suspend fun getNoShowAppointments(from: String?, to: String?) =
+        Result.success(emptyList<com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem>())
 }
 
 private fun makeAppointment(status: AppointmentStatus): Appointment {

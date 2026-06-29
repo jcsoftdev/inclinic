@@ -55,6 +55,9 @@ import com.inclinic.app.features.doctor.presentation.component.DefaultPatientDet
 import com.inclinic.app.features.doctor.presentation.component.DefaultPriceConfigComponent
 import com.inclinic.app.features.doctor.presentation.component.DefaultScheduleConfigComponent
 import com.inclinic.app.features.doctor.presentation.component.DefaultWeeklyScheduleComponent
+import com.inclinic.app.features.doctor.no_shows.application.GetNoShowQueueUseCase
+import com.inclinic.app.features.doctor.no_shows.presentation.component.DefaultNoShowQueueComponent
+import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorAppointmentDetailComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorChatComponent
@@ -129,8 +132,12 @@ val doctorModule = module {
     factory { SaveScheduleConfigUseCase(get(), get()) }
     factory { GetDoctorPriceConfigUseCase(get(), get()) }
     factory { UpdateDoctorPriceConfigUseCase(get(), get()) }
+    factory { GetNoShowQueueUseCase(get(), get()) }
 
     // ── Component factories ───────────────────────────────────────────────────
+    factory<NoShowQueueComponent> { (ctx: ComponentContext, onOutput: (NoShowQueueComponent.Output) -> Unit) ->
+        DefaultNoShowQueueComponent(ctx, get(), get(), onOutput)
+    }
     factory<DoctorDashboardComponent> { (ctx: ComponentContext, doctorId: String, onOutput: (DoctorDashboardComponent.Output) -> Unit) ->
         DefaultDoctorDashboardComponent(ctx, doctorId, get(), get(), onOutput, get())
     }
@@ -213,6 +220,7 @@ val doctorModule = module {
             },
             editPrescriptionFactory = { c, prescriptionId, out -> get<EditPrescriptionComponent> { parametersOf(c, prescriptionId, out) } },
             deleteAccountFactory = { c, out -> get<DeleteAccountComponent> { parametersOf(c, out) } },
+            noShowQueueFactory = { c, out -> get<NoShowQueueComponent> { parametersOf(c, out) } },
             onOutput = {},
         )
     }

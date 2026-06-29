@@ -1,6 +1,7 @@
 package com.inclinic.app.features.doctor.infrastructure.remote
 
 import com.inclinic.app.core.model.Appointment
+import com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem
 
 interface DoctorAppointmentDataSource {
     suspend fun getDashboard(doctorId: String): Result<DoctorDashboard>
@@ -10,6 +11,17 @@ interface DoctorAppointmentDataSource {
     suspend fun confirmAppointment(appointmentId: String): Result<Appointment>
     suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>): Result<Appointment>
     suspend fun markNoShow(appointmentId: String): Result<Appointment>
+
+    /**
+     * Fetch all no-show appointments for the authenticated doctor.
+     *
+     * Backend: GET /api/appointments?status=NO_SHOW[&from=…&to=…]
+     * The doctor JWT auto-injects doctorId scoping server-side.
+     */
+    suspend fun getNoShowAppointments(
+        from: String? = null,
+        to: String? = null,
+    ): Result<List<NoShowItem>>
 }
 
 data class DoctorDashboard(

@@ -2,6 +2,8 @@ package com.inclinic.app.features.doctor.infrastructure.remote
 
 import com.inclinic.app.core.model.Appointment
 import com.inclinic.app.core.network.ApiEnvelope
+import com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem
+import com.inclinic.app.features.doctor.no_shows.core.model.PaymentHoldStatus
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -12,6 +14,56 @@ import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
+
+// ── No-Show DTOs ──────────────────────────────────────────────────────────────
+
+@Serializable
+private data class NoShowPatientUserDto(
+    val firstName: String = "",
+    val lastName: String = "",
+)
+
+@Serializable
+private data class NoShowPatientDto(
+    val user: NoShowPatientUserDto = NoShowPatientUserDto(),
+)
+
+@Serializable
+private data class NoShowSpecialtyDto(
+    val name: String = "",
+)
+
+@Serializable
+private data class NoShowItemDto(
+    val id: String = "",
+    val startTime: String = "",
+    val price: Double = 0.0,
+    val reason: String? = null,
+    val cancelReason: String? = null,
+    val notes: String? = null,
+    val paymentHoldStatus: String? = null,
+    val visitType: String = "CLINIC",
+    val patient: NoShowPatientDto = NoShowPatientDto(),
+    val specialty: NoShowSpecialtyDto = NoShowSpecialtyDto(),
+)
+
+private fun NoShowItemDto.toDomain() = NoShowItem(
+    id = id,
+    patientName = "${patient.user.firstName} ${patient.user.lastName}".trim(),
+    startTime = startTime,
+    price = price,
+    reason = reason ?: cancelReason,
+    specialtyName = specialty.name,
+    visitType = visitType,
+    paymentHoldStatus = when (paymentHoldStatus) {
+        "HELD"     -> PaymentHoldStatus.HELD
+        "RELEASED" -> PaymentHoldStatus.RELEASED
+        "REFUNDED" -> PaymentHoldStatus.REFUNDED
+        else       -> PaymentHoldStatus.UNKNOWN
+    },
+)
+
+// ── Dashboard DTO ─────────────────────────────────────────────────────────────
 
 @Serializable
 private data class DashboardDto(
@@ -101,5 +153,18 @@ class KtorDoctorAppointmentDataSource(
             contentType(ContentType.Application.Json)
             setBody(emptyMap<String, String>())
         }.body<ApiEnvelope<Appointment>>().data ?: error("No-show failed")
+    }
+
+    override suspend fun getNoShowAppointments(
+        from: String?,
+        to: String?,
+    ): Result<List<NoShowItem>> = runCatching {
+        val dtos = client.get {
+            url("$baseUrl/api/appointments")
+            parameter("status", "NO_SHOW")
+            from?.let { parameter("from", it) }
+            to?.let { parameter("to", it) }
+        }.body<ApiEnvelope<List<NoShowItemDto>>>().data ?: emptyList()
+        dtos.map { it.toDomain() }
     }
 }

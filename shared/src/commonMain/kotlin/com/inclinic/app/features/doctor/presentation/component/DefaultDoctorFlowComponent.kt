@@ -43,6 +43,7 @@ import com.inclinic.app.features.doctor.profile.presentation.component.RequestSp
 import com.inclinic.app.features.doctor.reschedule.presentation.component.RescheduleQueueComponent
 import com.inclinic.app.features.doctor.reschedule_request.presentation.component.RequestRescheduleComponent
 import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSettingsComponent
+import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.DefaultRequestShareComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.DefaultShareRequestsListComponent
@@ -95,6 +96,7 @@ class DefaultDoctorFlowComponent(
     private val createTherapyOfferFactory: (ComponentContext, (CreateTherapyOfferComponent.Output) -> Unit) -> CreateTherapyOfferComponent,
     private val editPrescriptionFactory: (ComponentContext, String, (EditPrescriptionComponent.Output) -> Unit) -> EditPrescriptionComponent,
     private val deleteAccountFactory: (ComponentContext, (DeleteAccountComponent.Output) -> Unit) -> DeleteAccountComponent,
+    private val noShowQueueFactory: (ComponentContext, (NoShowQueueComponent.Output) -> Unit) -> NoShowQueueComponent,
     private val onOutput: (DoctorFlowComponent.Output) -> Unit,
 ) : DoctorFlowComponent, ComponentContext by componentContext {
 
@@ -417,6 +419,8 @@ class DefaultDoctorFlowComponent(
                             perfilNav.push(DoctorConfig.Settings)
                         MiPerfilComponent.Output.TherapyOffers ->
                             perfilNav.push(DoctorConfig.TherapyOffers)
+                        MiPerfilComponent.Output.NoShowQueue ->
+                            perfilNav.push(DoctorConfig.NoShowQueue)
                         MiPerfilComponent.Output.Logout ->
                             onOutput(DoctorFlowComponent.Output.Logout)
                     }
@@ -582,6 +586,14 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         EditPrescriptionComponent.Output.Saved -> activeNav().pop()
                         EditPrescriptionComponent.Output.Back -> activeNav().pop()
+                    }
+                }
+            )
+
+            is DoctorConfig.NoShowQueue -> DoctorFlowComponent.Child.NoShowQueue(
+                noShowQueueFactory(ctx) { output ->
+                    when (output) {
+                        NoShowQueueComponent.Output.Back -> activeNav().pop()
                     }
                 }
             )

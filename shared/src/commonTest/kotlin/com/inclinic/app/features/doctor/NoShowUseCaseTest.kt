@@ -10,6 +10,7 @@ import com.inclinic.app.features.doctor.appointments.application.NoShowUseCase
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorAppointmentDataSource
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorDashboard
 import com.inclinic.app.features.doctor.infrastructure.remote.DaySummary
+import com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem
 import kotlinx.coroutines.test.runTest
 import kotlin.time.Clock
 import kotlin.test.Test
@@ -46,6 +47,9 @@ private class FakeNoShowDataSource : DoctorAppointmentDataSource {
 
     override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
+
+    override suspend fun getNoShowAppointments(from: String?, to: String?): Result<List<NoShowItem>> =
+        Result.success(emptyList())
 }
 
 private fun makeAppointment(startsAt: kotlin.time.Instant, status: AppointmentStatus = AppointmentStatus.CONFIRMED): Appointment {

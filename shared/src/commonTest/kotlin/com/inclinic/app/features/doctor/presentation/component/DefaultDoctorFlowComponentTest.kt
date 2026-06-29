@@ -202,6 +202,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onNavigateSharing() { out(MiPerfilComponent.Output.Sharing) }
                 override fun onNavigateSettings() { out(MiPerfilComponent.Output.Settings) }
                 override fun onNavigateTherapyOffers() { out(MiPerfilComponent.Output.TherapyOffers) }
+                override fun onNavigateNoShowQueue() { out(MiPerfilComponent.Output.NoShowQueue) }
                 override fun onLogout() { out(MiPerfilComponent.Output.Logout) }
             }
         },
@@ -372,6 +373,15 @@ class DefaultDoctorFlowComponentTest {
                 override fun onConfirm() {}
                 override fun onBack() { out(DeleteAccountComponent.Output.Back) }
                 override fun onDismissError() {}
+            }
+        },
+        noShowQueueFactory = { ctx, out ->
+            object : com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent {
+                override val state: Value<com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueState> =
+                    MutableValue(com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueState())
+                override fun onTabSelected(tab: com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowTab) {}
+                override fun onRetry() {}
+                override fun onBack() { out(com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent.Output.Back) }
             }
         },
         onOutput = {},

@@ -321,6 +321,12 @@ private fun ProfCard(
             value = "Gestionar ofertas de terapia",
             onClick = component::onNavigateTherapyOffers,
         )
+        Divider()
+        ClickableDataRow(
+            label = "Cola de no-shows",
+            value = "Ver pacientes que no se presentaron",
+            onClick = component::onNavigateNoShowQueue,
+        )
     }
 }
 

@@ -28,6 +28,7 @@ import com.inclinic.app.features.doctor.sharing.presentation.component.ShareRequ
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.CreateTherapyOfferComponent
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListComponent
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
+import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
 
 interface DoctorFlowComponent {
     val currentTab: Value<DoctorTab>
@@ -88,6 +89,7 @@ interface DoctorFlowComponent {
         class CreateTherapyOffer(val component: CreateTherapyOfferComponent) : Child
         class EditPrescription(val component: EditPrescriptionComponent) : Child
         class DeleteAccount(val component: DeleteAccountComponent) : Child
+        class NoShowQueue(val component: NoShowQueueComponent) : Child
     }
 
     sealed interface Output {

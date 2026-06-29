@@ -18,6 +18,7 @@ interface MiPerfilComponent {
     fun onNavigateSharing()
     fun onNavigateSettings()
     fun onNavigateTherapyOffers()
+    fun onNavigateNoShowQueue()
     fun onLogout()
 
     sealed interface Output {
@@ -32,6 +33,7 @@ interface MiPerfilComponent {
         data object Sharing : Output
         data object Settings : Output
         data object TherapyOffers : Output
+        data object NoShowQueue : Output
         data object Logout : Output
     }
 }
