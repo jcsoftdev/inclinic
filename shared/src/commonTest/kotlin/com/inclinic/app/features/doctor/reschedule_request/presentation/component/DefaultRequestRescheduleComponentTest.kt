@@ -121,7 +121,7 @@ class DefaultRequestRescheduleComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNull(state.appointment)
-        assertEquals("Network error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -215,7 +215,7 @@ class DefaultRequestRescheduleComponentTest {
 
         assertTrue(outputs.isEmpty())
         assertFalse(component.state.value.isSubmitting)
-        assertEquals("Server error", component.state.value.error)
+        assertNotNull(component.state.value.error)
     }
 
     @Test

@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -105,7 +106,7 @@ class DefaultReportUserComponentTest {
         comp.onReasonChanged("A reason long enough to pass")
         comp.onSubmit()
 
-        assertEquals("Network error", comp.state.value.error)
+        assertNotNull(comp.state.value.error)
         assertFalse(emittedOutputs.contains(ReportUserComponent.Output.Submitted))
     }
 

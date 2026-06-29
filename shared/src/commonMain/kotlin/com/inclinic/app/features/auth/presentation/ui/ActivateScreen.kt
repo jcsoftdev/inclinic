@@ -60,7 +60,6 @@ fun ActivateScreen(
     AppTheme {
         val state by component.state.subscribeAsState()
         var showPassword by remember { mutableStateOf(false) }
-        var showConfirmPassword by remember { mutableStateOf(false) }
         val colors     = AppTheme.colors
         val typography = AppTheme.typography
 
@@ -183,7 +182,7 @@ fun ActivateScreen(
                                                else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
-                            imeAction    = ImeAction.Next,
+                            imeAction    = ImeAction.Done,
                         ),
                         trailingIcon = {
                             Icon(
@@ -201,42 +200,10 @@ fun ActivateScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    AppTextField(
-                        value         = "",
-                        onValueChange = {},
-                        label         = "Confirmar contraseña",
-                        placeholder   = "••••••••",
-                        leadingIcon   = {
-                            Icon(
-                                imageVector        = Lucide.Lock,
-                                contentDescription = null,
-                                tint               = colors.muted,
-                                modifier           = Modifier.size(18.dp),
-                            )
-                        },
-                        visualTransformation = if (showConfirmPassword) VisualTransformation.None
-                                               else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction    = ImeAction.Done,
-                        ),
-                        trailingIcon = {
-                            Icon(
-                                imageVector        = if (showConfirmPassword) Lucide.EyeOff else Lucide.Eye,
-                                contentDescription = null,
-                                tint               = colors.muted,
-                                modifier           = Modifier.size(18.dp).clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication        = null,
-                                    onClick           = { showConfirmPassword = !showConfirmPassword },
-                                ),
-                            )
-                        },
-                        enabled  = !state.isLoading,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-
                     // Expiry notice — amber card
+                    // Note: confirm-password field removed — the activate flow is token-only.
+                    // POST /api/auth/activate accepts only the activation token (state.code).
+                    // No password confirmation is required or possible at this stage.
                     Row(
                         verticalAlignment     = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -210,6 +210,17 @@ class DefaultClinicalProfileComponentTest {
         assertEquals(ClinicalProfileComponent.Output.Back, outputs.first())
     }
 
+    @Test
+    fun onNavigateToDeleteAccount_emits_NavigateToDeleteAccount_output() {
+        val outputs = mutableListOf<ClinicalProfileComponent.Output>()
+        val component = createComponent(outputs = outputs)
+
+        component.onNavigateToDeleteAccount()
+
+        assertEquals(1, outputs.size)
+        assertEquals(ClinicalProfileComponent.Output.NavigateToDeleteAccount, outputs.first())
+    }
+
     // ── Error dismiss ─────────────────────────────────────────────────────────
 
     @Test

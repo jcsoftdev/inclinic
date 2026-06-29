@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,6 +52,9 @@ fun AppTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
+    /** Semantic test tag placed on the inner [BasicTextField] node — the node that supports
+     *  [performTextInput] in Compose UI tests. */
+    inputTestTag: String? = null,
 ) {
     val colors     = AppTheme.colors
     val dimens     = AppTheme.dimens
@@ -86,7 +90,7 @@ fun AppTextField(
             interactionSource    = interactionSource,
             textStyle            = typography.body.copy(color = if (enabled) colors.text else colors.light),
             cursorBrush          = SolidColor(colors.navy),
-            modifier             = Modifier
+            modifier             = (if (inputTestTag != null) Modifier.testTag(inputTestTag) else Modifier)
                 .fillMaxWidth()
                 .heightIn(min = dimens.inputHeight)
                 .border(1.dp, borderColor, shape)

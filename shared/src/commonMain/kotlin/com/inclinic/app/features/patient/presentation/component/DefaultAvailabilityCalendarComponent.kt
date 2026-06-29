@@ -90,7 +90,7 @@ class DefaultAvailabilityCalendarComponent(
         val s = _state.value
         val slot = s.selectedSlot ?: return
         val date = s.selectedDate ?: return
-        onOutput(AvailabilityCalendarComponent.Output.NavigateToBooking(doctorId, slot.id, date.toString()))
+        onOutput(AvailabilityCalendarComponent.Output.NavigateToBooking(doctorId, slot.id, date.toString(), slot.startTime))
     }
 
     override fun onBack() { onOutput(AvailabilityCalendarComponent.Output.Back) }

@@ -61,6 +61,7 @@ private class FakeBookingAppointmentDataSource(
     override suspend fun cancelAppointment(appointmentId: String, reason: String) = Result.success(Unit)
     override suspend fun rescheduleAppointment(appointmentId: String, date: String, slotId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
+    override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
     override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)
@@ -88,6 +89,7 @@ class DefaultBookingComponentTest {
         apptDataSource: AppointmentDataSource = FakeBookingAppointmentDataSource(),
         doctorDataSource: DoctorSearchDataSource = FakeBookingDoctorDataSource(),
         consultType: String = "telemedicine",
+        startTime: String = "09:00",
         outputs: MutableList<BookingComponent.Output> = mutableListOf(),
     ): DefaultBookingComponent {
         return DefaultBookingComponent(
@@ -100,7 +102,15 @@ class DefaultBookingComponentTest {
             dispatchers = dispatchers,
             onOutput = outputs::add,
             consultType = consultType,
+            startTime = startTime,
         )
+    }
+
+    @Test
+    fun initial_state_has_startTime_from_input() = runTest {
+        val component = createComponent(startTime = "14:30")
+
+        assertEquals("14:30", component.state.value.startTime)
     }
 
     @Test
@@ -176,7 +186,7 @@ class DefaultBookingComponentTest {
 
         assertTrue(outputs.isEmpty())
         assertFalse(component.state.value.isLoading)
-        assertEquals("Slot taken", component.state.value.error)
+        assertNotNull(component.state.value.error)
     }
 
     @Test
@@ -207,6 +217,5 @@ class DefaultBookingComponentTest {
         val component = createComponent(doctorDataSource = failingDs)
 
         assertNotNull(component.state.value.error)
-        assertEquals("Not found", component.state.value.error)
     }
 }

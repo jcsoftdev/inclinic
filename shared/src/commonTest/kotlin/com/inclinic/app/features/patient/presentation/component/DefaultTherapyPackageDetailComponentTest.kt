@@ -102,7 +102,7 @@ class DefaultTherapyPackageDetailComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNull(state.therapyPackage)
-        assertEquals("Not found", state.error)
+        assertNotNull(state.error)
     }
 
     @Test

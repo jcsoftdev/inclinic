@@ -36,7 +36,7 @@ private class FakeSubscriptionDataSource(
     }
 }
 
-private class FakeCardTokenizer(
+private class FakeMembershipCardTokenizer(
     private val result: Result<CardToken> = Result.success(CardToken(token = "tok-123", last4 = "4242", brand = "visa")),
 ) : CardTokenizer {
     override suspend fun tokenize(card: RawCard): Result<CardToken> = result
@@ -50,7 +50,7 @@ class DefaultMembershipComponentTest {
 
     private fun createComponent(
         dataSource: SubscriptionDataSource = FakeSubscriptionDataSource(),
-        cardTokenizer: CardTokenizer = FakeCardTokenizer(),
+        cardTokenizer: CardTokenizer = FakeMembershipCardTokenizer(),
         outputs: MutableList<MembershipComponent.Output> = mutableListOf(),
     ): DefaultMembershipComponent = DefaultMembershipComponent(
         componentContext = ctx,

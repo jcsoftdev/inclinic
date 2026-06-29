@@ -25,6 +25,7 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
+        withHostTest {}
     }
 
     listOf(
@@ -70,6 +71,8 @@ kotlin {
             // Coil 3 — KMP image loading (avatars / doctor photos)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
+            // QRose — KMP QR code rendering (admin 2FA setup)
+            implementation(libs.qrose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

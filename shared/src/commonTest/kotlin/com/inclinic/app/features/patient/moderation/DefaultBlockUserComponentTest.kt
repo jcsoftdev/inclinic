@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -97,7 +98,7 @@ class DefaultBlockUserComponentTest {
         val comp = makeComponent()
         comp.onConfirm()
 
-        assertEquals("Timeout", comp.state.value.error)
+        assertNotNull(comp.state.value.error)
         assertFalse(emittedOutputs.contains(BlockUserComponent.Output.Blocked))
     }
 

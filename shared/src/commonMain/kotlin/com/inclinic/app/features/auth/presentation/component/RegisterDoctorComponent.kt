@@ -1,6 +1,7 @@
 package com.inclinic.app.features.auth.presentation.component
 
 import com.arkivanov.decompose.value.Value
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.auth.infrastructure.remote.dto.FreelanceScheduleDto
 
 /**
@@ -37,6 +38,12 @@ interface RegisterDoctorComponent {
     // ── Step 3 — Documentos ───────────────────────────────────────────────────
     fun onDocumentUploaded(url: String)
     fun onDocumentRemoved(url: String)
+
+    /**
+     * User picked a file from the native picker in the Documents step.
+     * Stores [file.fileName] in [documentUrls] as a local placeholder until actual upload.
+     */
+    fun onDocumentFilePicked(file: PickedFile)
 
     // ── Step 4 — Horarios ─────────────────────────────────────────────────────
     fun onScheduleAdded(schedule: FreelanceScheduleDto)

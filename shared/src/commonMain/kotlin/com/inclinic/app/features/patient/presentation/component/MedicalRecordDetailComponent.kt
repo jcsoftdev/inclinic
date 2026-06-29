@@ -6,7 +6,11 @@ import com.inclinic.app.core.model.MedicalRecordDetail
 interface MedicalRecordDetailComponent {
     val state: Value<MedicalRecordDetailState>
     fun onBack()
-    sealed interface Output { data object Back : Output }
+    fun onNavigateToMembership()
+    sealed interface Output {
+        data object Back : Output
+        data object NavigateToMembership : Output
+    }
 }
 
 data class MedicalRecordDetailState(

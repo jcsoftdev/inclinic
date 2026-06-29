@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.auth.application.RegisterFreelanceDoctorUseCase
 import com.inclinic.app.features.auth.core.error.AuthError
@@ -98,6 +99,10 @@ class DefaultRegisterDoctorComponent(
 
     override fun onDocumentRemoved(url: String) {
         _state.update { it.copy(documentUrls = it.documentUrls - url) }
+    }
+
+    override fun onDocumentFilePicked(file: PickedFile) {
+        _state.update { it.copy(documentUrls = it.documentUrls + file.fileName, documentError = null) }
     }
 
     // ── Step 4 ────────────────────────────────────────────────────────────────

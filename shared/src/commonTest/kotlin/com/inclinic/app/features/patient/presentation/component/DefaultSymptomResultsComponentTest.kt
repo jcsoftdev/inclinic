@@ -99,7 +99,7 @@ class DefaultSymptomResultsComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNull(state.analysis)
-        assertEquals("API error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test

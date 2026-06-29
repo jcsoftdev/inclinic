@@ -281,8 +281,9 @@ val patientModule = module {
             createAppointment = get(),
             dispatchers      = get(),
             telemetry        = null,
-            onOutput         = params.get(5),
+            onOutput         = params.get(6),
             consultType      = params.get(4),
+            startTime        = params.get(5),
         )
     }
     factory<PaymentComponent> { (ctx: ComponentContext, appointmentId: String?, therapyPackageId: String?, onOutput: (PaymentComponent.Output) -> Unit) ->
@@ -403,7 +404,7 @@ val patientModule = module {
             doctorProfileFactory = { c, doctorId, out -> get { parametersOf(c, doctorId, out) } },
             consultTypeFactory = { c, doctorId, out -> get { parametersOf(c, doctorId, out) } },
             availabilityFactory = { c, doctorId, consultType, out -> get { parametersOf(c, doctorId, consultType, out) } },
-            bookingFactory = { c, doctorId, slotId, date, consultType, out -> get { parametersOf(c, doctorId, slotId, date, consultType, out) } },
+            bookingFactory = { c, doctorId, slotId, date, consultType, startTime, out -> get { parametersOf(c, doctorId, slotId, date, consultType, startTime, out) } },
             paymentFactory = { c, appointmentId, therapyPackageId, out -> get { parametersOf(c, appointmentId, therapyPackageId, out) } },
             appointmentsFactory = { c, pid, out -> get { parametersOf(c, pid, out) } },
             appointmentDetailFactory = { c, appointmentId, out -> get { parametersOf(c, appointmentId, out) } },
@@ -414,7 +415,7 @@ val patientModule = module {
             profileOverviewFactory = { c, pid, out -> get { parametersOf(c, pid, out) } },
             membershipFactory = { c, out -> get { parametersOf(c, out) } },
             profileFactory = { c, pid, out -> get { parametersOf(c, pid, out) } },
-            assistantChatComponentFactory = { c -> get { parametersOf(c) } },
+            assistantChatComponentFactory = { c, onOutput -> get { parametersOf(c, onOutput) } },
             rescheduleAppointmentFactory = { c, appointmentId, out -> get { parametersOf(c, appointmentId, out) } },
             changeVisitTypeFactory = { c, appointmentId, out -> get { parametersOf(c, appointmentId, out) } },
             disputeAppointmentFactory = { c, appointmentId, out -> get { parametersOf(c, appointmentId, out) } },

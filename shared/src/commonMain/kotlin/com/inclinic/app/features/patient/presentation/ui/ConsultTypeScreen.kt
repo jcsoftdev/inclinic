@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -163,6 +164,7 @@ fun ConsultTypeScreen(component: ConsultTypeComponent, modifier: Modifier = Modi
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
+                    .testTag("consult_type_continue_button")
                     .clip(RoundedCornerShape(10.dp))
                     .background(colors.navy)
                     .clickable(interactionSource = interactionSource, indication = null, onClick = component::onContinue),

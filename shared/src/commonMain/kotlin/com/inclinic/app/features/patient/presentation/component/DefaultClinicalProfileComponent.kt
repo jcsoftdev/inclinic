@@ -34,6 +34,7 @@ class DefaultClinicalProfileComponent(
     init { load() }
 
     override fun onBack() { onOutput(ClinicalProfileComponent.Output.Back) }
+    override fun onNavigateToDeleteAccount() { onOutput(ClinicalProfileComponent.Output.NavigateToDeleteAccount) }
 
     override fun onToggleEdit() {
         val s = _state.value

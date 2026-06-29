@@ -21,6 +21,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -122,7 +123,7 @@ class DefaultDoctorNotificationsComponentTest {
     fun error_is_shown_when_load_fails() = runTest {
         repo.listResult = Result.failure(RuntimeException("Load error"))
         val component = createComponent()
-        assertEquals("Load error", component.state.value.error)
+        assertNotNull(component.state.value.error)
     }
 
     @Test

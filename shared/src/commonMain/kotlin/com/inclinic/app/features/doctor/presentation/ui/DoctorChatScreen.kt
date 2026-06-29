@@ -2,6 +2,7 @@ package com.inclinic.app.features.doctor.presentation.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +42,7 @@ import com.composables.icons.lucide.Paperclip
 import com.composables.icons.lucide.Send
 import com.composables.icons.lucide.UserRound
 import com.inclinic.app.core.model.SenderRole
+import com.inclinic.app.core.platform.rememberFilePicker
 import com.inclinic.app.features.doctor.presentation.component.DoctorChatComponent
 import com.inclinic.app.ui.molecules.ChatBubble
 import com.inclinic.app.ui.molecules.ChatInputBar
@@ -60,6 +65,7 @@ fun DoctorChatScreen(component: DoctorChatComponent, modifier: Modifier = Modifi
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val listState = rememberLazyListState()
+    val picker = rememberFilePicker { file -> if (file != null) component.onAttachmentPicked(file) }
 
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
@@ -129,6 +135,14 @@ fun DoctorChatScreen(component: DoctorChatComponent, modifier: Modifier = Modifi
             )
         }
 
+        // Pending attachments row (mirrors patient ChatScreen)
+        if (state.pendingAttachments.isNotEmpty()) {
+            DoctorPendingAttachmentsRow(
+                attachments = state.pendingAttachments,
+                onRemove = component::onRemovePendingAttachment,
+            )
+        }
+
         // Input bar (node U4coE in design)
         Box(
             modifier = Modifier
@@ -144,8 +158,57 @@ fun DoctorChatScreen(component: DoctorChatComponent, modifier: Modifier = Modifi
                 value = state.inputText,
                 onValueChange = component::onInputChange,
                 onSend = component::onSend,
-                onAttach = {},
+                onAttach = { picker.launch() },
             )
+        }
+    }
+}
+
+// ── Pending attachments row ───────────────────────────────────────────────────
+
+@Composable
+private fun DoctorPendingAttachmentsRow(
+    attachments: List<String>,
+    onRemove: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = AppTheme.colors
+    Column(modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+        attachments.forEachIndexed { index, name ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colors.navyTint)
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colors.tealBg),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Filled.Description,
+                        contentDescription = null,
+                        tint = colors.teal,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = name,
+                    color = colors.navy,
+                    fontSize = 12.sp,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = { onRemove(index) }, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Filled.Close, contentDescription = "Quitar adjunto", tint = colors.navy)
+                }
+            }
         }
     }
 }

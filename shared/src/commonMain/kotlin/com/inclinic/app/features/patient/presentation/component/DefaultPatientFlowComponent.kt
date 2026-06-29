@@ -32,7 +32,7 @@ class DefaultPatientFlowComponent(
     private val doctorProfileFactory: (ComponentContext, String, (DoctorProfileComponent.Output) -> Unit) -> DoctorProfileComponent,
     private val consultTypeFactory: (ComponentContext, String, (ConsultTypeComponent.Output) -> Unit) -> ConsultTypeComponent,
     private val availabilityFactory: (ComponentContext, String, String, (AvailabilityCalendarComponent.Output) -> Unit) -> AvailabilityCalendarComponent,
-    private val bookingFactory: (ComponentContext, String, String, String, String, (BookingComponent.Output) -> Unit) -> BookingComponent,
+    private val bookingFactory: (ComponentContext, String, String, String, String, String, (BookingComponent.Output) -> Unit) -> BookingComponent,
     private val paymentFactory: (ComponentContext, String?, String?, (PaymentComponent.Output) -> Unit) -> PaymentComponent,
     private val appointmentsFactory: (ComponentContext, String, (PatientAppointmentsListComponent.Output) -> Unit) -> PatientAppointmentsListComponent,
     private val appointmentDetailFactory: (ComponentContext, String, (AppointmentDetailComponent.Output) -> Unit) -> AppointmentDetailComponent,
@@ -43,7 +43,7 @@ class DefaultPatientFlowComponent(
     private val profileOverviewFactory: (ComponentContext, String, (ProfileOverviewComponent.Output) -> Unit) -> ProfileOverviewComponent,
     private val membershipFactory: (ComponentContext, (MembershipComponent.Output) -> Unit) -> MembershipComponent,
     private val profileFactory: (ComponentContext, String, (PatientProfileComponent.Output) -> Unit) -> PatientProfileComponent,
-    private val assistantChatComponentFactory: (ComponentContext) -> AssistantChatComponent,
+    private val assistantChatComponentFactory: (ComponentContext, (AssistantChatComponent.Output) -> Unit) -> AssistantChatComponent,
     private val rescheduleAppointmentFactory: (ComponentContext, String, (RescheduleAppointmentComponent.Output) -> Unit) -> RescheduleAppointmentComponent,
     private val changeVisitTypeFactory: (ComponentContext, String, (ChangeVisitTypeComponent.Output) -> Unit) -> ChangeVisitTypeComponent,
     private val disputeAppointmentFactory: (ComponentContext, String, (DisputeAppointmentComponent.Output) -> Unit) -> DisputeAppointmentComponent,
@@ -121,6 +121,8 @@ class DefaultPatientFlowComponent(
                             navigation.push(PatientConfig.TherapyPackages)
                         PatientHomeComponent.Output.NavigateToPremium ->
                             navigation.push(PatientConfig.Membership)
+                        PatientHomeComponent.Output.NavigateToHistoryAccess ->
+                            navigation.push(PatientConfig.HistoryAccessLogs)
                     }
                 }
             )
@@ -155,13 +157,13 @@ class DefaultPatientFlowComponent(
                 availabilityFactory(ctx, config.doctorId, config.consultType) { output ->
                     when (output) {
                         is AvailabilityCalendarComponent.Output.NavigateToBooking ->
-                            navigation.push(PatientConfig.Booking(output.doctorId, output.slotId, output.date, config.consultType))
+                            navigation.push(PatientConfig.Booking(output.doctorId, output.slotId, output.date, config.consultType, output.startTime))
                         AvailabilityCalendarComponent.Output.Back -> navigation.pop()
                     }
                 }
             )
             is PatientConfig.Booking -> PatientFlowComponent.Child.Booking(
-                bookingFactory(ctx, config.doctorId, config.slotId, config.date, config.consultType) { output ->
+                bookingFactory(ctx, config.doctorId, config.slotId, config.date, config.consultType, config.startTime) { output ->
                     when (output) {
                         is BookingComponent.Output.NavigateToPayment ->
                             navigation.push(PatientConfig.Payment(output.appointmentId))
@@ -278,7 +280,12 @@ class DefaultPatientFlowComponent(
                 }
             )
             is PatientConfig.AssistantChat -> PatientFlowComponent.Child.AssistantChat(
-                assistantChatComponentFactory(ctx)
+                assistantChatComponentFactory(ctx) { output ->
+                    when (output) {
+                        is AssistantChatComponent.Output.NavigateToPayment ->
+                            navigation.push(PatientConfig.Payment(output.appointmentId, null))
+                    }
+                }
             )
 
             // Appointment lifecycle
@@ -364,6 +371,8 @@ class DefaultPatientFlowComponent(
                 clinicalProfileFactory(ctx) { output ->
                     when (output) {
                         ClinicalProfileComponent.Output.Back -> navigation.pop()
+                        ClinicalProfileComponent.Output.NavigateToDeleteAccount ->
+                            navigation.push(PatientConfig.DeleteAccount)
                     }
                 }
             )
@@ -382,6 +391,8 @@ class DefaultPatientFlowComponent(
                 medicalRecordDetailFactory(ctx, config.recordId) { output ->
                     when (output) {
                         MedicalRecordDetailComponent.Output.Back -> navigation.pop()
+                        MedicalRecordDetailComponent.Output.NavigateToMembership ->
+                            navigation.push(PatientConfig.Membership)
                     }
                 }
             )

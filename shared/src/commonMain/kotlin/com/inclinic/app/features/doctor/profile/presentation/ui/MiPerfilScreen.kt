@@ -17,8 +17,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,8 +71,15 @@ fun MiPerfilScreen(
         val colors = AppTheme.colors
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
+        val snackbarHostState = remember { SnackbarHostState() }
+        val scope = rememberCoroutineScope()
 
-        Box(modifier = modifier.fillMaxSize().background(Color(0xFF0A0B14))) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            containerColor = Color(0xFF0A0B14),
+            modifier = modifier.fillMaxSize(),
+        ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().background(Color(0xFF0A0B14)).padding(innerPadding)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // ── AppHeader ──────────────────────────────────────────────────
                 Row(
@@ -142,14 +155,18 @@ fun MiPerfilScreen(
                                 icon = Lucide.Lock,
                                 title = "Cambiar contraseña",
                                 subtitle = "",
-                                onClick = { /* TODO: navigate to change password */ },
+                                onClick = {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Cambio de contraseña disponible próximamente")
+                                    }
+                                },
                             )
                             ProfileNavRow(
                                 icon = Lucide.LogOut,
                                 title = "Cerrar sesión",
                                 subtitle = "",
                                 iconBg = Color(0xFF3A1A1F),
-                                onClick = { /* delegated via Settings */ },
+                                onClick = component::onLogout,
                                 showChevron = false,
                             )
                         }
@@ -170,6 +187,7 @@ fun MiPerfilScreen(
 
             LoadingOverlay(visible = state.isLoading)
         }
+        } // Scaffold
     }
 }
 

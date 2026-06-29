@@ -92,7 +92,7 @@ class DefaultDoctorProfileComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNull(state.doctor)
-        assertEquals("Not found", state.error)
+        assertNotNull(state.error)
     }
 
     @Test

@@ -50,6 +50,7 @@ import com.inclinic.app.features.doctor.sharing.presentation.component.RequestSh
 import com.inclinic.app.features.doctor.sharing.presentation.component.ShareRequestsListComponent
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.CreateTherapyOfferComponent
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListComponent
+import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -93,6 +94,7 @@ class DefaultDoctorFlowComponent(
     private val therapyOffersListFactory: (ComponentContext, (TherapyOffersListComponent.Output) -> Unit) -> TherapyOffersListComponent,
     private val createTherapyOfferFactory: (ComponentContext, (CreateTherapyOfferComponent.Output) -> Unit) -> CreateTherapyOfferComponent,
     private val editPrescriptionFactory: (ComponentContext, String, (EditPrescriptionComponent.Output) -> Unit) -> EditPrescriptionComponent,
+    private val deleteAccountFactory: (ComponentContext, (DeleteAccountComponent.Output) -> Unit) -> DeleteAccountComponent,
     private val onOutput: (DoctorFlowComponent.Output) -> Unit,
 ) : DoctorFlowComponent, ComponentContext by componentContext {
 
@@ -415,6 +417,8 @@ class DefaultDoctorFlowComponent(
                             perfilNav.push(DoctorConfig.Settings)
                         MiPerfilComponent.Output.TherapyOffers ->
                             perfilNav.push(DoctorConfig.TherapyOffers)
+                        MiPerfilComponent.Output.Logout ->
+                            onOutput(DoctorFlowComponent.Output.Logout)
                     }
                 }
             )
@@ -423,6 +427,8 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         EditSpecialtiesComponent.Output.Back -> perfilNav.pop()
                         EditSpecialtiesComponent.Output.Saved -> perfilNav.pop()
+                        EditSpecialtiesComponent.Output.NavigateToRequestSpecialty ->
+                            perfilNav.push(DoctorConfig.RequestSpecialty)
                     }
                 }
             )
@@ -508,6 +514,17 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         DoctorSettingsComponent.Output.Back -> perfilNav.pop()
                         DoctorSettingsComponent.Output.LoggedOut -> onOutput(DoctorFlowComponent.Output.Logout)
+                        DoctorSettingsComponent.Output.NavigateToDeleteAccount ->
+                            perfilNav.push(DoctorConfig.DeleteAccount)
+                    }
+                }
+            )
+            is DoctorConfig.DeleteAccount -> DoctorFlowComponent.Child.DeleteAccount(
+                deleteAccountFactory(ctx) { output ->
+                    when (output) {
+                        DeleteAccountComponent.Output.Back -> perfilNav.pop()
+                        // Session cleaned via LogoutUseCase → SessionEvents; RootComponent handles nav.
+                        DeleteAccountComponent.Output.Deleted -> Unit
                     }
                 }
             )

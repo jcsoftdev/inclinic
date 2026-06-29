@@ -143,7 +143,6 @@ class DefaultChatComponentTest {
 
         assertFalse(component.state.value.isSending)
         assertNotNull(component.state.value.error)
-        assertEquals("Send failed", component.state.value.error)
     }
 
     @Test

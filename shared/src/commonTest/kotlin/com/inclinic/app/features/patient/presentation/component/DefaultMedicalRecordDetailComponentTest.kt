@@ -83,7 +83,7 @@ class DefaultMedicalRecordDetailComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNull(state.record)
-        assertEquals("Record not found", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -95,5 +95,16 @@ class DefaultMedicalRecordDetailComponentTest {
 
         assertEquals(1, outputs.size)
         assertTrue(outputs.first() is MedicalRecordDetailComponent.Output.Back)
+    }
+
+    @Test
+    fun onNavigateToMembership_emits_NavigateToMembership_output() = runTest {
+        val outputs = mutableListOf<MedicalRecordDetailComponent.Output>()
+        val component = createComponent(outputs = outputs)
+
+        component.onNavigateToMembership()
+
+        assertEquals(1, outputs.size)
+        assertTrue(outputs.first() is MedicalRecordDetailComponent.Output.NavigateToMembership)
     }
 }

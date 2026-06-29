@@ -121,7 +121,7 @@ fun EditSpecialtiesScreen(
 
                     AppButton(
                         text = "Solicitar nueva especialidad",
-                        onClick = { },
+                        onClick = component::onNavigateToRequestSpecialty,
                         variant = AppButtonVariant.Outline,
                         size = AppButtonSize.Lg,
                         modifier = Modifier.fillMaxWidth(),

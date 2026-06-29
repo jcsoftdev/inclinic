@@ -31,6 +31,7 @@ class DefaultDoctorSettingsComponent(
     override fun onToggleTwoFactor(enabled: Boolean) { _state.update { it.copy(twoFactorEnabled = enabled) } }
 
     override fun onBack() { onOutput(DoctorSettingsComponent.Output.Back) }
+    override fun onDeleteAccount() { onOutput(DoctorSettingsComponent.Output.NavigateToDeleteAccount) }
 
     override fun onLogOut() {
         if (_state.value.isLoggingOut) return

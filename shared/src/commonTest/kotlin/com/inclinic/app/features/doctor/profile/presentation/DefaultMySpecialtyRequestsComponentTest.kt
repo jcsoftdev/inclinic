@@ -52,7 +52,7 @@ class DefaultMySpecialtyRequestsComponentTest {
         repo.getMySpecialtyRequestsResult = Result.failure(RuntimeException("Network error"))
         val component = createComponent()
 
-        assertEquals("Network error", component.state.value.error)
+        assertNotNull(component.state.value.error)
         assertTrue(component.state.value.requests.isEmpty())
     }
 

@@ -88,7 +88,7 @@ class DefaultDoctorSearchComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertTrue(state.results.isEmpty())
-        assertEquals("Network error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test

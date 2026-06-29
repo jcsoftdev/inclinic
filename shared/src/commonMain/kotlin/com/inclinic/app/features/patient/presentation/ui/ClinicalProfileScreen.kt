@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -286,6 +288,21 @@ fun ClinicalProfileScreen(
                         } else {
                             Text("Guardar cambios")
                         }
+                    }
+                }
+
+                // ── Zona de peligro ───────────────────────────────────────────
+                if (!state.isEditing) {
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = component::onNavigateToDeleteAccount,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF3A1A1F),
+                            contentColor = Color(0xFFFF6B6B),
+                        ),
+                    ) {
+                        Text("Eliminar mi cuenta")
                     }
                 }
             }

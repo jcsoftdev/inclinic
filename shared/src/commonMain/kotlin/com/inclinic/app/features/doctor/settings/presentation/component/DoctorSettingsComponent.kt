@@ -7,6 +7,7 @@ interface DoctorSettingsComponent {
 
     fun onBack()
     fun onLogOut()
+    fun onDeleteAccount()
     fun onToggleNewAppointments(enabled: Boolean)
     fun onToggleChatMessages(enabled: Boolean)
     fun onToggleAppointmentReminders(enabled: Boolean)
@@ -15,6 +16,7 @@ interface DoctorSettingsComponent {
     sealed interface Output {
         data object Back : Output
         data object LoggedOut : Output
+        data object NavigateToDeleteAccount : Output
     }
 }
 

@@ -103,6 +103,25 @@ class DefaultPatientsListComponentTest {
         assertEquals(listOf("p1", "p2"), component.state.value.visiblePatients.map { it.id })
     }
 
+    @Test
+    fun onFilterChange_free_shows_only_active_non_premium_patients() = runTest {
+        fakeRepo.getPatientsResult = Result.success(
+            PatientList(
+                items = listOf(
+                    PatientListItem("p1", "Premium One", null, null, 1, PatientStatus.PREMIUM),
+                    PatientListItem("p2", "Active Free", null, null, 1, PatientStatus.ACTIVE),
+                    PatientListItem("p3", "Inactive Three", null, null, 0, PatientStatus.INACTIVE),
+                ),
+            ),
+        )
+        val component = createComponent()
+
+        component.onFilterChange(PatientsFilter.FREE)
+
+        assertEquals(PatientsFilter.FREE, component.state.value.filter)
+        assertEquals(listOf("p2"), component.state.value.visiblePatients.map { it.id })
+    }
+
     // ── Navigation outputs ────────────────────────────────────────────────────
 
     @Test

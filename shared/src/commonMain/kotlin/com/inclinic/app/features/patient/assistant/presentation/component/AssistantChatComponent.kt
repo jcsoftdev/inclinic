@@ -50,4 +50,15 @@ interface AssistantChatComponent {
 
     /** Hides the disclaimer banner for the rest of the session. */
     fun onDisclaimerDismissed()
+
+    /**
+     * Navigates to the Payment screen for the given [appointmentId].
+     * Emits [Output.NavigateToPayment] — handled by [DefaultPatientFlowComponent].
+     */
+    fun onNavigateToPayment(appointmentId: String)
+
+    sealed interface Output {
+        /** Emitted when the patient taps "Ir a pagar" on [BookingSuccessCard]. */
+        data class NavigateToPayment(val appointmentId: String) : Output
+    }
 }

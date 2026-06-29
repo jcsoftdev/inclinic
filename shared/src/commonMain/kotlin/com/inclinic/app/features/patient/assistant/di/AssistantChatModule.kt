@@ -45,12 +45,13 @@ val assistantChatModule = module {
 
     factory { SendAssistantMessageUseCase(get()) }
 
-    factory<AssistantChatComponent> { (ctx: ComponentContext) ->
+    factory<AssistantChatComponent> { (ctx: ComponentContext, onOutput: (AssistantChatComponent.Output) -> Unit) ->
         DefaultAssistantChatComponent(
             componentContext = ctx,
             sendMessage = get(),
             sessionEvents = get(),
             dispatchers = get(),
+            onOutput = onOutput,
         )
     }
 }

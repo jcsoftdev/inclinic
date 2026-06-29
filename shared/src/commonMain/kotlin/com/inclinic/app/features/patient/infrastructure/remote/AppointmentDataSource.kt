@@ -20,8 +20,7 @@ interface AppointmentDataSource {
     suspend fun cancelAppointment(appointmentId: String, reason: String): Result<Unit>
     suspend fun rescheduleAppointment(appointmentId: String, date: String, slotId: String): Result<Appointment>
     suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult>
-    suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> =
-        throw NotImplementedError("processPackagePayment not implemented")
+    suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult>
     suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?>
     suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?): Result<Unit>
     suspend fun disputeAppointment(appointmentId: String, reason: String, details: String): Result<Unit>

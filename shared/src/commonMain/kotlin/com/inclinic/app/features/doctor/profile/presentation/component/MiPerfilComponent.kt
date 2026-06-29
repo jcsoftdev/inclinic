@@ -18,6 +18,7 @@ interface MiPerfilComponent {
     fun onNavigateSharing()
     fun onNavigateSettings()
     fun onNavigateTherapyOffers()
+    fun onLogout()
 
     sealed interface Output {
         data object EditSpecialties : Output
@@ -31,11 +32,13 @@ interface MiPerfilComponent {
         data object Sharing : Output
         data object Settings : Output
         data object TherapyOffers : Output
+        data object Logout : Output
     }
 }
 
 data class MiPerfilState(
     val isLoading: Boolean = false,
+    val isLoggingOut: Boolean = false,
     val profile: DoctorProfile? = null,
     val error: String? = null,
 )

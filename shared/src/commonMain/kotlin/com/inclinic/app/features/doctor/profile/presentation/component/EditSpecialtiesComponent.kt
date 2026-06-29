@@ -9,10 +9,12 @@ interface EditSpecialtiesComponent {
     fun onToggleSpecialty(specialtyId: String)
     fun onSave()
     fun onBack()
+    fun onNavigateToRequestSpecialty()
 
     sealed interface Output {
         data object Back : Output
         data object Saved : Output
+        data object NavigateToRequestSpecialty : Output
     }
 }
 

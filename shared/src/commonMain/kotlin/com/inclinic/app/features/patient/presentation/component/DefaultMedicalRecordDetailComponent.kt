@@ -30,6 +30,7 @@ class DefaultMedicalRecordDetailComponent(
     init { load() }
 
     override fun onBack() { onOutput(MedicalRecordDetailComponent.Output.Back) }
+    override fun onNavigateToMembership() { onOutput(MedicalRecordDetailComponent.Output.NavigateToMembership) }
 
     private fun load() {
         _state.update { it.copy(isLoading = true, error = null) }

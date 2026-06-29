@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -93,7 +94,7 @@ class DefaultTherapyOffersComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertTrue(state.offers.isEmpty())
-        assertEquals("Service unavailable", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -148,7 +149,7 @@ class DefaultTherapyOffersComponentTest {
         val component = createComponent(
             dataSource = FakeTherapyOffersDataSource(offersError = Exception("Fail")),
         )
-        assertEquals("Fail", component.state.value.error)
+        assertNotNull(component.state.value.error)
 
         component.onErrorDismissed()
 

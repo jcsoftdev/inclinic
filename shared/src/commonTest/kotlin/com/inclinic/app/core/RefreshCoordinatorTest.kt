@@ -2,6 +2,7 @@
 
 package com.inclinic.app.core
 
+import app.cash.turbine.test
 import com.inclinic.app.core.events.SessionEvents
 import com.inclinic.app.core.network.RefreshCoordinator
 import com.inclinic.app.features.auth.core.model.AuthTokens
@@ -9,8 +10,6 @@ import com.inclinic.app.features.auth.core.port.TokenStorage
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -115,27 +114,19 @@ class RefreshCoordinatorTest {
         val storage = InMemoryTokenStorage(initialTokens)
         val sessionEvents = SessionEvents()
 
-        val collectedEvents = mutableListOf<Unit>()
-        val collectJob = backgroundScope.launch {
-            sessionEvents.expired.collect { collectedEvents.add(it) }
-        }
-
-        testScheduler.runCurrent()
-
         val coordinator = RefreshCoordinator(
             tokenStorage = storage,
             sessionEvents = sessionEvents,
             refreshCall = { _ -> null }, // refresh fails
         )
 
-        val result = coordinator.refresh(BearerTokens("old-access", "old-refresh"))
+        sessionEvents.expired.test {
+            val result = coordinator.refresh(BearerTokens("old-access", "old-refresh"))
 
-        testScheduler.advanceUntilIdle()
-
-        collectJob.cancel()
-
-        assertEquals(null, result)
-        assertEquals(null, storage.load())
-        assertEquals(1, collectedEvents.size)
+            assertEquals(null, result)
+            assertEquals(null, storage.load())
+            awaitItem() // session-expired event must be emitted exactly once
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

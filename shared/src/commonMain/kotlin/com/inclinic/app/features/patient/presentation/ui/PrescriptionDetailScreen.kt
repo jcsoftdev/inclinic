@@ -80,7 +80,7 @@ fun PrescriptionDetailScreen(component: PrescriptionDetailComponent, modifier: M
             if (state.prescription != null) {
                 PrescriptionActionBar(
                     onDownloadPdf = component::onDownloadPdf,
-                    onPrint = { /* TODO: print action when platform API is available */ },
+                    onPrint = component::onDownloadPdf,
                     isDownloading = state.isDownloading,
                 )
             }

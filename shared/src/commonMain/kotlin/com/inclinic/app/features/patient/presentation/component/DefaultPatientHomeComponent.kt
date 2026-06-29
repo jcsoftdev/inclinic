@@ -61,6 +61,10 @@ class DefaultPatientHomeComponent(
         onOutput(PatientHomeComponent.Output.NavigateToPremium)
     }
 
+    override fun onNavigateToHistoryAccess() {
+        onOutput(PatientHomeComponent.Output.NavigateToHistoryAccess)
+    }
+
     override fun onErrorDismissed() { _state.update { it.copy(error = null) } }
 
     private fun load() {

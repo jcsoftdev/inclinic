@@ -17,6 +17,7 @@ import kotlin.time.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -84,7 +85,7 @@ class DefaultHistoryAccessLogsComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertTrue(state.logs.isEmpty())
-        assertEquals("Unauthorized", state.error)
+        assertNotNull(state.error)
     }
 
     @Test

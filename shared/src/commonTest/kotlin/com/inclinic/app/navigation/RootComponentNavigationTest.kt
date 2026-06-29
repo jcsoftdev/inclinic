@@ -50,14 +50,17 @@ class RootComponentNavigationTest {
 
     private val getStoredTokens = GetStoredTokensUseCase(fakeTokenStorage, dispatchers)
 
-    private fun buildRoot(): DefaultRootComponent {
+    private fun buildRoot(
+        localDispatchers: TestAppDispatchers = dispatchers,
+    ): DefaultRootComponent {
+        val localGetStoredTokens = GetStoredTokensUseCase(fakeTokenStorage, localDispatchers)
         lifecycle.resume()
         val ctx = DefaultComponentContext(lifecycle)
         return DefaultRootComponent(
             componentContext = ctx,
-            dispatchers = dispatchers,
+            dispatchers = localDispatchers,
             sessionEvents = sessionEvents,
-            getStoredTokens = getStoredTokens,
+            getStoredTokens = localGetStoredTokens,
             tokenStorage = fakeTokenStorage,
             loginComponentFactory = { _, _, _, _, _ -> StubLoginComponent() },
             twoFactorVerifyComponentFactory = { _, _, _, _ -> StubTwoFactorVerifyComponent() },
@@ -74,7 +77,10 @@ class RootComponentNavigationTest {
 
     @Test
     fun initial_configuration_is_Splash() = runTest {
-        val root = buildRoot()
+        // StandardTestDispatcher prevents the splash coroutine from running eagerly,
+        // so the stack stays in Splash until the scheduler is explicitly advanced.
+        val stdDispatchers = TestAppDispatchers(scheduler = testScheduler, useStandard = true)
+        val root = buildRoot(stdDispatchers)
         assertIs<RootConfig.Splash>(root.stack.value.active.configuration)
     }
 
@@ -129,6 +135,7 @@ private class StubRegisterDoctorComponent : RegisterDoctorComponent {
     override fun onOffersHomeVisitToggled(value: Boolean) {}
     override fun onDocumentUploaded(url: String) {}
     override fun onDocumentRemoved(url: String) {}
+    override fun onDocumentFilePicked(file: com.inclinic.app.core.platform.PickedFile) {}
     override fun onScheduleAdded(schedule: com.inclinic.app.features.auth.infrastructure.remote.dto.FreelanceScheduleDto) {}
     override fun onScheduleRemoved(index: Int) {}
     override fun onNextStep() {}

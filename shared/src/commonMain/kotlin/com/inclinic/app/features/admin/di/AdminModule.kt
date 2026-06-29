@@ -47,8 +47,10 @@ import com.inclinic.app.features.admin.notifications.presentation.component.Admi
 import com.inclinic.app.features.admin.notifications.presentation.component.DefaultAdminNotificationsComponent
 import com.inclinic.app.core.navigation.AdminConfig
 import com.inclinic.app.features.admin.infrastructure.remote.AdminPatientListItem
+import com.inclinic.app.features.admin.presentation.component.AdminPatientAppointmentsComponent
 import com.inclinic.app.features.admin.presentation.component.AdminPatientDetailComponent
 import com.inclinic.app.features.admin.presentation.component.AdminPatientsComponent
+import com.inclinic.app.features.admin.presentation.component.DefaultAdminPatientAppointmentsComponent
 import com.inclinic.app.features.admin.presentation.component.AdminReportsComponent
 import com.inclinic.app.features.admin.presentation.component.AdminResolveReportComponent
 import com.inclinic.app.features.admin.presentation.component.AdminBlockedEmailsComponent
@@ -251,6 +253,9 @@ val adminModule = module {
     factory<AdminTwoFactorSetupComponent> { (ctx: ComponentContext, onActivated: () -> Unit, onBack: () -> Unit) ->
         DefaultAdminTwoFactorSetupComponent(ctx, get(), get(), get(), onActivated, onBack)
     }
+    factory<AdminPatientAppointmentsComponent> { (ctx: ComponentContext, patientId: String, onOutput: (AdminPatientAppointmentsComponent.Output) -> Unit) ->
+        DefaultAdminPatientAppointmentsComponent(ctx, patientId, get(), get(), onOutput)
+    }
     factory<AdminSpecialtiesComponent> { (ctx: ComponentContext, onOutput: (AdminSpecialtiesComponent.Output) -> Unit) ->
         DefaultAdminSpecialtiesComponent(ctx, get(), get(), get(), onOutput)
     }
@@ -300,6 +305,7 @@ val adminModule = module {
             placeholderFactory = { c, title -> get { parametersOf(c, title) } },
             securityFactory = { c, onSetup, onBack -> get { parametersOf(c, onSetup, onBack) } },
             twoFactorSetupFactory = { c, onActivated, onBack -> get { parametersOf(c, onActivated, onBack) } },
+            patientAppointmentsFactory = { c, patientId, out -> get { parametersOf(c, patientId, out) } },
             onOutput = {},
         )
     }

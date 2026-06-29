@@ -4,6 +4,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.inclinic.app.core.model.Specialty
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.auth.application.RegisterFreelanceDoctorUseCase
 import com.inclinic.app.features.auth.core.error.AuthError
@@ -12,6 +13,7 @@ import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.auth.infrastructure.remote.dto.FreelanceScheduleDto
 import com.inclinic.app.features.auth.infrastructure.local.SpecialtyCacheDataSource
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -40,18 +42,19 @@ class DefaultRegisterDoctorComponentTest {
     private val fakeRemote = FakeAuthRemoteDataSource()
 
     private fun makeComponent(
+        localDispatchers: com.inclinic.app.core.concurrency.AppDispatchers = dispatchers,
         onOutput: (RegisterDoctorComponent.Output) -> Unit = {},
     ): DefaultRegisterDoctorComponent {
-        val useCase = RegisterFreelanceDoctorUseCase(fakeRemote, dispatchers)
+        val useCase = RegisterFreelanceDoctorUseCase(fakeRemote, localDispatchers)
         val specialtiesUseCase = GetSpecialtiesUseCase(
             cache = SpecialtyCacheDataSource(remote = fakeRemote),
-            dispatchers = dispatchers,
+            dispatchers = localDispatchers,
         )
         return DefaultRegisterDoctorComponent(
             componentContext = context,
             registerFreelanceUseCase = useCase,
             getSpecialtiesUseCase = specialtiesUseCase,
-            dispatchers = dispatchers,
+            dispatchers = localDispatchers,
             onOutput = onOutput,
         )
     }
@@ -325,16 +328,20 @@ class DefaultRegisterDoctorComponentTest {
     }
 
     @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun onSubmit_while_loading_is_idempotent() = runTest {
-        // Issue two submits rapidly — second should be ignored
+        // Use StandardTestDispatcher so the first submit's coroutine doesn't complete
+        // eagerly before the second submit is called — preserving the isLoading guard.
+        val stdDispatchers = TestAppDispatchers(scheduler = testScheduler, useStandard = true)
         fakeRemote.registerFreelanceDoctorResult = Result.success(Unit)
-        val c = makeComponent()
+        val c = makeComponent(localDispatchers = stdDispatchers)
         fillStep1(c); c.onNextStep()
         fillStep2(c); c.onNextStep()
         c.onDocumentUploaded("https://cdn/doc.pdf"); c.onNextStep()
         c.onScheduleAdded(sampleSchedule); c.onNextStep()
-        c.onSubmit()
-        c.onSubmit() // second submit while first may still be in flight
+        c.onSubmit()           // sets isLoading = true, queues coroutine
+        c.onSubmit()           // blocked by isLoading = true guard
+        testScheduler.advanceUntilIdle() // run the first submit's coroutine
         assertEquals(1, fakeRemote.registerFreelanceDoctorCallCount)
     }
 
@@ -356,5 +363,29 @@ class DefaultRegisterDoctorComponentTest {
         assertEquals("sp-1", c.state.value.primarySpecialtyId)
         c.onToggleSpecialty("sp-1") // remove it
         assertNull(c.state.value.primarySpecialtyId)
+    }
+
+    // ── File picker — document step ───────────────────────────────────────────
+
+    @Test
+    fun onDocumentFilePicked_adds_filename_to_documentUrls() {
+        val c = makeComponent()
+        val file = PickedFile(byteArrayOf(1, 2, 3), "colegiatura.pdf", "application/pdf")
+
+        c.onDocumentFilePicked(file)
+
+        assertTrue(c.state.value.documentUrls.contains("colegiatura.pdf"))
+    }
+
+    @Test
+    fun onDocumentFilePicked_multiple_files_are_all_added() {
+        val c = makeComponent()
+        val fileA = PickedFile(byteArrayOf(1), "doc1.pdf", "application/pdf")
+        val fileB = PickedFile(byteArrayOf(2), "doc2.pdf", "application/pdf")
+
+        c.onDocumentFilePicked(fileA)
+        c.onDocumentFilePicked(fileB)
+
+        assertEquals(2, c.state.value.documentUrls.size)
     }
 }

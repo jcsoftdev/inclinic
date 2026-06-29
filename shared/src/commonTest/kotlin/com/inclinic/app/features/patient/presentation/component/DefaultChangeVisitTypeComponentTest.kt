@@ -49,6 +49,7 @@ private class FakeChangeVisitTypeDataSource(
     override suspend fun cancelAppointment(appointmentId: String, reason: String) = Result.success(Unit)
     override suspend fun rescheduleAppointment(appointmentId: String, date: String, slotId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
+    override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
     override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)
@@ -94,7 +95,6 @@ class DefaultChangeVisitTypeComponentTest {
 
         assertFalse(component.state.value.isLoading)
         assertNotNull(component.state.value.error)
-        assertEquals("Not found", component.state.value.error)
     }
 
     @Test
@@ -158,7 +158,7 @@ class DefaultChangeVisitTypeComponentTest {
 
         assertTrue(outputs.isEmpty())
         assertFalse(component.state.value.isSubmitting)
-        assertEquals("Too late to change", component.state.value.error)
+        assertNotNull(component.state.value.error)
     }
 
     @Test

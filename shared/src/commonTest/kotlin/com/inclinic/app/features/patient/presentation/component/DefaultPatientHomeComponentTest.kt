@@ -114,7 +114,7 @@ class DefaultPatientHomeComponentTest {
 
         val state = component.state.value
         assertFalse(state.isLoading)
-        assertEquals("Network error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -182,6 +182,17 @@ class DefaultPatientHomeComponentTest {
 
         assertEquals(1, outputs.size)
         assertTrue(outputs.first() is PatientHomeComponent.Output.NavigateToProfile)
+    }
+
+    @Test
+    fun onNavigateToHistoryAccess_emits_NavigateToHistoryAccess() = runTest {
+        val outputs = mutableListOf<PatientHomeComponent.Output>()
+        val component = createComponent(outputs = outputs)
+
+        component.onNavigateToHistoryAccess()
+
+        assertEquals(1, outputs.size)
+        assertTrue(outputs.first() is PatientHomeComponent.Output.NavigateToHistoryAccess)
     }
 
     @Test

@@ -13,7 +13,7 @@ import com.inclinic.app.features.auth.core.model.AuthUser
 import com.inclinic.app.features.auth.core.port.TokenStorage
 import com.arkivanov.decompose.DefaultComponentContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,7 +32,7 @@ private class FakeTokenStorage : TokenStorage {
 
 class DefaultDoctorSettingsComponentTest {
 
-    private val testDispatcher: CoroutineDispatcher = StandardTestDispatcher()
+    private val testDispatcher: CoroutineDispatcher = UnconfinedTestDispatcher()
 
     private val dispatchers = object : AppDispatchers {
         override val main = testDispatcher
@@ -111,6 +111,17 @@ class DefaultDoctorSettingsComponentTest {
 
         assertEquals(1, outputs.size)
         assertTrue(outputs.first() is DoctorSettingsComponent.Output.Back)
+    }
+
+    @Test
+    fun onDeleteAccount_emits_NavigateToDeleteAccount_output() = runTest {
+        val outputs = mutableListOf<DoctorSettingsComponent.Output>()
+        val component = createComponent(outputs = outputs)
+
+        component.onDeleteAccount()
+
+        assertEquals(1, outputs.size)
+        assertTrue(outputs.first() is DoctorSettingsComponent.Output.NavigateToDeleteAccount)
     }
 
     @Test

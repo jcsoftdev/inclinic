@@ -103,7 +103,9 @@ class AssistantChatModuleTest : KoinTest {
         val testCtx: ComponentContext = DefaultComponentContext(lifecycle = lifecycle)
 
         assertIs<DefaultAssistantChatComponent>(
-            koin.get<AssistantChatComponent> { parametersOf(testCtx) }
+            koin.get<AssistantChatComponent> {
+                parametersOf(testCtx, { _: AssistantChatComponent.Output -> })
+            }
         )
     }
 }

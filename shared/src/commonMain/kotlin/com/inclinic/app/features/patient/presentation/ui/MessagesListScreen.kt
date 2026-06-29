@@ -31,11 +31,14 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MessageCircle
+import com.inclinic.app.core.model.Conversation
+import com.inclinic.app.features.patient.messages.formatConversationTimestamp
 import com.inclinic.app.features.patient.presentation.component.MessagesListComponent
 import com.inclinic.app.ui.atoms.EmptyState
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.atoms.SkeletonMessageRow
 import com.inclinic.app.ui.theme.AppTheme
+import kotlin.time.Clock
 
 @Composable
 fun MessagesListScreen(component: MessagesListComponent, modifier: Modifier = Modifier) {
@@ -64,6 +67,11 @@ fun MessagesListScreen(component: MessagesListComponent, modifier: Modifier = Mo
 
         state.error?.let { ErrorBanner(message = it, onDismiss = { }) }
 
+        // Info banner — always visible regardless of conversation list state
+        MessagesInfoBanner(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+
         when {
             state.isLoading -> Column(
                 modifier = Modifier
@@ -81,12 +89,12 @@ fun MessagesListScreen(component: MessagesListComponent, modifier: Modifier = Mo
                     icon = Lucide.MessageCircle,
                 )
             }
-            else -> Column(modifier = Modifier.fillMaxSize()) {
+            else -> {
+                val now = Clock.System.now()
                 LazyColumn(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 16.dp),
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
                     items(state.conversations, key = { it.id }) { conversation ->
@@ -94,16 +102,12 @@ fun MessagesListScreen(component: MessagesListComponent, modifier: Modifier = Mo
                             doctorName = conversation.doctorName,
                             doctorInitials = conversation.doctorInitials,
                             lastMessage = conversation.lastMessage,
-                            timestamp = conversation.lastMessageAt.toString(),
+                            timestamp = formatConversationTimestamp(conversation.lastMessageAt, now),
                             unreadCount = conversation.unreadCount,
                             onClick = { component.onConversationClick(conversation.id) },
                         )
                     }
                 }
-                // Info banner — inside content area, padding 16dp all sides
-                MessagesInfoBanner(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                )
             }
         }
     }

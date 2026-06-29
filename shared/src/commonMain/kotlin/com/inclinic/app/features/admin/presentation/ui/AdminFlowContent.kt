@@ -75,6 +75,7 @@ fun AdminFlowContent(component: AdminFlowComponent, modifier: Modifier = Modifie
                 is AdminFlowComponent.Child.MasConfigScreen -> AdminConfigScreen(c.component)
                 is AdminFlowComponent.Child.MasSecurity -> AdminSecurityScreen(c.component)
                 is AdminFlowComponent.Child.MasTwoFactorSetup -> AdminTwoFactorSetupScreen(c.component)
+                is AdminFlowComponent.Child.MasPatientAppointments -> AdminPatientAppointmentsScreen(c.component)
             }
         }
     }

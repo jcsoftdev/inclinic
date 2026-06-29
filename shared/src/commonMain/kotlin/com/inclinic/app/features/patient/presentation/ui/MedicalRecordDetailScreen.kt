@@ -43,6 +43,7 @@ import com.composables.icons.lucide.Pill
 import com.inclinic.app.core.model.MedicalRecordDetail
 import com.inclinic.app.core.model.RecordPrescription
 import com.inclinic.app.core.model.VitalSigns
+import com.inclinic.app.core.platform.rememberUrlOpener
 import com.inclinic.app.features.patient.presentation.component.MedicalRecordDetailComponent
 import com.inclinic.app.ui.atoms.ChipSpecialty
 import com.inclinic.app.ui.atoms.ErrorBanner
@@ -83,7 +84,7 @@ fun MedicalRecordDetailScreen(component: MedicalRecordDetailComponent, modifier:
                 state.record == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No se encontró el registro", color = colors.muted, fontSize = 14.sp)
                 }
-                else -> RecordBody(state.record!!)
+                else -> RecordBody(state.record!!, onNavigateToMembership = component::onNavigateToMembership)
             }
         }
     }
@@ -91,7 +92,7 @@ fun MedicalRecordDetailScreen(component: MedicalRecordDetailComponent, modifier:
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RecordBody(record: MedicalRecordDetail) {
+private fun RecordBody(record: MedicalRecordDetail, onNavigateToMembership: () -> Unit) {
     val colors = AppTheme.colors
 
     Column(
@@ -110,7 +111,7 @@ private fun RecordBody(record: MedicalRecordDetail) {
         if (record.isLocked) {
             // Sólo se muestra el diagnóstico (recortado por el backend) + upsell.
             record.diagnosis?.let { Section(title = "DIAGNÓSTICO") { DiagnosisBody(it) } }
-            UpsellCard()
+            UpsellCard(onNavigateToMembership = onNavigateToMembership)
             return@Column
         }
 
@@ -170,7 +171,7 @@ private fun RecordBody(record: MedicalRecordDetail) {
             }
         }
 
-        // Adjuntos (filas tocables — abrir es no-op hasta tener un opener de URLs)
+        // Adjuntos (filas tocables — se abren con UrlOpener)
         if (record.attachments.isNotEmpty()) {
             Section(title = "ADJUNTOS") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -257,7 +258,7 @@ private fun LockedBanner() {
 }
 
 @Composable
-private fun UpsellCard() {
+private fun UpsellCard(onNavigateToMembership: () -> Unit) {
     val colors = AppTheme.colors
     Column(
         modifier = Modifier
@@ -276,13 +277,12 @@ private fun UpsellCard() {
                 fontSize = 13.sp,
             )
         }
-        // CTA upsell — sin navegación a checkout todavía; no-op hasta tener flujo de pago.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(colors.navy)
-                .clickable { /* TODO: navegar al flujo de upgrade PREMIUM cuando exista */ }
+                .clickable { onNavigateToMembership() }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -422,12 +422,12 @@ private fun PrescriptionRow(p: RecordPrescription) {
 @Composable
 private fun AttachmentRow(url: String) {
     val colors = AppTheme.colors
+    val urlOpener = rememberUrlOpener()
     val fileName = url.substringAfterLast('/').ifBlank { url }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            // Abrir el adjunto es no-op por ahora: no hay opener de URLs en el shared.
-            .clickable { /* TODO: abrir [url] cuando exista un UrlOpener expect/actual */ },
+            .clickable { urlOpener.open(url) },
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

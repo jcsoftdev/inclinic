@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -281,6 +282,7 @@ private fun DoctorResultCard(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier            = Modifier
             .fillMaxWidth()
+            .testTag("doctor_result_card")
             .shadow(
                 elevation    = 4.dp,
                 shape        = RoundedCornerShape(16.dp),

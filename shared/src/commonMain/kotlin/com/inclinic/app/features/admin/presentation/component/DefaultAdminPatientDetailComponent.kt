@@ -36,6 +36,10 @@ class DefaultAdminPatientDetailComponent(
         onOutput(AdminPatientDetailComponent.Output.NavigateToSuspend(_state.value.patient))
     }
 
+    override fun onViewAppointments() {
+        onOutput(AdminPatientDetailComponent.Output.NavigateToAppointments(_state.value.patient.id))
+    }
+
     override fun onReactivate() {
         val patient = _state.value.patient
         _state.update { it.copy(isReactivating = true, reactivateError = null) }

@@ -44,15 +44,18 @@ class KtorAuthRemoteDataSourceTest {
             respond(
                 content = """
                     {
-                        "user": {
-                            "id": "u1",
-                            "email": "doc@inclinic.com",
-                            "firstName": "Carlos",
-                            "lastName": "Ramirez",
-                            "role": "DOCTOR"
-                        },
-                        "accessToken": "access-abc",
-                        "refreshToken": "refresh-xyz"
+                        "success": true,
+                        "data": {
+                            "user": {
+                                "id": "u1",
+                                "email": "doc@inclinic.com",
+                                "firstName": "Carlos",
+                                "lastName": "Ramirez",
+                                "role": "DOCTOR"
+                            },
+                            "accessToken": "access-abc",
+                            "refreshToken": "refresh-xyz"
+                        }
                     }
                 """.trimIndent(),
                 status = HttpStatusCode.OK,

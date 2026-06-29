@@ -5,7 +5,7 @@ import com.inclinic.app.features.doctor.patients.core.model.PatientListItem
 import com.inclinic.app.features.doctor.patients.core.model.PatientListStats
 import com.inclinic.app.features.doctor.patients.core.model.PatientStatus
 
-enum class PatientsFilter { ALL, ACTIVE, PREMIUM }
+enum class PatientsFilter { ALL, FREE, ACTIVE, PREMIUM }
 
 interface PatientsListComponent {
     val state: Value<PatientsListState>
@@ -34,6 +34,7 @@ data class PatientsListState(
     val visiblePatients: List<PatientListItem>
         get() = when (filter) {
             PatientsFilter.ALL -> patients
+            PatientsFilter.FREE -> patients.filter { it.status == PatientStatus.ACTIVE }
             PatientsFilter.ACTIVE -> patients.filter {
                 it.status == PatientStatus.ACTIVE || it.status == PatientStatus.PREMIUM
             }

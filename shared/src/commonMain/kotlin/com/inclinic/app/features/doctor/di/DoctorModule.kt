@@ -55,6 +55,7 @@ import com.inclinic.app.features.doctor.presentation.component.DefaultPatientDet
 import com.inclinic.app.features.doctor.presentation.component.DefaultPriceConfigComponent
 import com.inclinic.app.features.doctor.presentation.component.DefaultScheduleConfigComponent
 import com.inclinic.app.features.doctor.presentation.component.DefaultWeeklyScheduleComponent
+import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorAppointmentDetailComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorChatComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorDashboardComponent
@@ -211,6 +212,7 @@ val doctorModule = module {
                 }
             },
             editPrescriptionFactory = { c, prescriptionId, out -> get<EditPrescriptionComponent> { parametersOf(c, prescriptionId, out) } },
+            deleteAccountFactory = { c, out -> get<DeleteAccountComponent> { parametersOf(c, out) } },
             onOutput = {},
         )
     }

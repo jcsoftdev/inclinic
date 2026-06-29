@@ -3,6 +3,7 @@ package com.inclinic.app.features.doctor.profile.presentation
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.doctor.profile.application.RequestSpecialtyUseCase
 import com.inclinic.app.features.doctor.profile.fakes.FakeDoctorProfileRepository
@@ -126,5 +127,37 @@ class DefaultRequestSpecialtyComponentTest {
         component.onBack()
 
         assertTrue(output is RequestSpecialtyComponent.Output.Back)
+    }
+
+    // ── File picker state updates ─────────────────────────────────────────────
+
+    @Test
+    fun onPickCertification_stores_file_in_pendingCertification() {
+        val component = makeComponent()
+        val file = PickedFile(byteArrayOf(1, 2, 3), "sunedu.pdf", "application/pdf")
+
+        component.onPickCertification(file)
+
+        assertEquals("sunedu.pdf", component.state.value.pendingCertification?.fileName)
+    }
+
+    @Test
+    fun onPickDiploma_stores_file_in_pendingDiploma() {
+        val component = makeComponent()
+        val file = PickedFile(byteArrayOf(4, 5, 6), "diploma.pdf", "application/pdf")
+
+        component.onPickDiploma(file)
+
+        assertEquals("diploma.pdf", component.state.value.pendingDiploma?.fileName)
+    }
+
+    @Test
+    fun onPickCertification_replaces_previous_pick() {
+        val component = makeComponent()
+        component.onPickCertification(PickedFile(byteArrayOf(1), "old.pdf", "application/pdf"))
+
+        component.onPickCertification(PickedFile(byteArrayOf(2), "new.pdf", "application/pdf"))
+
+        assertEquals("new.pdf", component.state.value.pendingCertification?.fileName)
     }
 }

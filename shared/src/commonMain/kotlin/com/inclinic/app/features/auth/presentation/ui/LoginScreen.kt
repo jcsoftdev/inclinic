@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.testTag
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.inclinic.app.features.auth.core.error.toUserMessage
 import com.inclinic.app.features.auth.presentation.component.LoginComponent
@@ -132,9 +133,10 @@ fun LoginScreen(
                             keyboardType = KeyboardType.Email,
                             imeAction    = ImeAction.Next,
                         ),
-                        error   = state.emailError,
-                        enabled = !state.isSubmitting,
-                        modifier = Modifier.fillMaxWidth(),
+                        error        = state.emailError,
+                        enabled      = !state.isSubmitting,
+                        modifier     = Modifier.fillMaxWidth(),
+                        inputTestTag = "login_email_field",
                     )
 
                     AppTextField(
@@ -157,8 +159,8 @@ fun LoginScreen(
                             imeAction    = ImeAction.Done,
                         ),
                         keyboardActions = KeyboardActions(onDone = { component.onSubmit() }),
-                        error   = state.passwordError,
-                        enabled = !state.isSubmitting,
+                        error        = state.passwordError,
+                        enabled      = !state.isSubmitting,
                         trailingIcon = {
                             Icon(
                                 imageVector        = if (showPassword) Lucide.EyeOff else Lucide.Eye,
@@ -173,7 +175,8 @@ fun LoginScreen(
                                     ),
                             )
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier     = Modifier.fillMaxWidth(),
+                        inputTestTag = "login_password_field",
                     )
 
                     // Forgot password — right-aligned
@@ -205,7 +208,7 @@ fun LoginScreen(
                         loading  = state.isSubmitting,
                         enabled  = !state.isSubmitting,
                         size     = AppButtonSize.Lg,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().testTag("login_button"),
                     )
 
                     Row(

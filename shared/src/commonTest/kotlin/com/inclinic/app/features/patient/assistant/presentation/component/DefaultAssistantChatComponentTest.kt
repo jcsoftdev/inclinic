@@ -62,6 +62,8 @@ class DefaultAssistantChatComponentTest {
     }
     private val sendMessageUseCase = SendAssistantMessageUseCase(fakeDataSource)
 
+    private val outputs = mutableListOf<AssistantChatComponent.Output>()
+
     private fun createComponent(instanceKeeper: InstanceKeeperDispatcher? = null): DefaultAssistantChatComponent {
         val ctx = if (instanceKeeper != null) {
             DefaultComponentContext(lifecycle = lifecycle, instanceKeeper = instanceKeeper)
@@ -73,6 +75,7 @@ class DefaultAssistantChatComponentTest {
             sendMessage = sendMessageUseCase,
             sessionEvents = sessionEvents,
             dispatchers = dispatchers,
+            onOutput = outputs::add,
         )
     }
 
@@ -652,6 +655,20 @@ class DefaultAssistantChatComponentTest {
         // Cleanup
         retryCh.send(AssistantStreamEvent.Finish)
         retryCh.close()
+    }
+
+    // ── Test: onNavigateToPayment emits Output ────────────────────────────────
+
+    @Test
+    fun onNavigateToPayment_emits_NavigateToPayment_output_with_appointmentId() = runTest {
+        val component = createComponent()
+
+        component.onNavigateToPayment("apt-123")
+
+        assertEquals(1, outputs.size)
+        val output = outputs.first()
+        assertTrue(output is AssistantChatComponent.Output.NavigateToPayment)
+        assertEquals("apt-123", (output as AssistantChatComponent.Output.NavigateToPayment).appointmentId)
     }
 }
 

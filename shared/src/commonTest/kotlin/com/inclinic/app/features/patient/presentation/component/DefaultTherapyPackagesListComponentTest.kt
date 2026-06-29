@@ -18,6 +18,7 @@ import kotlin.time.Clock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -94,7 +95,7 @@ class DefaultTherapyPackagesListComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertTrue(state.packages.isEmpty())
-        assertEquals("Server error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -160,7 +161,7 @@ class DefaultTherapyPackagesListComponentTest {
         val component = createComponent(
             dataSource = FakeTherapyPackagesListDataSource(packagesError = Exception("Fail")),
         )
-        assertEquals("Fail", component.state.value.error)
+        assertNotNull(component.state.value.error)
 
         component.onErrorDismissed()
 

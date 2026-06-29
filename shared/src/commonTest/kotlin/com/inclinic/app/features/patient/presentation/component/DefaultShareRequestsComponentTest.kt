@@ -80,7 +80,7 @@ class DefaultShareRequestsComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertTrue(state.requests.isEmpty())
-        assertEquals("Network error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test

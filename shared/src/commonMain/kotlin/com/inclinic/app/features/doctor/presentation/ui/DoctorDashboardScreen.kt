@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,7 +63,8 @@ fun DoctorDashboardScreen(component: DoctorDashboardComponent, modifier: Modifie
         onRefresh = component::onRefresh,
         modifier = modifier
             .fillMaxSize()
-            .background(colors.sand),
+            .background(colors.sand)
+            .testTag("doctor_dashboard"),
     ) {
         if (state.isLoading && state.todayCount == 0 && state.upcomingAppointments.isEmpty()) {
             CircularProgressIndicator(Modifier.align(Alignment.Center))

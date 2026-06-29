@@ -9,6 +9,7 @@ import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStart
 import com.arkivanov.essenty.lifecycle.doOnStop
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase
 import com.inclinic.app.features.doctor.chat.application.SendDoctorChatMessageUseCase
 import com.inclinic.app.features.patient.chat.infrastructure.ChatPollingService
@@ -58,16 +59,35 @@ class DoctorChatComponent(
 
     fun onSend() {
         val text = _state.value.inputText.trim()
-        if (text.isBlank() || _state.value.isSending) return
+        val attachments = _state.value.pendingAttachments
+        if ((text.isBlank() && attachments.isEmpty()) || _state.value.isSending) return
         _state.update { it.copy(inputText = "", isSending = true, error = null) }
         scope.launch {
             sendMessage(appointmentId, text)
                 .onSuccess { message ->
-                    _state.update { it.copy(isSending = false, messages = it.messages + message) }
+                    _state.update {
+                        it.copy(
+                            isSending = false,
+                            pendingAttachments = emptyList(),
+                            messages = it.messages + message,
+                        )
+                    }
                 }
                 .onFailure { err ->
                     _state.update { it.copy(isSending = false, error = err.toUserMessage("Failed to send message")) }
                 }
+        }
+    }
+
+    /** Stores the picked file name as a local pending attachment (upload deferred to a future PR). */
+    fun onAttachmentPicked(file: PickedFile) {
+        _state.update { it.copy(pendingAttachments = it.pendingAttachments + file.fileName) }
+    }
+
+    fun onRemovePendingAttachment(index: Int) {
+        _state.update {
+            if (index !in it.pendingAttachments.indices) it
+            else it.copy(pendingAttachments = it.pendingAttachments.filterIndexed { i, _ -> i != index })
         }
     }
 

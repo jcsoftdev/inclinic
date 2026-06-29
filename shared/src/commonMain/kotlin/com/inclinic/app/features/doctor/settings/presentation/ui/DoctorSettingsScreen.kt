@@ -44,6 +44,8 @@ import com.composables.icons.lucide.MessageCircle
 import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.Trash2
 import com.composables.icons.lucide.UserMinus
+import com.inclinic.app.core.platform.ExternalUrls
+import com.inclinic.app.core.platform.rememberUrlOpener
 import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSettingsComponent
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.theme.AppTheme
@@ -73,6 +75,7 @@ fun DoctorSettingsScreen(
         val colors = AppTheme.colors
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
+        val urlOpener = rememberUrlOpener()
 
         Column(modifier = modifier.fillMaxSize().background(Color(0xFF0A0B14))) {
             // ── Header ─────────────────────────────────────────────────────────
@@ -176,11 +179,12 @@ fun DoctorSettingsScreen(
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
                         Text("MercadoPago", fontSize = 14.sp, color = Color(0xFFEDEFFF))
-                        Text("Comisión actual 15% · plan FREE", fontSize = 11.sp, color = Color(0xFFA2A8C8))
+                        Text("Próximamente · integración en desarrollo", fontSize = 11.sp, color = Color(0xFFA2A8C8))
                     }
                     Switch(
-                        checked = true,
+                        checked = false,
                         onCheckedChange = {},
+                        enabled = false,
                         colors = SwitchDefaults.colors(
                             checkedTrackColor = Color(0xFF34D399),
                             checkedThumbColor = Color.White,
@@ -202,14 +206,14 @@ fun DoctorSettingsScreen(
                         title = "Centro de ayuda",
                         subtitle = "Preguntas frecuentes y soporte",
                         divider = true,
-                        onClick = {},
+                        onClick = { urlOpener.open(ExternalUrls.HELP_URL) },
                     )
                     SettingsNavRow(
                         icon = Lucide.FileText,
                         title = "Términos y condiciones",
                         subtitle = "",
                         divider = false,
-                        onClick = {},
+                        onClick = { urlOpener.open(ExternalUrls.TERMS_URL) },
                     )
                 }
 
@@ -229,7 +233,7 @@ fun DoctorSettingsScreen(
                         iconBg = Color(0xFF3A1A1F),
                         chevronTint = Color(0xFFFB5E6B),
                         divider = false,
-                        onClick = {},
+                        onClick = component::onDeleteAccount,
                     )
                 }
 

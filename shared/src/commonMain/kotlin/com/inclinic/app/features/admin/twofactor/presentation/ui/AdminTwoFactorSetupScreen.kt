@@ -1,5 +1,6 @@
 package com.inclinic.app.features.admin.twofactor.presentation.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -43,16 +44,16 @@ import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.atoms.InfoBanner
 import com.inclinic.app.ui.atoms.InfoBannerTone
 import com.inclinic.app.ui.theme.AppTheme
+import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 
 /**
  * Admin 2FA setup screen.
  *
  * Design node: CaoqN
  *
- * QR NOTE: There is no multiplatform QR library available without adding a Gradle dependency.
- * The QR area renders as a placeholder box with a QR icon + "Usa la clave manual" message.
- * The [TwoFactorSetup.provisioningUrl] (otpauth://) is shown as small selectable text.
- * TODO: render QR (needs a multiplatform QR lib — e.g., qrose or zxing-kotlin-multiplatform)
+ * QR rendering: uses qrose (io.github.alexzhirkevich:qrose:1.0.1), a KMP/Compose-native library.
+ * [rememberQrCodePainter] encodes [TwoFactorSetup.provisioningUrl] (otpauth:// URI) into a
+ * scannable QR image. If the URL is blank the area falls back to the manual-key placeholder.
  *
  * The manual [TwoFactorSetup.secret] is shown grouped in sets of 4 characters for readability.
  * Clipboard copy is shown as a hint; native clipboard is platform-specific and not wired here.
@@ -125,7 +126,8 @@ fun AdminTwoFactorSetupScreen(
                             modifier = Modifier.fillMaxWidth(),
                         )
 
-                        // ── QR placeholder ────────────────────────────────────
+                        // ── QR code ───────────────────────────────────────────
+                        val provisioningUrl = setup?.provisioningUrl.orEmpty()
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
@@ -135,23 +137,33 @@ fun AdminTwoFactorSetupScreen(
                                 .background(colors.surface)
                                 .border(2.dp, colors.border, RoundedCornerShape(dimens.radiusMd)),
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Lucide.ScanLine,
-                                    contentDescription = null,
-                                    tint = colors.muted,
-                                    modifier = Modifier.size(56.dp),
+                            if (provisioningUrl.isNotBlank()) {
+                                val qrPainter = rememberQrCodePainter(provisioningUrl)
+                                Image(
+                                    painter = qrPainter,
+                                    contentDescription = "Código QR para autenticador",
+                                    modifier = Modifier
+                                        .size(168.dp)
+                                        .padding(8.dp),
                                 )
-                                Text(
-                                    text = "Usa la clave manual",
-                                    color = colors.muted,
-                                    fontSize = 13.sp,
-                                    textAlign = TextAlign.Center,
-                                )
-                                // TODO: render QR (needs a multiplatform QR lib)
+                            } else {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = Lucide.ScanLine,
+                                        contentDescription = null,
+                                        tint = colors.muted,
+                                        modifier = Modifier.size(56.dp),
+                                    )
+                                    Text(
+                                        text = "Usa la clave manual",
+                                        color = colors.muted,
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
                             }
                         }
 

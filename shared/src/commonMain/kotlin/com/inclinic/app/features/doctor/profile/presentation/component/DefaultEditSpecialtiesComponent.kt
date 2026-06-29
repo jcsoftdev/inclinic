@@ -55,6 +55,7 @@ class DefaultEditSpecialtiesComponent(
     }
 
     override fun onBack() = onOutput(EditSpecialtiesComponent.Output.Back)
+    override fun onNavigateToRequestSpecialty() = onOutput(EditSpecialtiesComponent.Output.NavigateToRequestSpecialty)
 
     private fun load() {
         _state.update { it.copy(isLoading = true, error = null) }

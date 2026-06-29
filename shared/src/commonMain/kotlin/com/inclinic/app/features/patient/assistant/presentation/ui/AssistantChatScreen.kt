@@ -170,7 +170,10 @@ fun AssistantChatScreen(
                                 ToolName.BOOK_APPOINTMENT -> {
                                     when (val r = parseBookingResult(msg.result)) {
                                         is com.inclinic.app.features.patient.assistant.core.model.tool_results.BookingResult.Ok ->
-                                            BookingSuccessCard(r)
+                                            BookingSuccessCard(
+                                                result = r,
+                                                onNavigateToPayment = { component.onNavigateToPayment(r.appointmentId) },
+                                            )
                                         is com.inclinic.app.features.patient.assistant.core.model.tool_results.BookingResult.Failed ->
                                             BookingFailCard(r)
                                     }

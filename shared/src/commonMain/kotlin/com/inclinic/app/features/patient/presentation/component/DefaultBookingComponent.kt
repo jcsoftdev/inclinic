@@ -27,6 +27,7 @@ class DefaultBookingComponent(
     private val telemetry: TelemetryService? = null,
     private val onOutput: (BookingComponent.Output) -> Unit,
     consultType: String = "office",
+    startTime: String = "",
 ) : BookingComponent, ComponentContext by componentContext {
 
     private val initialVisitType: VisitType = when (consultType) {
@@ -48,7 +49,7 @@ class DefaultBookingComponent(
         stateKeeper.consume("booking_state", BookingState.serializer())
 
     private val _state = MutableValue(
-        (savedState ?: BookingState(slotId = slotId, date = date)).let {
+        (savedState ?: BookingState(slotId = slotId, date = date, startTime = startTime)).let {
             if (it.visitType == null) it.copy(visitType = initialVisitType) else it
         }
     )

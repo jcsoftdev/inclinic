@@ -8,6 +8,7 @@ import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.lifecycle.stop
 import com.inclinic.app.core.model.ChatMessage
 import com.inclinic.app.core.model.SenderRole
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase
 import com.inclinic.app.features.doctor.chat.application.SendDoctorChatMessageUseCase
@@ -174,5 +175,48 @@ class DoctorChatComponentTest {
         val doctorMsg = component.state.value.messages.firstOrNull { it.id == "m1" }
         assertNotNull(doctorMsg)
         assertEquals(SenderRole.DOCTOR, doctorMsg!!.senderRole)
+    }
+
+    // ── Attachment handling ───────────────────────────────────────────────────
+
+    @Test
+    fun onAttachmentPicked_adds_filename_to_pendingAttachments() = runTest {
+        val component = makeComponent()
+        val file = PickedFile(
+            bytes = byteArrayOf(1, 2, 3),
+            fileName = "informe.pdf",
+            mimeType = "application/pdf",
+        )
+
+        component.onAttachmentPicked(file)
+
+        assertTrue(component.state.value.pendingAttachments.contains("informe.pdf"))
+    }
+
+    @Test
+    fun onRemovePendingAttachment_removes_by_index() = runTest {
+        val component = makeComponent()
+        val fileA = PickedFile(byteArrayOf(1), "a.pdf", "application/pdf")
+        val fileB = PickedFile(byteArrayOf(2), "b.pdf", "application/pdf")
+        component.onAttachmentPicked(fileA)
+        component.onAttachmentPicked(fileB)
+
+        component.onRemovePendingAttachment(0)
+
+        assertEquals(1, component.state.value.pendingAttachments.size)
+        assertEquals("b.pdf", component.state.value.pendingAttachments[0])
+    }
+
+    @Test
+    fun onSend_clears_pendingAttachments_on_success() = runTest {
+        val sent = makeMessage(id = "m2", role = SenderRole.DOCTOR, text = "ok")
+        val ds = FakeDoctorChatDataSource(sendResult = Result.success(sent))
+        val component = makeComponent(ds)
+        component.onAttachmentPicked(PickedFile(byteArrayOf(1), "doc.pdf", "application/pdf"))
+        component.onInputChange("ok")
+
+        component.onSend()
+
+        assertTrue(component.state.value.pendingAttachments.isEmpty())
     }
 }

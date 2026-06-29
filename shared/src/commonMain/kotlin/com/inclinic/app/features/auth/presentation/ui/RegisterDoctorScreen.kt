@@ -41,6 +41,7 @@ import com.composables.icons.lucide.Mail
 import com.composables.icons.lucide.Phone
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Trash2
+import com.inclinic.app.core.platform.rememberFilePicker
 import com.inclinic.app.features.auth.core.error.toUserMessage
 import com.inclinic.app.features.auth.infrastructure.remote.dto.FreelanceScheduleDto
 import com.inclinic.app.features.auth.presentation.component.RegisterDoctorComponent
@@ -439,6 +440,7 @@ private fun DocumentsStep(
 ) {
     val colors     = AppTheme.colors
     val typography = AppTheme.typography
+    val docPicker  = rememberFilePicker { file -> if (file != null) component.onDocumentFilePicked(file) }
 
     AuthScaffold {
         StepHeader(
@@ -490,16 +492,17 @@ private fun DocumentsStep(
                 }
             }
 
-            // NOTE: Real file picking requires a platform-level FilePicker call.
-            // The UI button is a placeholder; the actual picker is triggered from
-            // composeApp (platform entry) which calls component.onDocumentUploaded(url)
-            // after upload. For now the button is informational.
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
                     .border(1.dp, colors.border, RoundedCornerShape(8.dp))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { docPicker.launch() },
+                    )
                     .padding(vertical = 16.dp),
             ) {
                 Row(

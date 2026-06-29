@@ -19,10 +19,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,13 +54,20 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
     val state by component.state.subscribeAsState()
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = modifier,
+    ) { innerPadding ->
     PullToRefreshBox(
         isRefreshing = state.isLoading,
         onRefresh = component::onRefresh,
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .background(colors.sand),
+            .background(colors.sand)
+            .padding(innerPadding),
     ) {
         if (state.isLoading && state.balanceTotal == "S/ 0") {
             CircularProgressIndicator(Modifier.align(Alignment.Center))
@@ -62,7 +75,14 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
 
                 // ── Header ────────────────────────────────────────────────────
-                FinanceHeader(onBack = component::onBack)
+                FinanceHeader(
+                    onBack = component::onBack,
+                    onExport = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Exportación disponible próximamente")
+                        }
+                    },
+                )
 
                 Column(
                     Modifier
@@ -127,12 +147,13 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
             }
         }
     }
+    } // Scaffold
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun FinanceHeader(onBack: () -> Unit) {
+private fun FinanceHeader(onBack: () -> Unit, onExport: () -> Unit) {
     val colors = AppTheme.colors
     Row(
         Modifier
@@ -149,7 +170,6 @@ private fun FinanceHeader(onBack: () -> Unit) {
             color = colors.text,
             modifier = Modifier.weight(1f),
         )
-        // Export icon — non-functional placeholder (TODO: implement export)
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -157,7 +177,7 @@ private fun FinanceHeader(onBack: () -> Unit) {
                 .clip(RoundedCornerShape(AppTheme.dimens.radius))
                 .background(colors.surface)
                 .border(1.dp, colors.border, RoundedCornerShape(AppTheme.dimens.radius))
-                .clickable { /* TODO: export */ },
+                .clickable { onExport() },
         ) {
             Icon(
                 imageVector = Lucide.Download,

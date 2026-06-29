@@ -160,7 +160,7 @@ private fun SearchPill(onClick: () -> Unit) {
             .padding(horizontal = 14.dp),
     ) {
         Icon(Lucide.Search, contentDescription = null, tint = colors.lav, modifier = Modifier.size(18.dp))
-        Text("Buscar paciente", style = typography.body, color = colors.muted)
+        Text("Buscar por nombre o email", style = typography.body, color = colors.muted)
     }
 }
 
@@ -212,7 +212,7 @@ private fun FilterTabs(selected: PatientsFilter, onSelect: (PatientsFilter) -> U
     ) {
         val tabs = listOf(
             PatientsFilter.ALL to "Todos",
-            PatientsFilter.ACTIVE to "Activos",
+            PatientsFilter.FREE to "FREE",
             PatientsFilter.PREMIUM to "Premium",
         )
         tabs.forEach { (filter, label) ->

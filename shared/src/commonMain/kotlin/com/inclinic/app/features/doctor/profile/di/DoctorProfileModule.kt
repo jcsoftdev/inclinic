@@ -53,6 +53,7 @@ fun doctorProfileModule() = module {
             ctx,
             GetDoctorProfileUseCase(repo, dispatchers),
             UpdateDoctorProfileUseCase(repo, dispatchers),
+            get(),
             dispatchers,
             onOutput,
         )

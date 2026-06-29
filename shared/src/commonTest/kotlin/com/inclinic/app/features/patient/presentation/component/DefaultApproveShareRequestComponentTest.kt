@@ -88,7 +88,6 @@ class DefaultApproveShareRequestComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNotNull(state.error)
-        assertEquals("Not found", state.error)
     }
 
     @Test
@@ -123,7 +122,7 @@ class DefaultApproveShareRequestComponentTest {
 
         assertTrue(outputs.isEmpty())
         assertFalse(component.state.value.isSubmitting)
-        assertEquals("Already responded", component.state.value.error)
+        assertNotNull(component.state.value.error)
     }
 
     @Test

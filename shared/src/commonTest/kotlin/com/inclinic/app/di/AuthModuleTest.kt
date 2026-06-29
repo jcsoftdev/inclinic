@@ -9,6 +9,7 @@ import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.config.Environment
 import com.inclinic.app.features.auth.core.port.AuthRepository
 import com.inclinic.app.features.auth.core.port.TokenStorage
+import com.inclinic.app.features.auth.di.APP_HTTP_CLIENT
 import com.inclinic.app.features.auth.di.authModule
 import com.inclinic.app.features.auth.infrastructure.DefaultAuthRepository
 import com.inclinic.app.features.auth.infrastructure.local.TokenLocalDataSource
@@ -117,8 +118,8 @@ class AuthModuleTest : KoinTest {
             modules(authModule, testSupportModule)
         }.koin
 
-        // HttpClient is bound as anonymous single — verify it can be resolved
-        val httpClient = koin.get<io.ktor.client.HttpClient>()
+        // HttpClient is bound with APP_HTTP_CLIENT qualifier — verify it can be resolved
+        val httpClient = koin.get<io.ktor.client.HttpClient>(qualifier = APP_HTTP_CLIENT)
         assertIs<io.ktor.client.HttpClient>(httpClient)
     }
 

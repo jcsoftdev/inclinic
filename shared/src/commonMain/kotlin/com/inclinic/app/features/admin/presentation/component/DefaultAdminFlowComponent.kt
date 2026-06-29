@@ -52,6 +52,7 @@ class DefaultAdminFlowComponent(
     private val placeholderFactory: (ComponentContext, String) -> AdminPlaceholderComponent,
     private val securityFactory: (ComponentContext, () -> Unit, () -> Unit) -> com.inclinic.app.features.admin.twofactor.presentation.component.AdminSecurityComponent,
     private val twoFactorSetupFactory: (ComponentContext, () -> Unit, () -> Unit) -> com.inclinic.app.features.admin.twofactor.presentation.component.AdminTwoFactorSetupComponent,
+    private val patientAppointmentsFactory: (ComponentContext, String, (AdminPatientAppointmentsComponent.Output) -> Unit) -> AdminPatientAppointmentsComponent,
     private val onOutput: (AdminFlowComponent.Output) -> Unit,
 ) : AdminFlowComponent, ComponentContext by componentContext {
 
@@ -283,6 +284,8 @@ class DefaultAdminFlowComponent(
                         AdminPatientDetailComponent.Output.ReactivateSuccess -> {
                             masNav.pop() // back to detail; caller should refresh list
                         }
+                        is AdminPatientDetailComponent.Output.NavigateToAppointments ->
+                            masNav.push(AdminConfig.MasPatientAppointments(output.patientId))
                     }
                 }
             )
@@ -395,6 +398,15 @@ class DefaultAdminFlowComponent(
                     { masNav.pop() }, // onActivated — pop back to Security (which re-loads status)
                     { masNav.pop() }, // onBack
                 )
+            )
+            is AdminConfig.MasPatientAppointments -> AdminFlowComponent.Child.MasPatientAppointments(
+                patientAppointmentsFactory(ctx, config.patientId) { output ->
+                    when (output) {
+                        AdminPatientAppointmentsComponent.Output.Back -> masNav.pop()
+                        is AdminPatientAppointmentsComponent.Output.NavigateToDetail ->
+                            citasNav.push(AdminConfig.AppointmentDetail(output.appointmentId))
+                    }
+                }
             )
         }
 }

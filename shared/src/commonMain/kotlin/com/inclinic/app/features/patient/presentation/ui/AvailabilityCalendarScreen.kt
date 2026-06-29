@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -245,6 +246,7 @@ fun AvailabilityCalendarScreen(component: AvailabilityCalendarComponent, modifie
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
+                    .testTag("calendar_continue_button")
                     .clip(RoundedCornerShape(10.dp))
                     .background(if (enabled) colors.navy else colors.navy.copy(alpha = 0.5f))
                     .clickable(enabled = enabled, onClick = component::onContinue),
@@ -385,6 +387,7 @@ private fun DayCell(
         modifier = Modifier
             .padding(2.dp)
             .size(36.dp)
+            .then(if (clickable) Modifier.testTag("calendar_day") else Modifier)
             .clip(RoundedCornerShape(8.dp))
             .background(bgColor)
             .then(borderMod)
@@ -447,6 +450,7 @@ private fun SlotChip(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+            .testTag("slot_chip")
             .clip(RoundedCornerShape(50))
             .background(bgColor)
             .clickable(enabled = slot.isAvailable, onClick = onClick)

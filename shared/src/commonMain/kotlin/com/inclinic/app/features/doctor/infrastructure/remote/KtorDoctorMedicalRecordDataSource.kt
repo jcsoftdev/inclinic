@@ -10,14 +10,21 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
+import io.ktor.http.content.TextContent
 import io.ktor.http.contentType
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class KtorDoctorMedicalRecordDataSource(
     private val client: HttpClient,
     private val baseUrl: String,
 ) : DoctorMedicalRecordDataSource {
+
+    // encodeDefaults = false ensures optional fields with null default are omitted from the body.
+    // The backend (Zod) rejects null for optional fields like appointmentId.
+    private val bodyJson = Json { encodeDefaults = false }
 
     // Lista el historial clínico del paciente. La ruta real es
     // `GET /api/patients/:id/medical-history`, que devuelve registros con las
@@ -43,20 +50,20 @@ class KtorDoctorMedicalRecordDataSource(
             ?.takeIf { it.isNotBlank() }
             ?.let { listOf(CreatePrescriptionBody(medication = it, dosage = "Según indicación médica")) }
             ?: emptyList()
+        val bodyStr = bodyJson.encodeToString(
+            CreateMedicalRecordBody(
+                appointmentId = request.appointmentId?.takeIf { it.isNotBlank() },
+                patientId = request.patientId,
+                diagnosis = request.diagnosis.takeIf { it.isNotBlank() },
+                symptoms = request.symptoms.takeIf { it.isNotBlank() },
+                treatmentPlan = request.treatment.takeIf { it.isNotBlank() },
+                prescriptions = prescriptions,
+                notes = request.notes?.takeIf { it.isNotBlank() },
+            ),
+        )
         client.post {
             url("$baseUrl/api/medical-records")
-            contentType(ContentType.Application.Json)
-            setBody(
-                CreateMedicalRecordBody(
-                    appointmentId = request.appointmentId?.takeIf { it.isNotBlank() },
-                    patientId = request.patientId,
-                    diagnosis = request.diagnosis.takeIf { it.isNotBlank() },
-                    symptoms = request.symptoms.takeIf { it.isNotBlank() },
-                    treatmentPlan = request.treatment.takeIf { it.isNotBlank() },
-                    prescriptions = prescriptions,
-                    notes = request.notes?.takeIf { it.isNotBlank() },
-                ),
-            )
+            setBody(TextContent(bodyStr, ContentType.Application.Json))
         }.body<ApiEnvelope<MedicalRecord>>().data ?: error("Medical record creation failed")
     }
 

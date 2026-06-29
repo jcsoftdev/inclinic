@@ -37,6 +37,7 @@ import com.inclinic.app.features.doctor.sharing.presentation.ui.RequestShareScre
 import com.inclinic.app.features.doctor.sharing.presentation.ui.ShareRequestsScreen
 import com.inclinic.app.features.doctor.therapy_offers.presentation.ui.CreateTherapyOfferScreen
 import com.inclinic.app.features.doctor.therapy_offers.presentation.ui.TherapyOffersListScreen
+import com.inclinic.app.features.patient.presentation.ui.DeleteAccountScreen
 import com.inclinic.app.ui.atoms.DoctorNavBar
 
 @Composable
@@ -102,6 +103,7 @@ fun DoctorFlowContent(component: DoctorFlowComponent, modifier: Modifier = Modif
                 is DoctorFlowComponent.Child.TherapyOffers -> TherapyOffersListScreen(c.component)
                 is DoctorFlowComponent.Child.CreateTherapyOffer -> CreateTherapyOfferScreen(c.component)
                 is DoctorFlowComponent.Child.EditPrescription -> EditPrescriptionScreen(c.component)
+                is DoctorFlowComponent.Child.DeleteAccount -> DeleteAccountScreen(c.component)
             }
         }
     }

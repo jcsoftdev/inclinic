@@ -12,6 +12,7 @@ interface ClinicalProfileComponent {
     val state: Value<ClinicalProfileState>
 
     fun onBack()
+    fun onNavigateToDeleteAccount()
     fun onToggleEdit()
     fun onBloodTypeChange(value: String)
     fun onHeightCmChange(value: String)
@@ -26,6 +27,7 @@ interface ClinicalProfileComponent {
 
     sealed interface Output {
         data object Back : Output
+        data object NavigateToDeleteAccount : Output
     }
 }
 

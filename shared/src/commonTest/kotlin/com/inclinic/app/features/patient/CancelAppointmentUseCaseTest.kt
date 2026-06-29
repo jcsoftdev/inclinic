@@ -45,6 +45,8 @@ private class FakeCancelDataSource : AppointmentDataSource {
 
     override suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult> =
         Result.failure(UnsupportedOperationException())
+    override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> =
+        Result.failure(UnsupportedOperationException())
 
     override suspend fun getMonthAvailability(doctorId: String, month: String): Result<Map<String, String>> =
         Result.success(emptyMap())

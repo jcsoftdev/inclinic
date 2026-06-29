@@ -91,7 +91,6 @@ class DefaultMessagesListComponentTest {
         assertFalse(state.isLoading)
         assertTrue(state.conversations.isEmpty())
         assertNotNull(state.error)
-        assertEquals("Network error", state.error)
     }
 
     @Test

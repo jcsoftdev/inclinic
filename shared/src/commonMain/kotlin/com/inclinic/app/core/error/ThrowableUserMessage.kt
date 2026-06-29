@@ -32,6 +32,8 @@ fun Throwable.toUserMessage(fallback: String? = null): String = when (this) {
     is ClientRequestException      -> clientErrorMessage()
     is ServerResponseException     -> SERVER_MESSAGE
     is ResponseException           -> SERVER_MESSAGE
+    // Domain validation errors carry intentional user-facing messages — surface them as-is
+    is IllegalArgumentException    -> message ?: (fallback ?: GENERIC_MESSAGE)
     else                           -> if (looksLikeConnectionFailure()) CONNECTION_MESSAGE
                                       else fallback ?: GENERIC_MESSAGE
 }

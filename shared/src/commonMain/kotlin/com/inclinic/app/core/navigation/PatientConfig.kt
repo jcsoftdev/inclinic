@@ -9,7 +9,7 @@ sealed interface PatientConfig {
     @Serializable data class DoctorProfile(val doctorId: String) : PatientConfig
     @Serializable data class ConsultType(val doctorId: String) : PatientConfig
     @Serializable data class Availability(val doctorId: String, val consultType: String) : PatientConfig
-    @Serializable data class Booking(val doctorId: String, val slotId: String, val date: String, val consultType: String = "office") : PatientConfig
+    @Serializable data class Booking(val doctorId: String, val slotId: String, val date: String, val consultType: String = "office", val startTime: String = "") : PatientConfig
     @Serializable data class Payment(val appointmentId: String? = null, val therapyPackageId: String? = null) : PatientConfig
     @Serializable data object Appointments : PatientConfig
     @Serializable data class AppointmentDetail(val appointmentId: String) : PatientConfig

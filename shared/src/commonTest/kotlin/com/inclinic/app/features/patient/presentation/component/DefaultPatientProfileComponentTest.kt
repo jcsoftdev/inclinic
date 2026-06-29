@@ -104,7 +104,7 @@ class DefaultPatientProfileComponentTest {
         val state = component.state.value
         assertFalse(state.isLoading)
         assertNull(state.profile)
-        assertEquals("Not found", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -229,14 +229,4 @@ class DefaultPatientProfileComponentTest {
         assertTrue(outputs.any { it is PatientProfileComponent.Output.Saved })
     }
 
-    @Test
-    fun onBack_emits_Back_output() = runTest {
-        val outputs = mutableListOf<PatientProfileComponent.Output>()
-        val component = createComponent(outputs = outputs)
-
-        component.onBack()
-
-        assertEquals(1, outputs.size)
-        assertTrue(outputs.first() is PatientProfileComponent.Output.Back)
-    }
 }

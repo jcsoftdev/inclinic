@@ -18,6 +18,7 @@ interface PatientHomeComponent {
     fun onProfileTapped()
     fun onPackagesTapped()
     fun onPremiumTapped()
+    fun onNavigateToHistoryAccess()
 
     sealed interface Output {
         data object NavigateToSearch : Output
@@ -28,6 +29,7 @@ interface PatientHomeComponent {
         data object NavigateToProfile : Output
         data object NavigateToPackages : Output
         data object NavigateToPremium : Output
+        data object NavigateToHistoryAccess : Output
     }
 }
 

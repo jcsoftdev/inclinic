@@ -28,6 +28,7 @@ turbine = "1.2.1"
 datastorePreferences = "1.2.1"
 lucideIcons = "1.1.0"
 coil = "3.1.0"
+qrose = "1.0.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -97,6 +98,9 @@ lucide-icons = { module = "com.composables:icons-lucide", version.ref = "lucideI
 # -- Coil 3 (KMP image loading) --
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+
+# -- QRose (KMP QR code rendering) --
+qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -31,12 +31,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.composables.icons.lucide.Bell
 import com.composables.icons.lucide.Calendar
+import com.composables.icons.lucide.ChevronRight
+import com.composables.icons.lucide.ClipboardList
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Package
@@ -66,7 +69,7 @@ fun PatientHomeScreen(
         val colors     = AppTheme.colors
         val typography = AppTheme.typography
 
-        Box(modifier = modifier.fillMaxSize().background(colors.sand)) {
+        Box(modifier = modifier.fillMaxSize().background(colors.sand).testTag("patient_home")) {
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -126,6 +129,9 @@ fun PatientHomeScreen(
                             modifier = Modifier.weight(1f),
                         )
                     }
+
+                    // Profile access card — nav shortcut to history access logs
+                    ProfileAccessCard(onClick = component::onNavigateToHistoryAccess)
 
                     // Stats row
                     Row(
@@ -263,6 +269,57 @@ private fun AppointmentCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * Card that navigates the patient to their history-access logs.
+ *
+ * The full access-count needs a backend endpoint not yet available.
+ * This renders as a static navigation shortcut only — no fake data.
+ */
+@Composable
+private fun ProfileAccessCard(onClick: () -> Unit) {
+    val colors     = AppTheme.colors
+    val typography = AppTheme.typography
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardSurface(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                imageVector        = Lucide.ClipboardList,
+                contentDescription = null,
+                tint               = colors.navy,
+                modifier           = Modifier.size(20.dp),
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text  = "Accesos a mi perfil",
+                    style = typography.body.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                    color = colors.text,
+                )
+                Text(
+                    text  = "Ver quién ha consultado tu historial",
+                    style = typography.body.copy(fontSize = 12.sp),
+                    color = colors.muted,
+                )
+            }
+        }
+        Icon(
+            imageVector        = Lucide.ChevronRight,
+            contentDescription = null,
+            tint               = colors.muted,
+            modifier           = Modifier.size(18.dp),
+        )
     }
 }
 

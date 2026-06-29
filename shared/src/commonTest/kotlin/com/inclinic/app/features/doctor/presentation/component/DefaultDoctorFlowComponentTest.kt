@@ -60,6 +60,8 @@ import com.inclinic.app.features.doctor.therapy_offers.presentation.component.Th
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListState
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionState
+import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
+import com.inclinic.app.features.patient.presentation.component.DeleteAccountState
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -200,6 +202,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onNavigateSharing() { out(MiPerfilComponent.Output.Sharing) }
                 override fun onNavigateSettings() { out(MiPerfilComponent.Output.Settings) }
                 override fun onNavigateTherapyOffers() { out(MiPerfilComponent.Output.TherapyOffers) }
+                override fun onLogout() { out(MiPerfilComponent.Output.Logout) }
             }
         },
         editSpecialtiesFactory = { ctx, out ->
@@ -208,6 +211,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onToggleSpecialty(specialtyId: String) {}
                 override fun onSave() {}
                 override fun onBack() { out(EditSpecialtiesComponent.Output.Back) }
+                override fun onNavigateToRequestSpecialty() { out(EditSpecialtiesComponent.Output.NavigateToRequestSpecialty) }
             }
         },
         requestSpecialtyFactory = { ctx, out ->
@@ -219,6 +223,8 @@ class DefaultDoctorFlowComponentTest {
                 override fun onCommentChange(comment: String) {}
                 override fun onSubmit() {}
                 override fun onBack() { out(RequestSpecialtyComponent.Output.Back) }
+                override fun onPickCertification(file: com.inclinic.app.core.platform.PickedFile) {}
+                override fun onPickDiploma(file: com.inclinic.app.core.platform.PickedFile) {}
             }
         },
         incomeFactory = { ctx, out ->
@@ -243,6 +249,7 @@ class DefaultDoctorFlowComponentTest {
                 override val state: Value<DoctorSettingsState> = MutableValue(DoctorSettingsState())
                 override fun onBack() { out(DoctorSettingsComponent.Output.Back) }
                 override fun onLogOut() { out(DoctorSettingsComponent.Output.LoggedOut) }
+                override fun onDeleteAccount() { out(DoctorSettingsComponent.Output.NavigateToDeleteAccount) }
                 override fun onToggleNewAppointments(enabled: Boolean) {}
                 override fun onToggleChatMessages(enabled: Boolean) {}
                 override fun onToggleAppointmentReminders(enabled: Boolean) {}
@@ -356,6 +363,15 @@ class DefaultDoctorFlowComponentTest {
                 override fun onRemoveItem(index: Int) {}
                 override fun onSubmit() {}
                 override fun onBack() { out(EditPrescriptionComponent.Output.Back) }
+            }
+        },
+        deleteAccountFactory = { ctx, out ->
+            object : DeleteAccountComponent {
+                override val state: Value<DeleteAccountState> = MutableValue(DeleteAccountState())
+                override fun onPasswordChange(value: String) {}
+                override fun onConfirm() {}
+                override fun onBack() { out(DeleteAccountComponent.Output.Back) }
+                override fun onDismissError() {}
             }
         },
         onOutput = {},

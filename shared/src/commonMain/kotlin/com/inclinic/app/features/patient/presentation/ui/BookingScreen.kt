@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -114,22 +115,23 @@ fun BookingScreen(component: BookingComponent, modifier: Modifier = Modifier) {
                 // Separator
                 Box(Modifier.fillMaxWidth().height(1.dp).background(colors.border))
 
+                // consultType hoisted so it's also available in the payment summary below
+                val consultType = when (state.visitType?.name) {
+                    "VIRTUAL" -> "Telemedicina"
+                    "HOME"    -> "Visita a domicilio"
+                    else      -> "Consulta presencial"
+                }
+
                 // Detail rows
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
-                    val consultType = when (state.visitType?.name) {
-                        "VIRTUAL" -> "Telemedicina"
-                        "HOME"    -> "Visita a domicilio"
-                        else      -> "Consulta presencial"
-                    }
                     val dateFormatted = state.date.ifBlank { "—" }
+                    val timeFormatted = state.startTime.ifBlank { "—" }
                     DetailRow(Lucide.Building2, "Tipo",  consultType)
                     DetailRow(Lucide.Calendar,  "Fecha", dateFormatted)
-                    // Hora: BookingState only carries an opaque slotId (no time string); the slot's
-                    // startTime lives in AvailabilityCalendarState and is not propagated to booking.
-                    DetailRow(Lucide.Timer,     "Hora",  "—")
+                    DetailRow(Lucide.Timer,     "Hora",  timeFormatted, valueTestTag = "booking_hora_value")
                     DetailRow(Lucide.MapPin,    "Lugar", "Miraflores")
                 }
 
@@ -152,7 +154,7 @@ fun BookingScreen(component: BookingComponent, modifier: Modifier = Modifier) {
                     val fee = state.doctor?.consultationFee?.toInt() ?: 0
                     val commission = (fee * 0.07).toInt().coerceAtLeast(5)
                     val total = fee + commission
-                    PaymentRow("Consulta presencial", "S/.$fee")
+                    PaymentRow(consultType, "S/.$fee")
                     PaymentRow("Comisión plataforma", "S/.$commission")
                     // Total row
                     Row(
@@ -351,7 +353,13 @@ private fun DoctorRow(doctor: Doctor, colors: com.inclinic.app.ui.theme.AppColor
 }
 
 @Composable
-private fun DetailRow(icon: ImageVector, label: String, value: String) {
+private fun DetailRow(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    /** Optional semantic tag placed on the value [Text] node — used by instrumented e2e tests. */
+    valueTestTag: String? = null,
+) {
     val colors = AppTheme.colors
     Row(
         modifier = Modifier
@@ -372,7 +380,13 @@ private fun DetailRow(icon: ImageVector, label: String, value: String) {
             fontSize = 13.sp,
             modifier = Modifier.width(60.dp),
         )
-        Text(value, color = colors.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Text(
+            value,
+            color = colors.text,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = if (valueTestTag != null) Modifier.testTag(valueTestTag) else Modifier,
+        )
     }
 }
 

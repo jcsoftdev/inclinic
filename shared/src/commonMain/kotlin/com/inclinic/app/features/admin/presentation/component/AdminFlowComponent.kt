@@ -54,6 +54,7 @@ interface AdminFlowComponent {
         class MasConfigScreen(val component: AdminConfigComponent) : Child
         class MasSecurity(val component: com.inclinic.app.features.admin.twofactor.presentation.component.AdminSecurityComponent) : Child
         class MasTwoFactorSetup(val component: com.inclinic.app.features.admin.twofactor.presentation.component.AdminTwoFactorSetupComponent) : Child
+        class MasPatientAppointments(val component: AdminPatientAppointmentsComponent) : Child
     }
 
     sealed interface Output {

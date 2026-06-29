@@ -15,27 +15,26 @@ import org.junit.runner.RunWith
 /**
  * E2E smoke test: doctor happy path (login → view dashboard).
  *
- * IMPORTANT: This test requires a running staging backend pointed to by
- * the `staging` build flavor. Mark @Ignore in CI — run manually against
- * a real or stubbed staging environment.
+ * IMPORTANT: This test requires a running staging backend. It is @Ignore in CI
+ * and must be run manually against a real or stubbed staging environment.
  *
- * Semantic tags required on UI nodes:
- *   - "email_field"      → login email TextField
- *   - "password_field"   → login password TextField
- *   - "login_button"     → login submit button
- *   - "doctor_dashboard" → root node of DoctorDashboardScreen
+ * Semantic tags used on UI nodes:
+ *   - "login_email_field" → login email BasicTextField (AppTextField.inputTestTag)
+ *   - "login_password_field" → login password BasicTextField
+ *   - "login_button"      → login submit AppButton
+ *   - "doctor_dashboard"  → root PullToRefreshBox of DoctorDashboardScreen
  */
 @RunWith(AndroidJUnit4::class)
+@Ignore("Requires a running staging backend — run manually")
 class DoctorDashboardE2ETest {
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    @Ignore("Requires staging backend")
     fun doctorCanLoginAndViewDashboard() {
-        composeTestRule.onNodeWithTag("email_field").performTextInput("ana.torres@test.com")
-        composeTestRule.onNodeWithTag("password_field").performTextInput("doctor123")
+        composeTestRule.onNodeWithTag("login_email_field").performTextInput("ana.torres@test.com")
+        composeTestRule.onNodeWithTag("login_password_field").performTextInput("doctor123")
         composeTestRule.onNodeWithTag("login_button").performClick()
 
         composeTestRule.waitUntil(timeoutMillis = 5_000L) {

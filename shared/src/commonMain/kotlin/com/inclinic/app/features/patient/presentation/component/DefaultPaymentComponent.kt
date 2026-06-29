@@ -192,7 +192,7 @@ class DefaultPaymentComponent(
                                     isLoading = false,
                                     isExpired = it.isExpired || expired,
                                     paymentStatus = if (!expired) PaymentStatus.REJECTED else PaymentStatus.FORM,
-                                    error = if (expired) err.toUserMessage("Payment failed") else null,
+                                    error = if (expired) "El plazo de pago ha expirado" else null,
                                 )
                             }
                         }

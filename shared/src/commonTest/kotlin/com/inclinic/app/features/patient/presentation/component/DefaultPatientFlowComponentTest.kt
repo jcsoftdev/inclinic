@@ -45,6 +45,7 @@ private class StubPatientHomeComponent : PatientHomeComponent {
     override fun onProfileTapped() = Unit
     override fun onPackagesTapped() = Unit
     override fun onPremiumTapped() = Unit
+    override fun onNavigateToHistoryAccess() = Unit
 }
 
 private class StubDoctorSearchComponent : DoctorSearchComponent {
@@ -213,6 +214,7 @@ private class StubProfileOverviewComponent : ProfileOverviewComponent {
 private class StubClinicalProfileComponent : ClinicalProfileComponent {
     override val state: Value<ClinicalProfileState> = MutableValue(ClinicalProfileState())
     override fun onBack() = Unit
+    override fun onNavigateToDeleteAccount() = Unit
     override fun onToggleEdit() = Unit
     override fun onBloodTypeChange(value: String) = Unit
     override fun onHeightCmChange(value: String) = Unit
@@ -243,6 +245,7 @@ private class StubAssistantChatComponent : AssistantChatComponent {
     override fun onErrorDismissed() = Unit
     override fun onRetry() = Unit
     override fun onDisclaimerDismissed() = Unit
+    override fun onNavigateToPayment(appointmentId: String) = Unit
 }
 
 private class StubRescheduleAppointmentComponent : RescheduleAppointmentComponent {
@@ -301,7 +304,6 @@ private class StubFlowSettingsComponent : SettingsComponent {
     override val state: Value<SettingsState> = MutableValue(SettingsState())
     override fun onPushToggle(enabled: Boolean) = Unit
     override fun onAnalyticsToggle(enabled: Boolean) = Unit
-    override fun onEditProfile() = Unit
     override fun onChangePassword() = Unit
     override fun onSubscribe() = Unit
     override fun onBack() = Unit
@@ -311,6 +313,7 @@ private class StubFlowSettingsComponent : SettingsComponent {
 private class StubMedicalRecordDetailComponent : MedicalRecordDetailComponent {
     override val state: Value<MedicalRecordDetailState> = MutableValue(MedicalRecordDetailState())
     override fun onBack() = Unit
+    override fun onNavigateToMembership() = Unit
 }
 
 private class StubPrescriptionDetailComponent : PrescriptionDetailComponent {
@@ -448,7 +451,7 @@ class DefaultPatientFlowComponentTest {
         doctorProfileFactory = { _, _, _ -> StubDoctorProfileComponent() },
         consultTypeFactory = { _, _, _ -> StubConsultTypeComponent() },
         availabilityFactory = { _, _, _, _ -> StubAvailabilityComponent() },
-        bookingFactory = { _, _, _, _, _, _ -> StubBookingComponent() },
+        bookingFactory = { _, _, _, _, _, _, _ -> StubBookingComponent() },
         paymentFactory = { _, _, _, _ -> StubPaymentComponent() },
         appointmentsFactory = { _, _, _ -> StubPatientAppointmentsListComponent() },
         appointmentDetailFactory = { _, _, _ -> StubAppointmentDetailComponent() },
@@ -459,7 +462,7 @@ class DefaultPatientFlowComponentTest {
         profileOverviewFactory = { _, _, _ -> StubProfileOverviewComponent() },
         membershipFactory = { _, _ -> StubMembershipComponent() },
         profileFactory = { _, _, _ -> StubFlowPatientProfileComponent() },
-        assistantChatComponentFactory = { _ -> StubAssistantChatComponent() },
+        assistantChatComponentFactory = { _, _ -> StubAssistantChatComponent() },
         rescheduleAppointmentFactory = { _, _, _ -> StubRescheduleAppointmentComponent() },
         changeVisitTypeFactory = { _, _, _ -> StubChangeVisitTypeComponent() },
         disputeAppointmentFactory = { _, _, _ -> StubDisputeAppointmentComponent() },

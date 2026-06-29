@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -60,7 +61,7 @@ class DefaultRespondModalityComponentTest {
     fun error_propagates_when_load_fails() = runTest {
         repo.getRequestResult = Result.failure(RuntimeException("Network error"))
         val component = createComponent()
-        assertEquals("Network error", component.state.value.error)
+        assertNotNull(component.state.value.error)
         assertNull(component.state.value.request)
     }
 
@@ -141,7 +142,7 @@ class DefaultRespondModalityComponentTest {
 
         component.onApprove()
 
-        assertEquals("Respond failed", component.state.value.error)
+        assertNotNull(component.state.value.error)
         assertFalse(component.state.value.isResponding)
     }
 

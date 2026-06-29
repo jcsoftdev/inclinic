@@ -42,6 +42,7 @@ class DefaultAssistantChatComponent(
     private val sendMessage: SendAssistantMessageUseCase,
     private val sessionEvents: SessionEvents,
     private val dispatchers: AppDispatchers,
+    private val onOutput: (AssistantChatComponent.Output) -> Unit = {},
 ) : AssistantChatComponent, ComponentContext by componentContext {
 
     private val scope = CoroutineScope(dispatchers.main + SupervisorJob())
@@ -125,6 +126,10 @@ class DefaultAssistantChatComponent(
 
     override fun onDisclaimerDismissed() {
         _state.update { it.copy(disclaimerVisible = false) }
+    }
+
+    override fun onNavigateToPayment(appointmentId: String) {
+        onOutput(AssistantChatComponent.Output.NavigateToPayment(appointmentId))
     }
 
     // ── Event handling ────────────────────────────────────────────────────────

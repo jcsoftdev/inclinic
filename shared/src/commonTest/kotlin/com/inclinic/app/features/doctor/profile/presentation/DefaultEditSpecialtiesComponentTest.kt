@@ -108,4 +108,14 @@ class DefaultEditSpecialtiesComponentTest {
 
         assertTrue(output is EditSpecialtiesComponent.Output.Back)
     }
+
+    @Test
+    fun onNavigateToRequestSpecialty_emits_NavigateToRequestSpecialty_output() = runTest {
+        var output: EditSpecialtiesComponent.Output? = null
+        val component = makeComponent(onOutput = { output = it })
+
+        component.onNavigateToRequestSpecialty()
+
+        assertTrue(output is EditSpecialtiesComponent.Output.NavigateToRequestSpecialty)
+    }
 }

@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.features.doctor.profile.application.RequestSpecialtyUseCase
 import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequest
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +67,14 @@ class DefaultRequestSpecialtyComponent(
                 _state.update { it.copy(isSubmitting = false, error = err.toUserMessage("Submit failed")) }
             }
         }
+    }
+
+    override fun onPickCertification(file: PickedFile) {
+        _state.update { it.copy(pendingCertification = file) }
+    }
+
+    override fun onPickDiploma(file: PickedFile) {
+        _state.update { it.copy(pendingDiploma = file) }
     }
 
     override fun onBack() = onOutput(RequestSpecialtyComponent.Output.Back)

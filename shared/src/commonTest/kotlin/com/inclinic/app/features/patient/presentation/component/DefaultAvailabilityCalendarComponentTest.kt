@@ -37,6 +37,7 @@ private class FakeAvailabilityDataSource(
     override suspend fun cancelAppointment(appointmentId: String, reason: String) = Result.success(Unit)
     override suspend fun rescheduleAppointment(appointmentId: String, date: String, slotId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
+    override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
     override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)
@@ -89,7 +90,7 @@ class DefaultAvailabilityCalendarComponentTest {
 
         val state = component.state.value
         assertFalse(state.isLoading)
-        assertEquals("Network error", state.error)
+        assertNotNull(state.error)
     }
 
     @Test
@@ -123,6 +124,19 @@ class DefaultAvailabilityCalendarComponentTest {
         assertTrue(output is AvailabilityCalendarComponent.Output.NavigateToBooking)
         assertEquals("doc-1", (output as AvailabilityCalendarComponent.Output.NavigateToBooking).doctorId)
         assertEquals("slot-1", output.slotId)
+    }
+
+    @Test
+    fun onContinue_emits_NavigateToBooking_with_slot_startTime() = runTest {
+        val outputs = mutableListOf<AvailabilityCalendarComponent.Output>()
+        val component = createComponent(outputs = outputs)
+        component.onSlotSelected(testSlot)
+
+        component.onContinue()
+
+        assertEquals(1, outputs.size)
+        val output = outputs.first() as AvailabilityCalendarComponent.Output.NavigateToBooking
+        assertEquals("09:00", output.startTime)
     }
 
     @Test

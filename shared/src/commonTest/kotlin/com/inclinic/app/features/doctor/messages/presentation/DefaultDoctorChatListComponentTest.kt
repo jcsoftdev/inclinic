@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class DefaultDoctorChatListComponentTest {
@@ -83,7 +84,7 @@ class DefaultDoctorChatListComponentTest {
     fun error_is_shown_when_load_fails() = runTest {
         repo.listThreadsResult = Result.failure(RuntimeException("Load failed"))
         val component = createComponent()
-        assertEquals("Load failed", component.state.value.error)
+        assertNotNull(component.state.value.error)
     }
 
     @Test

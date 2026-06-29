@@ -3,6 +3,11 @@ package com.inclinic.app.features.doctor.profile.presentation
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
+import com.inclinic.app.features.auth.application.LogoutUseCase
+import com.inclinic.app.features.auth.core.model.AuthTokens
+import com.inclinic.app.features.auth.core.model.AuthUser
+import com.inclinic.app.features.auth.core.port.TokenStorage
+import com.inclinic.app.core.events.SessionEvents
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.doctor.profile.application.GetDoctorProfileUseCase
 import com.inclinic.app.features.doctor.profile.application.UpdateDoctorProfileUseCase
@@ -16,11 +21,23 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+private class FakeMiPerfilTokenStorage : TokenStorage {
+    var cleared = false
+    private var tokens: AuthTokens? = AuthTokens("access", "refresh")
+    override suspend fun save(tokens: AuthTokens) { this.tokens = tokens }
+    override suspend fun load(): AuthTokens? = tokens
+    override suspend fun clear() { cleared = true; tokens = null }
+    override suspend fun saveUser(user: AuthUser) {}
+    override suspend fun loadUser(): AuthUser? = null
+}
+
 class DefaultMiPerfilComponentTest {
 
     private val lifecycle = LifecycleRegistry()
     private val fakeRepo = FakeDoctorProfileRepository()
     private val dispatchers = TestAppDispatchers()
+    private val tokenStorage = FakeMiPerfilTokenStorage()
+    private val sessionEvents = SessionEvents()
 
     private fun makeComponent(
         onOutput: (MiPerfilComponent.Output) -> Unit = {},
@@ -31,6 +48,7 @@ class DefaultMiPerfilComponentTest {
             componentContext = ctx,
             getProfile = GetDoctorProfileUseCase(fakeRepo, dispatchers),
             updateProfile = UpdateDoctorProfileUseCase(fakeRepo, dispatchers),
+            logout = LogoutUseCase(tokenStorage, sessionEvents, dispatchers),
             dispatchers = dispatchers,
             onOutput = onOutput,
         )
@@ -107,5 +125,15 @@ class DefaultMiPerfilComponentTest {
         component.onNavigateTherapyOffers()
 
         assertTrue(output is MiPerfilComponent.Output.TherapyOffers)
+    }
+
+    @Test
+    fun onLogout_emits_Logout_output() = runTest {
+        var output: MiPerfilComponent.Output? = null
+        val component = makeComponent(onOutput = { output = it })
+
+        component.onLogout()
+
+        assertTrue(output is MiPerfilComponent.Output.Logout)
     }
 }

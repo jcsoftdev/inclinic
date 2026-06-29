@@ -17,7 +17,7 @@ interface AvailabilityCalendarComponent {
     fun onBack()
 
     sealed interface Output {
-        data class NavigateToBooking(val doctorId: String, val slotId: String, val date: String) : Output
+        data class NavigateToBooking(val doctorId: String, val slotId: String, val date: String, val startTime: String) : Output
         data object Back : Output
     }
 }

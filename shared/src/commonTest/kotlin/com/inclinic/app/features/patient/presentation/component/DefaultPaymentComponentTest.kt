@@ -80,6 +80,7 @@ private class FakePaymentAppointmentDataSource(
     }
     override suspend fun rescheduleAppointment(appointmentId: String, date: String, slotId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult> = paymentResult
+    override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> = paymentResult
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
     override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)
@@ -279,7 +280,9 @@ class DefaultPaymentComponentTest {
 
         assertTrue(outputs.isEmpty())
         assertFalse(component.state.value.isLoading)
-        assertEquals("Payment declined", component.state.value.error)
+        // Non-expired payment failures now set REJECTED status instead of an error string
+        assertEquals(PaymentStatus.REJECTED, component.state.value.paymentStatus)
+        assertNull(component.state.value.error)
     }
 
     @Test
@@ -353,10 +356,11 @@ class DefaultPaymentComponentTest {
     // ── Payment status transitions ─────────────────────────────────────────────
 
     @Test
-    fun initial_paymentStatus_is_FORM() = runTest {
+    fun initial_paymentStatus_is_PENDING_for_pending_payment_appointment() = runTest {
         val component = createComponent()
 
-        assertEquals(PaymentStatus.FORM, component.state.value.paymentStatus)
+        // PENDING_PAYMENT appointments now start in PENDING status (not FORM)
+        assertEquals(PaymentStatus.PENDING, component.state.value.paymentStatus)
     }
 
     @Test
@@ -494,7 +498,10 @@ class DefaultPaymentComponentTest {
         val dispatchers = TestAppDispatchers(scheduler = testScheduler, useStandard = true)
         val lifecycle = LifecycleRegistry().also { it.resume() }
         val ctx = DefaultComponentContext(lifecycle = lifecycle)
-        val ds = FakePaymentAppointmentDataSource()
+        // Use CONFIRMED appointment so loadAppointment() does NOT trigger auto-countdown
+        val ds = FakePaymentAppointmentDataSource(
+            appointment = testAppointment().copy(status = AppointmentStatus.CONFIRMED),
+        )
         val component = DefaultPaymentComponent(
             componentContext = ctx,
             appointmentId = "apt-1",
@@ -521,7 +528,10 @@ class DefaultPaymentComponentTest {
         val dispatchers = TestAppDispatchers(scheduler = testScheduler, useStandard = true)
         val lifecycle = LifecycleRegistry().also { it.resume() }
         val ctx = DefaultComponentContext(lifecycle = lifecycle)
-        val ds = FakePaymentAppointmentDataSource()
+        // Use CONFIRMED appointment so loadAppointment() does NOT trigger auto-countdown
+        val ds = FakePaymentAppointmentDataSource(
+            appointment = testAppointment().copy(status = AppointmentStatus.CONFIRMED),
+        )
         val component = DefaultPaymentComponent(
             componentContext = ctx,
             appointmentId = "apt-1",
@@ -549,7 +559,10 @@ class DefaultPaymentComponentTest {
         val dispatchers = TestAppDispatchers(scheduler = testScheduler, useStandard = true)
         val lifecycle = LifecycleRegistry().also { it.resume() }
         val ctx = DefaultComponentContext(lifecycle = lifecycle)
-        val ds = FakePaymentAppointmentDataSource()
+        // Use CONFIRMED appointment so loadAppointment() does NOT trigger auto-countdown
+        val ds = FakePaymentAppointmentDataSource(
+            appointment = testAppointment().copy(status = AppointmentStatus.CONFIRMED),
+        )
         val component = DefaultPaymentComponent(
             componentContext = ctx,
             appointmentId = "apt-1",

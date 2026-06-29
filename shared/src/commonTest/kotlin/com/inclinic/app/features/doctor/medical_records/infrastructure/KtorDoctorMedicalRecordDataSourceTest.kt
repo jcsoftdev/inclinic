@@ -106,7 +106,7 @@ class KtorDoctorMedicalRecordDataSourceTest {
         val client = buildClient { request ->
             capturedBody = (request.body as io.ktor.http.content.TextContent).text
             respond(
-                content = """{"success":true,"data":{"id":"r9","appointmentId":null,"patientId":"pat1","doctorId":"doc1","diagnosis":"Dx","symptoms":"","treatment":"","prescription":null,"notes":null,"createdAt":"2026-03-08T10:00:00Z"}}""",
+                content = """{"success":true,"data":{"id":"r9","appointmentId":"","patientId":"pat1","doctorId":"doc1","diagnosis":"Dx","symptoms":"","treatment":"","prescription":null,"notes":null,"createdAt":"2026-03-08T10:00:00Z"}}""",
                 status = HttpStatusCode.Created,
                 headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
             )

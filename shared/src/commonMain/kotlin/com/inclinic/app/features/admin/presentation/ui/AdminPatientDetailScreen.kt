@@ -124,6 +124,7 @@ fun AdminPatientDetailScreen(component: AdminPatientDetailComponent, modifier: M
                 isReactivating = state.isReactivating,
                 onSuspend = component::onSuspend,
                 onReactivate = component::onReactivate,
+                onViewAppointments = component::onViewAppointments,
             )
 
             Spacer(Modifier.height(dimens.spacingLg))
@@ -259,6 +260,7 @@ private fun ActionsSection(
     isReactivating: Boolean,
     onSuspend: () -> Unit,
     onReactivate: () -> Unit,
+    onViewAppointments: () -> Unit,
 ) {
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
@@ -295,14 +297,12 @@ private fun ActionsSection(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        // Historial de citas: no endpoint to fetch by patient ID in this scope.
-        // TODO: wire to admin appointments filtered by patientId when backend supports it.
+        // Historial de citas — loads appointments via AdminDataSource.getAppointments(patientId).
         AppButton(
             text = "Historial de citas",
-            onClick = { /* TODO: navigate to appointments filtered by this patient */ },
+            onClick = onViewAppointments,
             variant = AppButtonVariant.Ghost,
             size = AppButtonSize.Md,
-            enabled = false,
             modifier = Modifier.fillMaxWidth(),
         )
     }

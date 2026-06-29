@@ -32,6 +32,7 @@ data class BookingState(
     @kotlinx.serialization.Transient val doctor: Doctor? = null,
     val slotId: String = "",
     val date: String = "",
+    val startTime: String = "",
     val visitType: VisitType? = null,
     val notes: String = "",
     @kotlinx.serialization.Transient val isLoading: Boolean = false,

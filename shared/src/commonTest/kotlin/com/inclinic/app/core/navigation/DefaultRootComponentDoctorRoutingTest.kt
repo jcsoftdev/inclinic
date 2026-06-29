@@ -244,6 +244,7 @@ private class StubRegisterDoctorComponent : RegisterDoctorComponent {
     override fun onOffersHomeVisitToggled(value: Boolean) {}
     override fun onDocumentUploaded(url: String) {}
     override fun onDocumentRemoved(url: String) {}
+    override fun onDocumentFilePicked(file: com.inclinic.app.core.platform.PickedFile) {}
     override fun onScheduleAdded(schedule: com.inclinic.app.features.auth.infrastructure.remote.dto.FreelanceScheduleDto) {}
     override fun onScheduleRemoved(index: Int) {}
     override fun onNextStep() {}

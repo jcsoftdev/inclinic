@@ -62,6 +62,8 @@ private class FakeAppointmentDataSource : AppointmentDataSource {
 
     override suspend fun getMonthAvailability(doctorId: String, month: String): Result<Map<String, String>> =
         Result.success(emptyMap())
+    override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> =
+        Result.failure(UnsupportedOperationException())
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<com.inclinic.app.core.model.RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
     override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)

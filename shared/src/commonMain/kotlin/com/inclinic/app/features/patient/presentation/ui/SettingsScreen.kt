@@ -43,6 +43,8 @@ import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.LifeBuoy
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Trash2
+import com.inclinic.app.core.platform.ExternalUrls
+import com.inclinic.app.core.platform.rememberUrlOpener
 import com.inclinic.app.features.patient.presentation.component.SettingsComponent
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.theme.AppTheme
@@ -52,6 +54,7 @@ import com.inclinic.app.ui.theme.AppTheme
 fun SettingsScreen(component: SettingsComponent, modifier: Modifier = Modifier) {
     val state by component.state.subscribeAsState()
     val colors = AppTheme.colors
+    val urlOpener = rememberUrlOpener()
 
     Scaffold(
         topBar = {
@@ -157,9 +160,8 @@ fun SettingsScreen(component: SettingsComponent, modifier: Modifier = Modifier) 
                     // ── SOPORTE ────────────────────────────────────────────
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         SectionLabel("SOPORTE")
-                        // No navigation callbacks exposed by SettingsComponent → no-op rows.
-                        SettingsActionRow(label = "Centro de ayuda", icon = Lucide.LifeBuoy, onClick = {})
-                        SettingsActionRow(label = "Términos y privacidad", icon = Lucide.FileText, onClick = {})
+                        SettingsActionRow(label = "Centro de ayuda", icon = Lucide.LifeBuoy, onClick = { urlOpener.open(ExternalUrls.HELP_URL) })
+                        SettingsActionRow(label = "Términos y privacidad", icon = Lucide.FileText, onClick = { urlOpener.open(ExternalUrls.TERMS_URL) })
                     }
 
                     // ── ZONA DE PELIGRO ────────────────────────────────────

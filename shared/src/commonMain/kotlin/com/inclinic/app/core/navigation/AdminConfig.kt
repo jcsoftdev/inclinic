@@ -95,4 +95,10 @@ sealed interface AdminConfig {
     @Serializable data object MasSecurity : AdminConfig
     /** 2FA setup screen — pushed from MasSecurity when 2FA is not enabled. */
     @Serializable data object MasTwoFactorSetup : AdminConfig
+    /**
+     * Patient appointments list — pushed from AdminPatientDetail.
+     * Carries patientId as a primitive String to avoid serialization issues
+     * (no full patient payload needed here, only the id).
+     */
+    @Serializable data class MasPatientAppointments(val patientId: String) : AdminConfig
 }

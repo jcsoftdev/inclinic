@@ -28,6 +28,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.TriangleAlert
+import com.inclinic.app.core.platform.rememberFilePicker
 import com.inclinic.app.features.doctor.profile.presentation.component.RequestSpecialtyComponent
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonSize
@@ -60,6 +61,8 @@ fun RequestSpecialtyScreen(
         val colors = AppTheme.colors
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
+        val certPicker = rememberFilePicker { file -> if (file != null) component.onPickCertification(file) }
+        val diplomaPicker = rememberFilePicker { file -> if (file != null) component.onPickDiploma(file) }
 
         Box(modifier = modifier.fillMaxSize().background(colors.sand)) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -128,18 +131,20 @@ fun RequestSpecialtyScreen(
                     DocumentUploader(
                         label = "Certificación SUNEDU",
                         hint = "PDF · máx 5MB",
-                        state = state.documentUrls.getOrNull(0)
-                            ?.let { DocUploadState.Done(it) } ?: DocUploadState.Empty,
-                        onPickClick = { },
+                        state = state.pendingCertification?.let { DocUploadState.Done(it.fileName) }
+                            ?: state.documentUrls.getOrNull(0)?.let { DocUploadState.Done(it) }
+                            ?: DocUploadState.Empty,
+                        onPickClick = { certPicker.launch() },
                         modifier = Modifier.fillMaxWidth(),
                     )
 
                     DocumentUploader(
                         label = "Diploma",
                         hint = "PDF · máx 5MB",
-                        state = state.documentUrls.getOrNull(1)
-                            ?.let { DocUploadState.Done(it) } ?: DocUploadState.Empty,
-                        onPickClick = { },
+                        state = state.pendingDiploma?.let { DocUploadState.Done(it.fileName) }
+                            ?: state.documentUrls.getOrNull(1)?.let { DocUploadState.Done(it) }
+                            ?: DocUploadState.Empty,
+                        onPickClick = { diplomaPicker.launch() },
                         modifier = Modifier.fillMaxWidth(),
                     )
 

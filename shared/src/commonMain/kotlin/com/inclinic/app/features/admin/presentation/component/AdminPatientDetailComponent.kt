@@ -20,12 +20,15 @@ interface AdminPatientDetailComponent {
     fun onBack()
     fun onSuspend()
     fun onReactivate()
+    fun onViewAppointments()
 
     sealed interface Output {
         data object Back : Output
         data class NavigateToSuspend(val patient: AdminPatientListItem) : Output
         /** Reactivate was called and succeeded — pop back to list with refresh signal. */
         data object ReactivateSuccess : Output
+        /** Navigate to appointments list filtered by this patient. */
+        data class NavigateToAppointments(val patientId: String) : Output
     }
 }
 
