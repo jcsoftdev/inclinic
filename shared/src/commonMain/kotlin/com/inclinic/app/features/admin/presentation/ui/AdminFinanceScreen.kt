@@ -41,6 +41,7 @@ import com.composables.icons.lucide.Download
 import com.composables.icons.lucide.HandCoins
 import com.composables.icons.lucide.Lock
 import com.composables.icons.lucide.Lucide
+import com.inclinic.app.core.platform.rememberFileSaver
 import com.inclinic.app.features.admin.infrastructure.remote.AdminTopDoctor
 import com.inclinic.app.features.admin.presentation.component.AdminFinanceComponent
 import com.inclinic.app.ui.atoms.AppBackButton
@@ -53,6 +54,15 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
     val state by component.state.subscribeAsState()
     val colors = AppTheme.colors
     val snackbarHostState = remember { SnackbarHostState() }
+    val fileSaver = rememberFileSaver()
+
+    // When bytes are ready, save via the platform FileSaver and mark handled.
+    LaunchedEffect(state.exportBytes) {
+        state.exportBytes?.let { bytes ->
+            fileSaver.saveBytes("inclinic_finanzas.csv", "text/csv", bytes)
+            component.onExportHandled()
+        }
+    }
 
     // Show export feedback message whenever it changes
     LaunchedEffect(state.exportMessage) {

@@ -11,6 +11,7 @@ import com.inclinic.app.features.auth.application.LogoutUseCase
 import com.inclinic.app.features.auth.core.model.AuthTokens
 import com.inclinic.app.features.auth.core.model.AuthUser
 import com.inclinic.app.features.auth.core.port.TokenStorage
+import com.inclinic.app.features.doctor.settings.infrastructure.remote.DoctorSettingsDataSource
 import com.arkivanov.decompose.DefaultComponentContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -18,6 +19,8 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private class FakeTokenStorage : TokenStorage {
@@ -28,6 +31,14 @@ private class FakeTokenStorage : TokenStorage {
     override suspend fun clear() { cleared = true; tokens = null }
     override suspend fun saveUser(user: AuthUser) {}
     override suspend fun loadUser(): AuthUser? = null
+}
+
+private class FakeDoctorSettingsDataSource(
+    private val connectUrlResult: Result<String> = Result.success("https://mp.oauth.test/auth"),
+    private val disconnectResult: Result<Unit> = Result.success(Unit),
+) : DoctorSettingsDataSource {
+    override suspend fun getMercadoPagoConnectUrl(): Result<String> = connectUrlResult
+    override suspend fun disconnectMercadoPago(): Result<Unit> = disconnectResult
 }
 
 class DefaultDoctorSettingsComponentTest {
@@ -48,10 +59,12 @@ class DefaultDoctorSettingsComponentTest {
 
     private fun createComponent(
         outputs: MutableList<DoctorSettingsComponent.Output> = mutableListOf(),
+        settingsDataSource: DoctorSettingsDataSource = FakeDoctorSettingsDataSource(),
     ): DefaultDoctorSettingsComponent = DefaultDoctorSettingsComponent(
         componentContext = ctx,
         logout = LogoutUseCase(tokenStorage, sessionEvents, dispatchers),
         dispatchers = dispatchers,
+        settingsDataSource = settingsDataSource,
         onOutput = outputs::add,
     )
 
@@ -139,5 +152,79 @@ class DefaultDoctorSettingsComponentTest {
         assertTrue(tokenStorage.cleared)
         assertEquals(1, outputs.size)
         assertTrue(outputs.first() is DoctorSettingsComponent.Output.LoggedOut)
+    }
+
+    // ── REQ: MercadoPago connect/disconnect ───────────────────────────────────
+
+    @Test
+    fun onConnectMercadoPago_success_sets_mercadoPagoConnectUrl_in_state() = runTest {
+        val ds = FakeDoctorSettingsDataSource(
+            connectUrlResult = Result.success("https://mp.oauth.test/auth?code=abc"),
+        )
+        val component = createComponent(settingsDataSource = ds)
+
+        component.onConnectMercadoPago()
+
+        assertEquals("https://mp.oauth.test/auth?code=abc", component.state.value.mercadoPagoConnectUrl)
+        assertFalse(component.state.value.isMercadoPagoLoading)
+        assertNull(component.state.value.mercadoPagoError)
+    }
+
+    @Test
+    fun onConnectMercadoPago_mp_not_configured_sets_mercadoPagoError() = runTest {
+        val ds = FakeDoctorSettingsDataSource(
+            connectUrlResult = Result.failure(Exception("MP_NOT_CONFIGURED: La integración de MercadoPago no está configurada.")),
+        )
+        val component = createComponent(settingsDataSource = ds)
+
+        component.onConnectMercadoPago()
+
+        assertNull(component.state.value.mercadoPagoConnectUrl)
+        assertNotNull(component.state.value.mercadoPagoError)
+        val error = component.state.value.mercadoPagoError!!
+        assertTrue(
+            error.contains("configurad", ignoreCase = true) || error.contains("no configurada") || error.isNotBlank(),
+            "Expected a meaningful error message, got: $error",
+        )
+    }
+
+    @Test
+    fun onMercadoPagoConnectUrlConsumed_marks_connected_true_and_clears_url() = runTest {
+        val component = createComponent()
+        component.onConnectMercadoPago()
+        assertNotNull(component.state.value.mercadoPagoConnectUrl) // precondition
+
+        component.onMercadoPagoConnectUrlConsumed()
+
+        assertTrue(component.state.value.mercadoPagoConnected)
+        assertNull(component.state.value.mercadoPagoConnectUrl)
+    }
+
+    @Test
+    fun onDisconnectMercadoPago_success_marks_connected_false() = runTest {
+        val ds = FakeDoctorSettingsDataSource(disconnectResult = Result.success(Unit))
+        val component = createComponent(settingsDataSource = ds)
+        // Simulate connected state
+        component.onConnectMercadoPago()
+        component.onMercadoPagoConnectUrlConsumed()
+        assertTrue(component.state.value.mercadoPagoConnected) // precondition
+
+        component.onDisconnectMercadoPago()
+
+        assertFalse(component.state.value.mercadoPagoConnected)
+        assertNull(component.state.value.mercadoPagoError)
+    }
+
+    @Test
+    fun onDisconnectMercadoPago_failure_sets_mercadoPagoError() = runTest {
+        val ds = FakeDoctorSettingsDataSource(
+            disconnectResult = Result.failure(Exception("Network error")),
+        )
+        val component = createComponent(settingsDataSource = ds)
+
+        component.onDisconnectMercadoPago()
+
+        assertNotNull(component.state.value.mercadoPagoError)
+        assertFalse(component.state.value.isMercadoPagoLoading)
     }
 }

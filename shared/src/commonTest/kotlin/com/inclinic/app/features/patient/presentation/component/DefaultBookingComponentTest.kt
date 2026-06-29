@@ -218,4 +218,54 @@ class DefaultBookingComponentTest {
 
         assertNotNull(component.state.value.error)
     }
+
+    // ── REQ: Booking Lugar — real clinic location ──────────────────────────────
+
+    @Test
+    fun clinicLocation_prefers_clinicDistrict_over_clinicAddress_and_serviceArea() = runTest {
+        val doctor = testDoctor().copy(
+            clinicDistrict = "Miraflores",
+            clinicAddress = "Av. Pardo 123",
+            serviceArea = "Lima",
+        )
+        val component = createComponent(doctorDataSource = FakeBookingDoctorDataSource(doctor))
+
+        assertEquals("Miraflores", component.state.value.clinicLocation)
+    }
+
+    @Test
+    fun clinicLocation_falls_back_to_clinicAddress_when_district_is_null() = runTest {
+        val doctor = testDoctor().copy(
+            clinicDistrict = null,
+            clinicAddress = "Av. Pardo 123",
+            serviceArea = "Lima",
+        )
+        val component = createComponent(doctorDataSource = FakeBookingDoctorDataSource(doctor))
+
+        assertEquals("Av. Pardo 123", component.state.value.clinicLocation)
+    }
+
+    @Test
+    fun clinicLocation_falls_back_to_serviceArea_when_no_address_fields() = runTest {
+        val doctor = testDoctor().copy(
+            clinicDistrict = null,
+            clinicAddress = null,
+            serviceArea = "Lima Norte",
+        )
+        val component = createComponent(doctorDataSource = FakeBookingDoctorDataSource(doctor))
+
+        assertEquals("Lima Norte", component.state.value.clinicLocation)
+    }
+
+    @Test
+    fun clinicLocation_is_null_when_all_location_fields_are_null() = runTest {
+        val doctor = testDoctor().copy(
+            clinicDistrict = null,
+            clinicAddress = null,
+            serviceArea = null,
+        )
+        val component = createComponent(doctorDataSource = FakeBookingDoctorDataSource(doctor))
+
+        assertNull(component.state.value.clinicLocation)
+    }
 }

@@ -38,19 +38,12 @@ class DefaultAdminFinanceComponent(
 
     override fun onExport() {
         if (_state.value.isExporting) return
-        _state.update { it.copy(isExporting = true, exportMessage = null) }
+        _state.update { it.copy(isExporting = true, exportMessage = null, exportBytes = null) }
         scope.launch {
             exportFinanceCsv()
                 .onSuccess { bytes ->
-                    // CSV bytes fetched successfully via authed client.
-                    // Saving to filesystem requires platform-specific code; here we confirm receipt.
-                    val kb = bytes.size / 1024
-                    _state.update {
-                        it.copy(
-                            isExporting = false,
-                            exportMessage = "CSV exportado (${kb}KB). Revisa la app de descargas.",
-                        )
-                    }
+                    // Hand bytes to the screen; it will call onExportHandled() after saving.
+                    _state.update { it.copy(isExporting = false, exportBytes = bytes) }
                 }
                 .onFailure { err ->
                     _state.update {
@@ -60,6 +53,16 @@ class DefaultAdminFinanceComponent(
                         )
                     }
                 }
+        }
+    }
+
+    override fun onExportHandled() {
+        val kb = (_state.value.exportBytes?.size ?: 0) / 1024
+        _state.update {
+            it.copy(
+                exportBytes = null,
+                exportMessage = "CSV guardado (${kb}KB). Revisa la app de descargas.",
+            )
         }
     }
 

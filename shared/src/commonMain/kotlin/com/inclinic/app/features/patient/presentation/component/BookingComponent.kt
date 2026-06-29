@@ -40,4 +40,10 @@ data class BookingState(
     @kotlinx.serialization.Transient val error: String? = null,
     @kotlinx.serialization.Transient val visitTypeError: String? = null,
     @kotlinx.serialization.Transient val isLoadingSkip: Boolean = false,
+    /**
+     * Resolved location label derived from the loaded doctor's address fields.
+     * Priority: [Doctor.clinicDistrict] → [Doctor.clinicAddress] → [Doctor.serviceArea] → null.
+     * Transient because it is re-derived every time the doctor loads.
+     */
+    @kotlinx.serialization.Transient val clinicLocation: String? = null,
 )

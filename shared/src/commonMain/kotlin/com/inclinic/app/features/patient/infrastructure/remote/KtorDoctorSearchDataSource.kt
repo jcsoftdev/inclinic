@@ -45,6 +45,12 @@ private data class DoctorDto(
     val isActive: Boolean = false,
     val ratingAvg: Double? = null,
     val ratingCount: Int = 0,
+    /** Clinic district (e.g. "Miraflores"). Added in PR-7 backend delivery. */
+    val clinicDistrict: String? = null,
+    /** Full clinic address string. Added in PR-7 backend delivery. */
+    val clinicAddress: String? = null,
+    /** Service area / coverage zone. Added in PR-7 backend delivery. */
+    val serviceArea: String? = null,
 ) {
     fun toDomain() = Doctor(
         id = id,
@@ -63,6 +69,9 @@ private data class DoctorDto(
         bio = bio,
         isVerified = isActive,
         cmpLicense = licenseNumber,
+        clinicDistrict = clinicDistrict,
+        clinicAddress = clinicAddress,
+        serviceArea = serviceArea,
     )
 }
 

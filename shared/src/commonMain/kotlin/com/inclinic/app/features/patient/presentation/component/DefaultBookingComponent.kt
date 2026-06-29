@@ -59,7 +59,10 @@ class DefaultBookingComponent(
         stateKeeper.register("booking_state", BookingState.serializer()) { _state.value }
         scope.launch {
             getDoctorDetail(doctorId)
-                .onSuccess { doctor -> _state.update { it.copy(doctor = doctor) } }
+                .onSuccess { doctor ->
+                    val location = doctor.clinicDistrict ?: doctor.clinicAddress ?: doctor.serviceArea
+                    _state.update { it.copy(doctor = doctor, clinicLocation = location) }
+                }
                 .onFailure { err -> _state.update { it.copy(error = err.toUserMessage()) } }
         }
     }

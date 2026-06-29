@@ -258,6 +258,9 @@ class DefaultDoctorFlowComponentTest {
                 override fun onToggleChatMessages(enabled: Boolean) {}
                 override fun onToggleAppointmentReminders(enabled: Boolean) {}
                 override fun onToggleTwoFactor(enabled: Boolean) {}
+                override fun onConnectMercadoPago() {}
+                override fun onMercadoPagoConnectUrlConsumed() {}
+                override fun onDisconnectMercadoPago() {}
             }
         },
         rescheduleQueueFactory = { ctx, out ->

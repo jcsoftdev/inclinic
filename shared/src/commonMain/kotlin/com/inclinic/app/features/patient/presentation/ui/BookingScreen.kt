@@ -132,7 +132,7 @@ fun BookingScreen(component: BookingComponent, modifier: Modifier = Modifier) {
                     DetailRow(Lucide.Building2, "Tipo",  consultType)
                     DetailRow(Lucide.Calendar,  "Fecha", dateFormatted)
                     DetailRow(Lucide.Timer,     "Hora",  timeFormatted, valueTestTag = "booking_hora_value")
-                    DetailRow(Lucide.MapPin,    "Lugar", "Miraflores")
+                    DetailRow(Lucide.MapPin,    "Lugar", state.clinicLocation ?: "—")
                 }
 
                 // Separator

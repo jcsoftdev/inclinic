@@ -19,6 +19,12 @@ data class Doctor(
     val isVerified: Boolean,
     val cmpLicense: String?,
     val onboardingStatus: OnboardingStatus = OnboardingStatus.APPROVED,
+    /** Clinic district/borough (e.g. "Miraflores"). Prefer over [clinicAddress] for display. */
+    val clinicDistrict: String? = null,
+    /** Full clinic address string (e.g. "Av. Pardo 123, Miraflores"). */
+    val clinicAddress: String? = null,
+    /** Service area / coverage zone (e.g. "Lima Norte"). Fallback location label. */
+    val serviceArea: String? = null,
 )
 
 @Serializable

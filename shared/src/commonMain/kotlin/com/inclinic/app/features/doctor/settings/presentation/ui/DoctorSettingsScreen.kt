@@ -18,10 +18,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +78,14 @@ fun DoctorSettingsScreen(
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
         val urlOpener = rememberUrlOpener()
+
+        // When the component puts an OAuth URL in state, open it and mark consumed.
+        LaunchedEffect(state.mercadoPagoConnectUrl) {
+            state.mercadoPagoConnectUrl?.let { url ->
+                urlOpener.open(url)
+                component.onMercadoPagoConnectUrlConsumed()
+            }
+        }
 
         Column(modifier = modifier.fillMaxSize().background(Color(0xFF0A0B14))) {
             // ── Header ─────────────────────────────────────────────────────────
@@ -160,36 +170,68 @@ fun DoctorSettingsScreen(
 
                 // ── PAGOS ──────────────────────────────────────────────────────
                 SectionLabel("PAGOS")
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(dimens.spacing12),
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
                         .border(1.dp, Color(0xFF262A3D), RoundedCornerShape(14.dp))
                         .background(Color(0xFF1A1D2B))
                         .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    // MercadoPago logo placeholder
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF00B1EA)),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(dimens.spacing12),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text("MP", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEDEFFF))
+                        // MercadoPago logo placeholder
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF00B1EA)),
+                        ) {
+                            Text("MP", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEDEFFF))
+                        }
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
+                            Text("MercadoPago", fontSize = 14.sp, color = Color(0xFFEDEFFF))
+                            Text(
+                                if (state.mercadoPagoConnected) "Conectado · recibe pagos en tu cuenta"
+                                else "Conecta tu cuenta para recibir pagos",
+                                fontSize = 11.sp,
+                                color = if (state.mercadoPagoConnected) Color(0xFF34D399) else Color(0xFFA2A8C8),
+                            )
+                        }
+                        if (state.isMercadoPagoLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                                color = Color(0xFF5B6CFF),
+                            )
+                        } else {
+                            Switch(
+                                checked = state.mercadoPagoConnected,
+                                onCheckedChange = { checked ->
+                                    if (checked) component.onConnectMercadoPago()
+                                    else component.onDisconnectMercadoPago()
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedTrackColor = Color(0xFF34D399),
+                                    checkedThumbColor = Color.White,
+                                    uncheckedTrackColor = Color(0xFF262A3D),
+                                    uncheckedThumbColor = Color.White,
+                                    uncheckedBorderColor = Color(0xFF262A3D),
+                                ),
+                            )
+                        }
                     }
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
-                        Text("MercadoPago", fontSize = 14.sp, color = Color(0xFFEDEFFF))
-                        Text("Próximamente · integración en desarrollo", fontSize = 11.sp, color = Color(0xFFA2A8C8))
+                    // Error feedback
+                    state.mercadoPagoError?.let { errorMsg ->
+                        Text(
+                            text = errorMsg,
+                            fontSize = 11.sp,
+                            color = Color(0xFFFB5E6B),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
-                    Switch(
-                        checked = false,
-                        onCheckedChange = {},
-                        enabled = false,
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = Color(0xFF34D399),
-                            checkedThumbColor = Color.White,
-                        ),
-                    )
                 }
 
                 // ── SOPORTE ────────────────────────────────────────────────────
