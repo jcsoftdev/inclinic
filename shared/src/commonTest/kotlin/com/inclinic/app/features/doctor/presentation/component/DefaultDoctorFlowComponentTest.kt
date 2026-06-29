@@ -62,6 +62,8 @@ import com.inclinic.app.features.doctor.prescriptions.presentation.component.Edi
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionState
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountState
+import com.inclinic.app.features.doctor.profile.presentation.component.ChangePasswordComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.ChangePasswordState
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -203,6 +205,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onNavigateSettings() { out(MiPerfilComponent.Output.Settings) }
                 override fun onNavigateTherapyOffers() { out(MiPerfilComponent.Output.TherapyOffers) }
                 override fun onNavigateNoShowQueue() { out(MiPerfilComponent.Output.NoShowQueue) }
+                override fun onNavigateChangePassword() { out(MiPerfilComponent.Output.ChangePassword) }
                 override fun onLogout() { out(MiPerfilComponent.Output.Logout) }
             }
         },
@@ -382,6 +385,16 @@ class DefaultDoctorFlowComponentTest {
                 override fun onTabSelected(tab: com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowTab) {}
                 override fun onRetry() {}
                 override fun onBack() { out(com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent.Output.Back) }
+            }
+        },
+        changePasswordFactory = { ctx, out ->
+            object : ChangePasswordComponent {
+                override val state: Value<ChangePasswordState> = MutableValue(ChangePasswordState())
+                override fun onCurrentPasswordChange(value: String) {}
+                override fun onNewPasswordChange(value: String) {}
+                override fun onConfirmNewPasswordChange(value: String) {}
+                override fun onSubmit() {}
+                override fun onBack() { out(ChangePasswordComponent.Output.Back) }
             }
         },
         onOutput = {},

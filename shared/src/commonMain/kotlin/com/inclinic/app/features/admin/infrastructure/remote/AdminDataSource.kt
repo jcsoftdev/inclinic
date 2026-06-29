@@ -77,6 +77,14 @@ interface AdminDataSource {
     // ── Subscriptions ─────────────────────────────────────────────────────────
     suspend fun getSubscriptions(): Result<AdminSubscriptionsOverview>
     suspend fun setUserSubscription(userId: String, tier: String, expiresAt: String?): Result<Unit>
+
+    // ── Finance export ────────────────────────────────────────────────────────
+    /**
+     * Exports finance data as CSV via GET /api/admin/finance/export?format=csv.
+     * Returns raw CSV bytes on success.
+     * Requires SUPER_ADMIN role.
+     */
+    suspend fun exportFinanceCsv(): Result<ByteArray>
 }
 
 // ── Appointment list domain models ────────────────────────────────────────────

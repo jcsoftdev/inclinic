@@ -69,6 +69,7 @@ import com.inclinic.app.features.doctor.presentation.component.PatientDetailComp
 import com.inclinic.app.features.doctor.presentation.component.PriceConfigComponent
 import com.inclinic.app.features.doctor.presentation.component.ScheduleConfigComponent
 import com.inclinic.app.features.doctor.presentation.component.WeeklyScheduleComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.ChangePasswordComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.EditSpecialtiesComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.IncomeComponent
 import com.inclinic.app.features.doctor.modality.presentation.component.RespondModalityComponent
@@ -221,6 +222,7 @@ val doctorModule = module {
             editPrescriptionFactory = { c, prescriptionId, out -> get<EditPrescriptionComponent> { parametersOf(c, prescriptionId, out) } },
             deleteAccountFactory = { c, out -> get<DeleteAccountComponent> { parametersOf(c, out) } },
             noShowQueueFactory = { c, out -> get<NoShowQueueComponent> { parametersOf(c, out) } },
+            changePasswordFactory = { c, out -> get<ChangePasswordComponent> { parametersOf(c, doctorId, out) } },
             onOutput = {},
         )
     }

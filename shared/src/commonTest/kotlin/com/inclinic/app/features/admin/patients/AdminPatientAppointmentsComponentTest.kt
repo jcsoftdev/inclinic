@@ -91,6 +91,7 @@ private class FakeAdminDataSourceForAppointments(
     override suspend fun unblockEmail(email: String): Result<Unit> = Result.failure(UnsupportedOperationException())
     override suspend fun getSubscriptions(): Result<AdminSubscriptionsOverview> = Result.failure(UnsupportedOperationException())
     override suspend fun setUserSubscription(userId: String, tier: String, expiresAt: String?): Result<Unit> = Result.failure(UnsupportedOperationException())
+    override suspend fun exportFinanceCsv(): Result<ByteArray> = Result.failure(UnsupportedOperationException())
 }
 
 class AdminPatientAppointmentsComponentTest {

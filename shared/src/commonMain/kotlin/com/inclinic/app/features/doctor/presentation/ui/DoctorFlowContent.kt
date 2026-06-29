@@ -39,6 +39,7 @@ import com.inclinic.app.features.doctor.therapy_offers.presentation.ui.CreateThe
 import com.inclinic.app.features.doctor.therapy_offers.presentation.ui.TherapyOffersListScreen
 import com.inclinic.app.features.patient.presentation.ui.DeleteAccountScreen
 import com.inclinic.app.features.doctor.no_shows.presentation.ui.NoShowQueueScreen
+import com.inclinic.app.features.doctor.profile.presentation.ui.ChangePasswordScreen
 import com.inclinic.app.ui.atoms.DoctorNavBar
 
 @Composable
@@ -106,6 +107,7 @@ fun DoctorFlowContent(component: DoctorFlowComponent, modifier: Modifier = Modif
                 is DoctorFlowComponent.Child.EditPrescription -> EditPrescriptionScreen(c.component)
                 is DoctorFlowComponent.Child.DeleteAccount -> DeleteAccountScreen(c.component)
                 is DoctorFlowComponent.Child.NoShowQueue -> NoShowQueueScreen(c.component)
+                is DoctorFlowComponent.Child.ChangePassword -> ChangePasswordScreen(c.component)
             }
         }
     }

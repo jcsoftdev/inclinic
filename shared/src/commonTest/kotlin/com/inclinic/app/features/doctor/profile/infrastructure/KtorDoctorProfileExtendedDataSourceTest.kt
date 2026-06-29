@@ -156,6 +156,47 @@ class KtorDoctorProfileExtendedDataSourceTest {
     // ── getReviews ────────────────────────────────────────────────────────────
 
     @Test
+    fun getMetrics_parses_breakdown_when_present() = runTest {
+        val client = buildClient {
+            respond(
+                content = """{"success":true,"data":{"monthRevenue":{"amount":1800.0,"commission":270.0,"net":1530.0,"sessions":6,"growthPct":12.0,"breakdown":{"retained":500.0,"released":1000.0,"refunded":300.0}}}}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+            )
+        }
+        val ds = KtorDoctorProfileExtendedDataSource(client, baseUrl)
+
+        val result = ds.getMetrics()
+
+        assertTrue(result.isSuccess)
+        val breakdown = result.getOrThrow().monthRevenue?.breakdown
+        assertNotNull(breakdown)
+        assertEquals(500.0, breakdown.retained)
+        assertEquals(1000.0, breakdown.released)
+        assertEquals(300.0, breakdown.refunded)
+    }
+
+    @Test
+    fun getMetrics_returns_null_breakdown_when_absent_for_backward_compat() = runTest {
+        val client = buildClient {
+            respond(
+                content = """{"success":true,"data":{"monthRevenue":{"amount":1800.0,"commission":270.0,"net":1530.0,"sessions":6}}}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+            )
+        }
+        val ds = KtorDoctorProfileExtendedDataSource(client, baseUrl)
+
+        val result = ds.getMetrics()
+
+        assertTrue(result.isSuccess)
+        // breakdown is optional — absence should not cause error
+        val breakdown = result.getOrThrow().monthRevenue?.breakdown
+        // null is acceptable for backward compatibility
+        assertTrue(breakdown == null || breakdown.retained == 0.0)
+    }
+
+    @Test
     fun getReviews_returns_reviews_on_success() = runTest {
         val client = buildClient {
             respond(

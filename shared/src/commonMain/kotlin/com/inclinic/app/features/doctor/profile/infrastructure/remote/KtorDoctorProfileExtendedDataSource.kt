@@ -4,9 +4,11 @@ import com.inclinic.app.core.network.ApiEnvelope
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
@@ -59,10 +61,18 @@ data class EditSpecialtiesRequestDto(val specialtyIds: List<String>)
 /**
  * Income summary from GET /api/doctors/me/metrics (monthRevenue section).
  * The backend does NOT provide time-series bars; only monthly aggregates.
+ * The backend NOW also optionally returns monthRevenue.breakdown.
  */
 @Serializable
 data class DoctorMetricsDto(
     val monthRevenue: MonthRevenueDto? = null,
+)
+
+@Serializable
+data class MonthRevenueBreakdownDto(
+    val retained: Double = 0.0,
+    val released: Double = 0.0,
+    val refunded: Double = 0.0,
 )
 
 @Serializable
@@ -72,6 +82,20 @@ data class MonthRevenueDto(
     val net: Double = 0.0,
     val sessions: Int = 0,
     val growthPct: Double? = null,
+    val breakdown: MonthRevenueBreakdownDto? = null,
+)
+
+@Serializable
+private data class ChangePasswordRequestDto(
+    val currentPassword: String,
+    val newPassword: String,
+)
+
+@Serializable
+private data class ChangePasswordErrorDto(
+    val success: Boolean = false,
+    val code: String? = null,
+    val error: String? = null,
 )
 
 @Serializable
@@ -99,6 +123,11 @@ interface DoctorProfileExtendedDataSource {
     suspend fun editSpecialties(doctorId: String, specialtyIds: List<String>): Result<Unit>
     suspend fun getMetrics(): Result<DoctorMetricsDto>
     suspend fun getReviews(doctorId: String, limit: Int): Result<DoctorReviewsDto>
+    /**
+     * Change the authenticated user's password via PATCH /api/users/me/password.
+     * Returns failure with message "INVALID_CREDENTIALS" when the current password is wrong.
+     */
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
 }
 
 // Ktor implementation
@@ -154,5 +183,25 @@ class KtorDoctorProfileExtendedDataSource(
         client.get {
             url("$baseUrl/api/doctors/$doctorId/reviews?limit=$limit")
         }.body<ApiEnvelope<DoctorReviewsDto>>().data ?: error("Reviews data missing")
+    }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = runCatching {
+        val response = client.patch {
+            url("$baseUrl/api/users/me/password")
+            contentType(ContentType.Application.Json)
+            setBody(ChangePasswordRequestDto(currentPassword, newPassword))
+        }
+        when {
+            response.status.value in 200..299 -> Unit
+            response.status.value == 400 -> {
+                val body = response.bodyAsText()
+                if (body.contains("INVALID_CREDENTIALS")) {
+                    error("INVALID_CREDENTIALS")
+                } else {
+                    error("Error al cambiar contraseña: ${response.status}")
+                }
+            }
+            else -> error("Error al cambiar contraseña: ${response.status}")
+        }
     }
 }

@@ -10,6 +10,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.encodeURLPathPart
@@ -1092,4 +1093,15 @@ class KtorAdminDataSource(
             }
             Unit
         }
+
+    override suspend fun exportFinanceCsv(): Result<ByteArray> = runCatching {
+        val response = client.get {
+            url("$baseUrl/api/admin/finance/export")
+            parameter("format", "csv")
+        }
+        if (response.status.value !in 200..299) {
+            error("Export failed with status ${response.status}")
+        }
+        response.readRawBytes()
+    }
 }

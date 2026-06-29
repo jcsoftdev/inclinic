@@ -18,13 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,11 +66,8 @@ fun MiPerfilScreen(
         val colors = AppTheme.colors
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
-        val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
 
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = Color(0xFF0A0B14),
             modifier = modifier.fillMaxSize(),
         ) { innerPadding ->
@@ -155,11 +147,7 @@ fun MiPerfilScreen(
                                 icon = Lucide.Lock,
                                 title = "Cambiar contraseña",
                                 subtitle = "",
-                                onClick = {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Cambio de contraseña disponible próximamente")
-                                    }
-                                },
+                                onClick = component::onNavigateChangePassword,
                             )
                             ProfileNavRow(
                                 icon = Lucide.LogOut,

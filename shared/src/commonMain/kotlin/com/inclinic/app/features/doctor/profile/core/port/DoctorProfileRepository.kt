@@ -45,4 +45,10 @@ interface DoctorProfileRepository {
      * @param limit Max number of reviews to return (default 20).
      */
     suspend fun getReviews(limit: Int = 20): Result<DoctorReviewsPage>
+
+    /**
+     * Change the authenticated user's password via PATCH /api/users/me/password.
+     * Returns failure with message "INVALID_CREDENTIALS" when current password is wrong.
+     */
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
 }

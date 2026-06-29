@@ -5,6 +5,7 @@ import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.features.admin.appointments.application.GetAdminAppointmentDetailUseCase
 import com.inclinic.app.features.admin.appointments.application.GetAdminAppointmentsUseCase
 import com.inclinic.app.features.admin.dashboard.application.GetAdminDashboardUseCase
+import com.inclinic.app.features.admin.finance.application.ExportFinanceCsvUseCase
 import com.inclinic.app.features.admin.finance.application.GetFinanceUseCase
 import com.inclinic.app.features.admin.doctors.application.ApproveDoctorUseCase
 import com.inclinic.app.features.admin.doctors.application.GetAdminDoctorDetailUseCase
@@ -130,6 +131,7 @@ val adminModule = module {
     // ── Use cases ─────────────────────────────────────────────────────────────
     factory { GetAdminDashboardUseCase(get(), get()) }
     factory { GetFinanceUseCase(get(), get()) }
+    factory { ExportFinanceCsvUseCase(get(), get()) }
     factory { GetAdminAppointmentsUseCase(get(), get()) }
     factory { GetAdminAppointmentDetailUseCase(get(), get()) }
     factory { GetAdminDoctorsUseCase(get(), get()) }
@@ -190,7 +192,7 @@ val adminModule = module {
         DefaultAdminPendingDoctorDetailComponent(ctx, doctorId, get(), get(), get(), get(), onOutput)
     }
     factory<AdminFinanceComponent> { (ctx: ComponentContext, onOutput: (AdminFinanceComponent.Output) -> Unit) ->
-        DefaultAdminFinanceComponent(ctx, get(), get(), onOutput)
+        DefaultAdminFinanceComponent(ctx, get(), get(), get(), onOutput)
     }
     factory<AdminPlaceholderComponent> { (ctx: ComponentContext, title: String) ->
         AdminPlaceholderComponent(ctx, title)

@@ -25,10 +25,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,9 +52,12 @@ import com.inclinic.app.ui.theme.AppTheme
 fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Modifier) {
     val state by component.state.subscribeAsState()
     val colors = AppTheme.colors
-    val dimens = AppTheme.dimens
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+
+    // Show export feedback message whenever it changes
+    LaunchedEffect(state.exportMessage) {
+        state.exportMessage?.let { msg -> snackbarHostState.showSnackbar(msg) }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -77,11 +79,8 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
                 // ── Header ────────────────────────────────────────────────────
                 FinanceHeader(
                     onBack = component::onBack,
-                    onExport = {
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Exportación disponible próximamente")
-                        }
-                    },
+                    onExport = component::onExport,
+                    isExporting = state.isExporting,
                 )
 
                 Column(
@@ -153,7 +152,7 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
 // ── Header ─────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun FinanceHeader(onBack: () -> Unit, onExport: () -> Unit) {
+private fun FinanceHeader(onBack: () -> Unit, onExport: () -> Unit, isExporting: Boolean = false) {
     val colors = AppTheme.colors
     Row(
         Modifier
@@ -177,14 +176,22 @@ private fun FinanceHeader(onBack: () -> Unit, onExport: () -> Unit) {
                 .clip(RoundedCornerShape(AppTheme.dimens.radius))
                 .background(colors.surface)
                 .border(1.dp, colors.border, RoundedCornerShape(AppTheme.dimens.radius))
-                .clickable { onExport() },
+                .clickable(enabled = !isExporting) { onExport() },
         ) {
-            Icon(
-                imageVector = Lucide.Download,
-                contentDescription = "Exportar",
-                tint = colors.navy,
-                modifier = Modifier.size(18.dp),
-            )
+            if (isExporting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = colors.navy,
+                )
+            } else {
+                Icon(
+                    imageVector = Lucide.Download,
+                    contentDescription = "Exportar CSV",
+                    tint = colors.navy,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.di.APP_HTTP_CLIENT
+import com.inclinic.app.features.doctor.profile.application.ChangePasswordUseCase
 import com.inclinic.app.features.doctor.profile.application.EditSpecialtiesUseCase
 import com.inclinic.app.features.doctor.profile.application.GetDoctorIncomeUseCase
 import com.inclinic.app.features.doctor.profile.application.GetDoctorProfileUseCase
@@ -15,6 +16,8 @@ import com.inclinic.app.features.doctor.profile.application.UpdateDoctorProfileU
 import com.inclinic.app.features.doctor.profile.infrastructure.DefaultDoctorProfileRepository
 import com.inclinic.app.features.doctor.profile.infrastructure.remote.DoctorProfileExtendedDataSource
 import com.inclinic.app.features.doctor.profile.infrastructure.remote.KtorDoctorProfileExtendedDataSource
+import com.inclinic.app.features.doctor.profile.presentation.component.ChangePasswordComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.DefaultChangePasswordComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultEditSpecialtiesComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultIncomeComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultMiPerfilComponent
@@ -124,5 +127,16 @@ fun doctorProfileModule() = module {
         val dispatchers = get<AppDispatchers>()
         val repo = DefaultDoctorProfileRepository(get(), dispatchers, doctorId)
         DefaultMySpecialtyRequestsComponent(ctx, GetMySpecialtyRequestsUseCase(repo, dispatchers), dispatchers, onOutput)
+    }
+
+    factory<ChangePasswordComponent> { params ->
+        val ctx = params[0] as ComponentContext
+        val doctorId = params[1] as String
+        @Suppress("UNCHECKED_CAST")
+        val onOutput = params[2] as (ChangePasswordComponent.Output) -> Unit
+        val dispatchers = get<AppDispatchers>()
+        // doctorId needed only for repo construction; changePassword itself is user-agnostic
+        val repo = DefaultDoctorProfileRepository(get(), dispatchers, doctorId)
+        DefaultChangePasswordComponent(ctx, ChangePasswordUseCase(repo, dispatchers), dispatchers, onOutput)
     }
 }

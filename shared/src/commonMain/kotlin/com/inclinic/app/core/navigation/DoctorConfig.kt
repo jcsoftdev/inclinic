@@ -47,4 +47,5 @@ sealed interface DoctorConfig {
     @Serializable data class EditPrescription(val prescriptionId: String) : DoctorConfig
     @Serializable data object DeleteAccount : DoctorConfig
     @Serializable data object NoShowQueue : DoctorConfig
+    @Serializable data object ChangePassword : DoctorConfig
 }

@@ -27,6 +27,8 @@ import com.inclinic.app.features.doctor.patients.presentation.component.DefaultP
 import com.inclinic.app.features.doctor.patients.presentation.component.DefaultSearchPatientComponent
 import com.inclinic.app.features.doctor.patients.presentation.component.PatientsListComponent
 import com.inclinic.app.features.doctor.patients.presentation.component.SearchPatientComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.ChangePasswordComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.DefaultChangePasswordComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultEditSpecialtiesComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultIncomeComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultMiPerfilComponent
@@ -97,6 +99,7 @@ class DefaultDoctorFlowComponent(
     private val editPrescriptionFactory: (ComponentContext, String, (EditPrescriptionComponent.Output) -> Unit) -> EditPrescriptionComponent,
     private val deleteAccountFactory: (ComponentContext, (DeleteAccountComponent.Output) -> Unit) -> DeleteAccountComponent,
     private val noShowQueueFactory: (ComponentContext, (NoShowQueueComponent.Output) -> Unit) -> NoShowQueueComponent,
+    private val changePasswordFactory: (ComponentContext, (ChangePasswordComponent.Output) -> Unit) -> ChangePasswordComponent,
     private val onOutput: (DoctorFlowComponent.Output) -> Unit,
 ) : DoctorFlowComponent, ComponentContext by componentContext {
 
@@ -421,6 +424,8 @@ class DefaultDoctorFlowComponent(
                             perfilNav.push(DoctorConfig.TherapyOffers)
                         MiPerfilComponent.Output.NoShowQueue ->
                             perfilNav.push(DoctorConfig.NoShowQueue)
+                        MiPerfilComponent.Output.ChangePassword ->
+                            perfilNav.push(DoctorConfig.ChangePassword)
                         MiPerfilComponent.Output.Logout ->
                             onOutput(DoctorFlowComponent.Output.Logout)
                     }
@@ -594,6 +599,14 @@ class DefaultDoctorFlowComponent(
                 noShowQueueFactory(ctx) { output ->
                     when (output) {
                         NoShowQueueComponent.Output.Back -> activeNav().pop()
+                    }
+                }
+            )
+
+            is DoctorConfig.ChangePassword -> DoctorFlowComponent.Child.ChangePassword(
+                changePasswordFactory(ctx) { output ->
+                    when (output) {
+                        ChangePasswordComponent.Output.Back -> perfilNav.pop()
                     }
                 }
             )

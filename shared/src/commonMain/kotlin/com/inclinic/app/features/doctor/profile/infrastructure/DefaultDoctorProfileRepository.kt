@@ -5,6 +5,7 @@ import com.inclinic.app.core.model.Specialty
 import com.inclinic.app.features.doctor.profile.core.model.DoctorProfile
 import com.inclinic.app.features.doctor.profile.core.model.DoctorReview
 import com.inclinic.app.features.doctor.profile.core.model.DoctorReviewsPage
+import com.inclinic.app.features.doctor.profile.core.model.IncomeBreakdown
 import com.inclinic.app.features.doctor.profile.core.model.IncomeSummary
 import com.inclinic.app.features.doctor.profile.core.model.MySpecialtyRequest
 import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequest
@@ -65,8 +66,20 @@ class DefaultDoctorProfileRepository(
                     growthPct = mr?.growthPct,
                     availableCents = 0L,
                     bars = emptyList(),
+                    breakdown = mr?.breakdown?.let { bd ->
+                        IncomeBreakdown(
+                            retainedCents = (bd.retained * 100).toLong(),
+                            releasedCents = (bd.released * 100).toLong(),
+                            refundedCents = (bd.refunded * 100).toLong(),
+                        )
+                    },
                 )
             }
+        }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> =
+        withContext(dispatchers.io) {
+            remote.changePassword(currentPassword, newPassword)
         }
 
     override suspend fun getReviews(limit: Int): Result<DoctorReviewsPage> =

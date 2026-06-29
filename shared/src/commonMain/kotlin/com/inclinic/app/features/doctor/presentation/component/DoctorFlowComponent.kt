@@ -10,6 +10,7 @@ import com.inclinic.app.features.doctor.packages.presentation.component.PackageD
 import com.inclinic.app.features.doctor.packages.presentation.component.PackagesListComponent
 import com.inclinic.app.features.doctor.patients.presentation.component.PatientsListComponent
 import com.inclinic.app.features.doctor.patients.presentation.component.SearchPatientComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.ChangePasswordComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.EditSpecialtiesComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.IncomeComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.MiPerfilComponent
@@ -90,6 +91,7 @@ interface DoctorFlowComponent {
         class EditPrescription(val component: EditPrescriptionComponent) : Child
         class DeleteAccount(val component: DeleteAccountComponent) : Child
         class NoShowQueue(val component: NoShowQueueComponent) : Child
+        class ChangePassword(val component: ChangePasswordComponent) : Child
     }
 
     sealed interface Output {

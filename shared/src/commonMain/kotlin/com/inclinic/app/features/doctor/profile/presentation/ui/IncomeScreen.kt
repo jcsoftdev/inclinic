@@ -32,6 +32,7 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Percent
 import com.composables.icons.lucide.TrendingUp
 import com.composables.icons.lucide.Wallet
+import com.inclinic.app.features.doctor.profile.core.model.IncomeBreakdown
 import com.inclinic.app.features.doctor.profile.core.model.IncomeSummary
 import com.inclinic.app.features.doctor.profile.presentation.component.IncomeComponent
 import com.inclinic.app.ui.atoms.AppBackButton
@@ -95,6 +96,7 @@ fun IncomeScreen(
                     if (summary != null) {
                         IncomeHeroCard(summary)
                         KpiRow(summary)
+                        summary.breakdown?.let { BreakdownRow(it) }
                         ChartCard()
                         WithdrawalCard(summary)
                         CommissionBanner()
@@ -236,6 +238,75 @@ private fun KpiRow(summary: IncomeSummary) {
                 color = colors.navy,
             )
         }
+    }
+}
+
+/**
+ * Three-column breakdown: retenido / liberado / reembolsado.
+ * Rendered only when breakdown is non-null (backend included it).
+ * If a value is 0, shows "S/ 0" — no fake data, no empty-state card.
+ */
+@Composable
+private fun BreakdownRow(breakdown: IncomeBreakdown) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(dimens.spacing12 - 2.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        BreakdownTile(
+            label = "Retenido",
+            value = formatSoles(breakdown.retainedCents),
+            accentColor = Color(0xFFFFB347),
+            modifier = Modifier.weight(1f),
+        )
+        BreakdownTile(
+            label = "Liberado",
+            value = formatSoles(breakdown.releasedCents),
+            accentColor = Color(0xFF34D399),
+            modifier = Modifier.weight(1f),
+        )
+        BreakdownTile(
+            label = "Reembolsado",
+            value = formatSoles(breakdown.refundedCents),
+            accentColor = Color(0xFFFF6B6B),
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun BreakdownTile(
+    label: String,
+    value: String,
+    accentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+    val typography = AppTheme.typography
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(dimens.spacingXs),
+        modifier = modifier
+            .clip(RoundedCornerShape(dimens.radiusMd + 2.dp))
+            .background(colors.surface)
+            .padding(dimens.spacingMd - 4.dp),
+    ) {
+        Text(
+            text = label,
+            style = typography.label,
+            color = colors.muted,
+            fontSize = 10.sp,
+        )
+        Text(
+            text = value,
+            style = typography.displayNano,
+            color = accentColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 

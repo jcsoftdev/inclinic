@@ -5,6 +5,7 @@ import com.inclinic.app.features.doctor.profile.core.model.DoctorProfile
 import com.inclinic.app.features.doctor.profile.core.model.DoctorReview
 import com.inclinic.app.features.doctor.profile.core.model.DoctorReviewsPage
 import com.inclinic.app.features.doctor.profile.core.model.IncomeBar
+import com.inclinic.app.features.doctor.profile.core.model.IncomeBreakdown
 import com.inclinic.app.features.doctor.profile.core.model.IncomeSummary
 import com.inclinic.app.features.doctor.profile.core.model.MySpecialtyRequest
 import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequest
@@ -40,6 +41,11 @@ class FakeDoctorProfileRepository : DoctorProfileRepository {
             growthPct = 12.0,
             availableCents = 0L,
             bars = emptyList(),
+            breakdown = IncomeBreakdown(
+                retainedCents = 50000L,
+                releasedCents = 100000L,
+                refundedCents = 30000L,
+            ),
         )
 
         val defaultRequests = listOf(
@@ -96,6 +102,7 @@ class FakeDoctorProfileRepository : DoctorProfileRepository {
     var getMySpecialtyRequestsResult: Result<List<MySpecialtyRequest>> = Result.success(defaultRequests)
     var getIncomeResult: Result<IncomeSummary> = Result.success(defaultIncome)
     var getReviewsResult: Result<DoctorReviewsPage> = Result.success(defaultReviews)
+    var changePasswordResult: Result<Unit> = Result.success(Unit)
 
     var getProfileCallCount = 0
     var updateProfileCallCount = 0
@@ -104,11 +111,14 @@ class FakeDoctorProfileRepository : DoctorProfileRepository {
     var getMySpecialtyRequestsCallCount = 0
     var getIncomeCallCount = 0
     var getReviewsCallCount = 0
+    var changePasswordCallCount = 0
 
     var lastUpdatedProfile: DoctorProfile? = null
     var lastEditedSpecialtyIds: List<String>? = null
     var lastSpecialtyRequest: SpecialtyRequest? = null
     var lastReviewsLimit: Int? = null
+    var lastChangePasswordCurrent: String? = null
+    var lastChangePasswordNew: String? = null
 
     override suspend fun getProfile(): Result<DoctorProfile> {
         getProfileCallCount++
@@ -147,5 +157,12 @@ class FakeDoctorProfileRepository : DoctorProfileRepository {
         getReviewsCallCount++
         lastReviewsLimit = limit
         return getReviewsResult
+    }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> {
+        changePasswordCallCount++
+        lastChangePasswordCurrent = currentPassword
+        lastChangePasswordNew = newPassword
+        return changePasswordResult
     }
 }

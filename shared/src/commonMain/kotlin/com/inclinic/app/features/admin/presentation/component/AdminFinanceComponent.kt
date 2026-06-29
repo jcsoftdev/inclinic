@@ -8,6 +8,7 @@ interface AdminFinanceComponent {
 
     fun onRefresh()
     fun onBack()
+    fun onExport()
 
     sealed interface Output {
         data object Back : Output
@@ -30,4 +31,8 @@ data class AdminFinanceState(
 
     // Movimientos
     val topDoctors: List<AdminTopDoctor> = emptyList(),
+
+    // Export
+    val isExporting: Boolean = false,
+    val exportMessage: String? = null,
 )
