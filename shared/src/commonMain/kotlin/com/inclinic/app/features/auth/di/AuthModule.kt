@@ -11,6 +11,9 @@ import com.inclinic.app.core.network.HttpClientFactory
 import com.inclinic.app.core.network.RefreshCoordinator
 import com.inclinic.app.core.secure.SecureStorage
 import com.inclinic.app.core.secure.SettingsSecureStorage
+import com.inclinic.app.core.upload.KtorUploadDataSource
+import com.inclinic.app.core.upload.UploadDataSource
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.application.ActivateUseCase
 import com.inclinic.app.features.auth.application.GetCurrentUserUseCase
 import com.inclinic.app.features.auth.application.ForgotPasswordUseCase
@@ -119,6 +122,15 @@ val authModule = module {
         )
     }
 
+    // ── Shared upload datasource (POST /api/upload) ───────────────────────────
+    single<UploadDataSource> {
+        KtorUploadDataSource(
+            client = get(APP_HTTP_CLIENT),
+            baseUrl = get<AuthConfig>().apiBaseUrl,
+        )
+    }
+    factory { UploadFileUseCase(dataSource = get(), dispatchers = get()) }
+
     // ── Specialty cache (24-hour in-memory TTL) ───────────────────────────────
     single { SpecialtyCacheDataSource(remote = get()) }
 
@@ -184,6 +196,7 @@ val authModule = module {
             componentContext = ctx,
             registerFreelanceUseCase = get(),
             getSpecialtiesUseCase = get(),
+            uploadFileUseCase = get(),
             dispatchers = get(),
             onOutput = onOutput,
         )

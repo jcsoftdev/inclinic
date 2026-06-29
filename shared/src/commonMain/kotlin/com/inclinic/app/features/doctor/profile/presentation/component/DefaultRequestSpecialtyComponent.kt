@@ -8,6 +8,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.doctor.profile.application.RequestSpecialtyUseCase
 import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequest
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 class DefaultRequestSpecialtyComponent(
     componentContext: ComponentContext,
     private val requestSpecialty: RequestSpecialtyUseCase,
+    private val uploadFileUseCase: UploadFileUseCase,
     private val dispatchers: AppDispatchers,
     private val onOutput: (RequestSpecialtyComponent.Output) -> Unit,
 ) : RequestSpecialtyComponent, ComponentContext by componentContext {
@@ -70,12 +72,52 @@ class DefaultRequestSpecialtyComponent(
     }
 
     override fun onPickCertification(file: PickedFile) {
-        _state.update { it.copy(pendingCertification = file) }
+        if (_state.value.isCertUploading) return
+        _state.update { it.copy(isCertUploading = true, certUploadError = null) }
+        scope.launch {
+            uploadFileUseCase(
+                bucket = SPECIALTY_DOCS_BUCKET,
+                bytes = file.bytes,
+                fileName = file.fileName,
+                mimeType = file.mimeType,
+            ).onSuccess { url ->
+                _state.update { it.copy(isCertUploading = false, documentUrls = it.documentUrls + url) }
+            }.onFailure { err ->
+                _state.update {
+                    it.copy(
+                        isCertUploading = false,
+                        certUploadError = err.toUserMessage("Error al subir certificación"),
+                    )
+                }
+            }
+        }
     }
 
     override fun onPickDiploma(file: PickedFile) {
-        _state.update { it.copy(pendingDiploma = file) }
+        if (_state.value.isDiplomaUploading) return
+        _state.update { it.copy(isDiplomaUploading = true, diplomaUploadError = null) }
+        scope.launch {
+            uploadFileUseCase(
+                bucket = SPECIALTY_DOCS_BUCKET,
+                bytes = file.bytes,
+                fileName = file.fileName,
+                mimeType = file.mimeType,
+            ).onSuccess { url ->
+                _state.update { it.copy(isDiplomaUploading = false, documentUrls = it.documentUrls + url) }
+            }.onFailure { err ->
+                _state.update {
+                    it.copy(
+                        isDiplomaUploading = false,
+                        diplomaUploadError = err.toUserMessage("Error al subir diploma"),
+                    )
+                }
+            }
+        }
     }
 
     override fun onBack() = onOutput(RequestSpecialtyComponent.Output.Back)
+
+    private companion object {
+        const val SPECIALTY_DOCS_BUCKET = "specialty-request-docs"
+    }
 }

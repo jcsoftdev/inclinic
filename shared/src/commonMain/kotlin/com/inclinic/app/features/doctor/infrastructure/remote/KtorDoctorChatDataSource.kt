@@ -10,6 +10,9 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class KtorDoctorChatDataSource(
     private val client: HttpClient,
@@ -22,11 +25,24 @@ class KtorDoctorChatDataSource(
         }.body<ApiEnvelope<List<ChatMessage>>>().data ?: emptyList()
     }
 
-    override suspend fun sendMessage(appointmentId: String, text: String): Result<ChatMessage> = runCatching {
+    override suspend fun sendMessage(
+        appointmentId: String,
+        text: String,
+        attachments: List<String>,
+    ): Result<ChatMessage> = runCatching {
         client.post {
             url("$baseUrl/api/chats/$appointmentId/messages")
             contentType(ContentType.Application.Json)
-            setBody(mapOf("text" to text))
+            setBody(
+                JsonObject(
+                    buildMap {
+                        put("text", JsonPrimitive(text))
+                        if (attachments.isNotEmpty()) {
+                            put("attachments", JsonArray(attachments.map { JsonPrimitive(it) }))
+                        }
+                    },
+                ),
+            )
         }.body<ApiEnvelope<ChatMessage>>().data ?: error("Send message failed")
     }
 }

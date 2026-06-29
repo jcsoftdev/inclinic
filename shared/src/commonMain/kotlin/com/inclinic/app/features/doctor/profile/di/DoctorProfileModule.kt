@@ -2,6 +2,7 @@ package com.inclinic.app.features.doctor.profile.di
 
 import com.arkivanov.decompose.ComponentContext
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.di.APP_HTTP_CLIENT
 import com.inclinic.app.features.doctor.profile.application.EditSpecialtiesUseCase
@@ -82,7 +83,7 @@ fun doctorProfileModule() = module {
         val onOutput = params[2] as (RequestSpecialtyComponent.Output) -> Unit
         val dispatchers = get<AppDispatchers>()
         val repo = DefaultDoctorProfileRepository(get(), dispatchers, doctorId)
-        DefaultRequestSpecialtyComponent(ctx, RequestSpecialtyUseCase(repo, dispatchers), dispatchers, onOutput)
+        DefaultRequestSpecialtyComponent(ctx, RequestSpecialtyUseCase(repo, dispatchers), get<UploadFileUseCase>(), dispatchers, onOutput)
     }
 
     factory<IncomeComponent> { params ->

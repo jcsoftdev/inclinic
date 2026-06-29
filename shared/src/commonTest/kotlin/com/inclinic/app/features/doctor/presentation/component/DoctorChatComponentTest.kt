@@ -9,10 +9,13 @@ import com.arkivanov.essenty.lifecycle.stop
 import com.inclinic.app.core.model.ChatMessage
 import com.inclinic.app.core.model.SenderRole
 import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.FakeUploadDataSource
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase
 import com.inclinic.app.features.doctor.chat.application.SendDoctorChatMessageUseCase
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorChatDataSource
+import com.inclinic.app.features.patient.infrastructure.remote.dto.UploadResultDto
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -40,15 +43,21 @@ private class FakeDoctorChatDataSource(
     var getCallCount = 0
     var sendCallCount = 0
     var lastSentText: String? = null
+    var lastSentAttachments: List<String> = emptyList()
 
     override suspend fun getMessages(appointmentId: String): Result<List<ChatMessage>> {
         getCallCount++
         return Result.success(messages)
     }
 
-    override suspend fun sendMessage(appointmentId: String, text: String): Result<ChatMessage> {
+    override suspend fun sendMessage(
+        appointmentId: String,
+        text: String,
+        attachments: List<String>,
+    ): Result<ChatMessage> {
         sendCallCount++
         lastSentText = text
+        lastSentAttachments = attachments
         return sendResult
     }
 }
@@ -57,6 +66,7 @@ class DoctorChatComponentTest {
 
     private val lifecycle = LifecycleRegistry()
     private val dispatchers = TestAppDispatchers()
+    private val fakeUpload = FakeUploadDataSource()
 
     private fun makeComponent(
         dataSource: FakeDoctorChatDataSource = FakeDoctorChatDataSource(),
@@ -69,9 +79,14 @@ class DoctorChatComponentTest {
             appointmentId = appointmentId,
             getMessages = GetDoctorChatMessagesUseCase(dataSource, dispatchers),
             sendMessage = SendDoctorChatMessageUseCase(dataSource, dispatchers),
+            uploadAttachment = UploadFileUseCase(dataSource = fakeUpload, dispatchers = dispatchers),
             dispatchers = dispatchers,
         )
     }
+
+    private fun uploadResult(url: String) = Result.success(
+        UploadResultDto(url = url, path = "p", bucket = "medical-attachments", size = 1L, type = "application/pdf")
+    )
 
     // ── Initial state ─────────────────────────────────────────────────────────
 
@@ -177,38 +192,74 @@ class DoctorChatComponentTest {
         assertEquals(SenderRole.DOCTOR, doctorMsg!!.senderRole)
     }
 
-    // ── Attachment handling ───────────────────────────────────────────────────
+    // ── Attachment upload (real upload — bucket: medical-attachments) ─────────
 
     @Test
-    fun onAttachmentPicked_adds_filename_to_pendingAttachments() = runTest {
+    fun onAttachmentPicked_successful_upload_stores_url_in_pendingAttachments() = runTest {
+        fakeUpload.result = uploadResult("https://cdn.inclinic.com/medical-attachments/informe.pdf")
         val component = makeComponent()
-        val file = PickedFile(
-            bytes = byteArrayOf(1, 2, 3),
-            fileName = "informe.pdf",
-            mimeType = "application/pdf",
-        )
+        val file = PickedFile(byteArrayOf(1, 2, 3), "informe.pdf", "application/pdf")
 
         component.onAttachmentPicked(file)
 
-        assertTrue(component.state.value.pendingAttachments.contains("informe.pdf"))
+        assertTrue(
+            component.state.value.pendingAttachments.contains("https://cdn.inclinic.com/medical-attachments/informe.pdf"),
+            "Expected URL, got: ${component.state.value.pendingAttachments}"
+        )
+        assertFalse(component.state.value.isUploading)
+    }
+
+    @Test
+    fun onAttachmentPicked_uses_medical_attachments_bucket() = runTest {
+        val component = makeComponent()
+        component.onAttachmentPicked(PickedFile(byteArrayOf(1), "scan.jpg", "image/jpeg"))
+        assertEquals("medical-attachments", fakeUpload.lastBucket)
+    }
+
+    @Test
+    fun onAttachmentPicked_upload_failure_sets_error_and_does_not_add_to_pending() = runTest {
+        fakeUpload.result = Result.failure(RuntimeException("Upload failed"))
+        val component = makeComponent()
+
+        component.onAttachmentPicked(PickedFile(byteArrayOf(1), "scan.jpg", "image/jpeg"))
+
+        assertFalse(component.state.value.isUploading)
+        assertTrue(component.state.value.pendingAttachments.isEmpty())
+        assertNotNull(component.state.value.error)
     }
 
     @Test
     fun onRemovePendingAttachment_removes_by_index() = runTest {
+        fakeUpload.result = uploadResult("https://cdn/a.pdf")
         val component = makeComponent()
-        val fileA = PickedFile(byteArrayOf(1), "a.pdf", "application/pdf")
-        val fileB = PickedFile(byteArrayOf(2), "b.pdf", "application/pdf")
-        component.onAttachmentPicked(fileA)
-        component.onAttachmentPicked(fileB)
+        component.onAttachmentPicked(PickedFile(byteArrayOf(1), "a.pdf", "application/pdf"))
+
+        fakeUpload.result = uploadResult("https://cdn/b.pdf")
+        component.onAttachmentPicked(PickedFile(byteArrayOf(2), "b.pdf", "application/pdf"))
 
         component.onRemovePendingAttachment(0)
 
         assertEquals(1, component.state.value.pendingAttachments.size)
-        assertEquals("b.pdf", component.state.value.pendingAttachments[0])
+        assertEquals("https://cdn/b.pdf", component.state.value.pendingAttachments[0])
+    }
+
+    @Test
+    fun onSend_passes_pending_attachment_urls_to_datasource() = runTest {
+        fakeUpload.result = uploadResult("https://cdn/report.pdf")
+        val ds = FakeDoctorChatDataSource(sendResult = Result.success(makeMessage()))
+        val component = makeComponent(ds)
+        component.onAttachmentPicked(PickedFile(byteArrayOf(1), "report.pdf", "application/pdf"))
+        component.onInputChange("See attached")
+
+        component.onSend()
+
+        assertTrue(ds.lastSentAttachments.contains("https://cdn/report.pdf"),
+            "sendMessage should have received the upload URL, got: ${ds.lastSentAttachments}")
     }
 
     @Test
     fun onSend_clears_pendingAttachments_on_success() = runTest {
+        fakeUpload.result = uploadResult("https://cdn/doc.pdf")
         val sent = makeMessage(id = "m2", role = SenderRole.DOCTOR, text = "ok")
         val ds = FakeDoctorChatDataSource(sendResult = Result.success(sent))
         val component = makeComponent(ds)

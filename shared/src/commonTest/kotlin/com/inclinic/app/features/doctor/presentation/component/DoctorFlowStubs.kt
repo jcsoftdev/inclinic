@@ -154,13 +154,17 @@ internal fun StubDoctorChatComponent(ctx: ComponentContext, appointmentId: Strin
     val noOpDataSource = object : com.inclinic.app.features.doctor.infrastructure.remote.DoctorChatDataSource {
         override suspend fun getMessages(appointmentId: String) =
             Result.success(emptyList<com.inclinic.app.core.model.ChatMessage>())
-        override suspend fun sendMessage(appointmentId: String, text: String) =
+        override suspend fun sendMessage(appointmentId: String, text: String, attachments: List<String>) =
             Result.success(com.inclinic.app.core.model.ChatMessage(
                 id = "msg-0", appointmentId = appointmentId, senderId = "doc",
                 senderRole = com.inclinic.app.core.model.SenderRole.DOCTOR,
                 text = text, sentAt = kotlin.time.Clock.System.now(), readAt = null,
             ))
     }
+    val noOpUpload = com.inclinic.app.core.upload.UploadFileUseCase(
+        dataSource = com.inclinic.app.core.upload.FakeUploadDataSource(),
+        dispatchers = dispatchers,
+    )
     val noOpGetMessages = com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase(
         dataSource = noOpDataSource,
         dispatchers = dispatchers,
@@ -169,5 +173,5 @@ internal fun StubDoctorChatComponent(ctx: ComponentContext, appointmentId: Strin
         dataSource = noOpDataSource,
         dispatchers = dispatchers,
     )
-    return DoctorChatComponent(ctx, appointmentId, noOpGetMessages, noOpSendMessage, dispatchers)
+    return DoctorChatComponent(ctx, appointmentId, noOpGetMessages, noOpSendMessage, noOpUpload, dispatchers)
 }

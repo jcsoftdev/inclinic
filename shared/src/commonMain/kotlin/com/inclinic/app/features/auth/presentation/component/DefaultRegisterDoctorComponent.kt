@@ -6,7 +6,9 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.error.toUserMessage
 import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.auth.application.RegisterFreelanceDoctorUseCase
 import com.inclinic.app.features.auth.core.error.AuthError
@@ -20,6 +22,7 @@ class DefaultRegisterDoctorComponent(
     componentContext: ComponentContext,
     private val registerFreelanceUseCase: RegisterFreelanceDoctorUseCase,
     private val getSpecialtiesUseCase: GetSpecialtiesUseCase,
+    private val uploadFileUseCase: UploadFileUseCase,
     private val dispatchers: AppDispatchers,
     private val onOutput: (RegisterDoctorComponent.Output) -> Unit,
 ) : RegisterDoctorComponent, ComponentContext by componentContext {
@@ -102,7 +105,31 @@ class DefaultRegisterDoctorComponent(
     }
 
     override fun onDocumentFilePicked(file: PickedFile) {
-        _state.update { it.copy(documentUrls = it.documentUrls + file.fileName, documentError = null) }
+        if (_state.value.isDocumentUploading) return
+        _state.update { it.copy(isDocumentUploading = true, documentUploadError = null) }
+        scope.launch {
+            uploadFileUseCase(
+                bucket = DOCUMENTS_BUCKET,
+                bytes = file.bytes,
+                fileName = file.fileName,
+                mimeType = file.mimeType,
+            ).onSuccess { url ->
+                _state.update {
+                    it.copy(
+                        isDocumentUploading = false,
+                        documentUrls = it.documentUrls + url,
+                        documentError = null,
+                    )
+                }
+            }.onFailure { err ->
+                _state.update {
+                    it.copy(
+                        isDocumentUploading = false,
+                        documentUploadError = err.toUserMessage("Error al subir documento"),
+                    )
+                }
+            }
+        }
     }
 
     // ── Step 4 ────────────────────────────────────────────────────────────────
@@ -242,5 +269,6 @@ class DefaultRegisterDoctorComponent(
 
     private companion object {
         val EMAIL_REGEX = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+        const val DOCUMENTS_BUCKET = "documents"
     }
 }

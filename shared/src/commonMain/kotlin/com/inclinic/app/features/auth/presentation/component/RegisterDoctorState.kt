@@ -36,6 +36,10 @@ data class RegisterDoctorState(
     /** Uploaded document URLs (returned by the upload endpoint). */
     val documentUrls: List<String> = emptyList(),
     val documentError: String? = null,
+    /** True while a file is being POSTed to /api/upload. */
+    val isDocumentUploading: Boolean = false,
+    /** Set to a user-facing message when the upload request fails. */
+    val documentUploadError: String? = null,
 
     // ── Step 4 — Horarios ─────────────────────────────────────────────────────
     val schedules: List<FreelanceScheduleDto> = emptyList(),

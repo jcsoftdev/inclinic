@@ -5,6 +5,8 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.inclinic.app.core.model.Specialty
 import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.FakeUploadDataSource
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.auth.application.RegisterFreelanceDoctorUseCase
 import com.inclinic.app.features.auth.core.error.AuthError
@@ -12,6 +14,7 @@ import com.inclinic.app.features.auth.fakes.FakeAuthRemoteDataSource
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.auth.infrastructure.remote.dto.FreelanceScheduleDto
 import com.inclinic.app.features.auth.infrastructure.local.SpecialtyCacheDataSource
+import com.inclinic.app.features.patient.infrastructure.remote.dto.UploadResultDto
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.Test
@@ -19,6 +22,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -40,6 +44,7 @@ class DefaultRegisterDoctorComponentTest {
     private val context = DefaultComponentContext(lifecycle)
     private val dispatchers = TestAppDispatchers()
     private val fakeRemote = FakeAuthRemoteDataSource()
+    private val fakeUpload = FakeUploadDataSource()
 
     private fun makeComponent(
         localDispatchers: com.inclinic.app.core.concurrency.AppDispatchers = dispatchers,
@@ -50,10 +55,12 @@ class DefaultRegisterDoctorComponentTest {
             cache = SpecialtyCacheDataSource(remote = fakeRemote),
             dispatchers = localDispatchers,
         )
+        val uploadUseCase = UploadFileUseCase(dataSource = fakeUpload, dispatchers = localDispatchers)
         return DefaultRegisterDoctorComponent(
             componentContext = context,
             registerFreelanceUseCase = useCase,
             getSpecialtiesUseCase = specialtiesUseCase,
+            uploadFileUseCase = uploadUseCase,
             dispatchers = localDispatchers,
             onOutput = onOutput,
         )
@@ -365,27 +372,91 @@ class DefaultRegisterDoctorComponentTest {
         assertNull(c.state.value.primarySpecialtyId)
     }
 
-    // ── File picker — document step ───────────────────────────────────────────
+    // ── File picker — real upload (bucket: documents) ─────────────────────────
 
     @Test
-    fun onDocumentFilePicked_adds_filename_to_documentUrls() {
+    fun onDocumentFilePicked_successful_upload_adds_url_not_filename() = runTest {
+        fakeUpload.result = Result.success(
+            UploadResultDto(
+                url = "https://cdn.inclinic.com/documents/cert.pdf",
+                path = "documents/cert.pdf",
+                bucket = "documents",
+                size = 1024L,
+                type = "application/pdf",
+            )
+        )
         val c = makeComponent()
         val file = PickedFile(byteArrayOf(1, 2, 3), "colegiatura.pdf", "application/pdf")
 
         c.onDocumentFilePicked(file)
 
-        assertTrue(c.state.value.documentUrls.contains("colegiatura.pdf"))
+        val urls = c.state.value.documentUrls
+        assertTrue(urls.contains("https://cdn.inclinic.com/documents/cert.pdf"),
+            "Expected the server URL, got: $urls")
+        assertFalse(urls.contains("colegiatura.pdf"),
+            "Should NOT contain the local filename placeholder")
     }
 
     @Test
-    fun onDocumentFilePicked_multiple_files_are_all_added() {
+    fun onDocumentFilePicked_shows_uploading_then_done_state() = runTest {
+        fakeUpload.result = Result.success(
+            UploadResultDto(
+                url = "https://cdn.inclinic.com/documents/id.jpg",
+                path = "documents/id.jpg",
+                bucket = "documents",
+                size = 512L,
+                type = "image/jpeg",
+            )
+        )
         val c = makeComponent()
-        val fileA = PickedFile(byteArrayOf(1), "doc1.pdf", "application/pdf")
-        val fileB = PickedFile(byteArrayOf(2), "doc2.pdf", "application/pdf")
+        val file = PickedFile(byteArrayOf(1), "id.jpg", "image/jpeg")
 
-        c.onDocumentFilePicked(fileA)
-        c.onDocumentFilePicked(fileB)
+        c.onDocumentFilePicked(file)
+
+        // After upload completes the URL must be present and upload must not be in progress
+        assertFalse(c.state.value.isDocumentUploading)
+        assertEquals(1, c.state.value.documentUrls.size)
+    }
+
+    @Test
+    fun onDocumentFilePicked_upload_failure_sets_documentUploadError() = runTest {
+        fakeUpload.result = Result.failure(RuntimeException("Network error"))
+        val c = makeComponent()
+        val file = PickedFile(byteArrayOf(1), "id.jpg", "image/jpeg")
+
+        c.onDocumentFilePicked(file)
+
+        assertFalse(c.state.value.isDocumentUploading)
+        assertTrue(c.state.value.documentUrls.isEmpty())
+        assertNotNull(c.state.value.documentUploadError)
+    }
+
+    @Test
+    fun onDocumentFilePicked_uses_correct_bucket() = runTest {
+        val c = makeComponent()
+        val file = PickedFile(byteArrayOf(1), "doc.pdf", "application/pdf")
+
+        c.onDocumentFilePicked(file)
+
+        assertEquals("documents", fakeUpload.lastBucket)
+    }
+
+    @Test
+    fun onDocumentFilePicked_multiple_files_all_uploaded_as_urls() = runTest {
+        var urlIndex = 0
+        val urls = listOf("https://cdn/doc1.pdf", "https://cdn/doc2.pdf")
+        fakeUpload.result = Result.success(
+            UploadResultDto(url = urls[0], path = "p", bucket = "documents", size = 1L, type = "application/pdf")
+        )
+        val c = makeComponent()
+
+        c.onDocumentFilePicked(PickedFile(byteArrayOf(1), "doc1.pdf", "application/pdf"))
+        fakeUpload.result = Result.success(
+            UploadResultDto(url = urls[1], path = "p", bucket = "documents", size = 1L, type = "application/pdf")
+        )
+        c.onDocumentFilePicked(PickedFile(byteArrayOf(2), "doc2.pdf", "application/pdf"))
 
         assertEquals(2, c.state.value.documentUrls.size)
+        assertTrue(c.state.value.documentUrls.containsAll(urls))
     }
 }

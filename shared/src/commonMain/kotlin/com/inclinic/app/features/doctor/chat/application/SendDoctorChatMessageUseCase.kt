@@ -9,6 +9,10 @@ class SendDoctorChatMessageUseCase(
     private val dataSource: DoctorChatDataSource,
     private val dispatchers: AppDispatchers,
 ) {
-    suspend operator fun invoke(appointmentId: String, text: String): Result<ChatMessage> =
-        withContext(dispatchers.io) { dataSource.sendMessage(appointmentId, text) }
+    suspend operator fun invoke(
+        appointmentId: String,
+        text: String,
+        attachments: List<String> = emptyList(),
+    ): Result<ChatMessage> =
+        withContext(dispatchers.io) { dataSource.sendMessage(appointmentId, text, attachments) }
 }

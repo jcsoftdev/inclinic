@@ -4,14 +4,18 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.FakeUploadDataSource
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.doctor.profile.application.RequestSpecialtyUseCase
 import com.inclinic.app.features.doctor.profile.fakes.FakeDoctorProfileRepository
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultRequestSpecialtyComponent
 import com.inclinic.app.features.doctor.profile.presentation.component.RequestSpecialtyComponent
+import com.inclinic.app.features.patient.infrastructure.remote.dto.UploadResultDto
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -21,6 +25,7 @@ class DefaultRequestSpecialtyComponentTest {
     private val lifecycle = LifecycleRegistry()
     private val fakeRepo = FakeDoctorProfileRepository()
     private val dispatchers = TestAppDispatchers()
+    private val fakeUpload = FakeUploadDataSource()
 
     private fun makeComponent(
         onOutput: (RequestSpecialtyComponent.Output) -> Unit = {},
@@ -30,10 +35,15 @@ class DefaultRequestSpecialtyComponentTest {
         return DefaultRequestSpecialtyComponent(
             componentContext = ctx,
             requestSpecialty = RequestSpecialtyUseCase(fakeRepo, dispatchers),
+            uploadFileUseCase = UploadFileUseCase(dataSource = fakeUpload, dispatchers = dispatchers),
             dispatchers = dispatchers,
             onOutput = onOutput,
         )
     }
+
+    private fun certResult(url: String) = Result.success(
+        UploadResultDto(url = url, path = "p", bucket = "specialty-request-docs", size = 1L, type = "application/pdf")
+    )
 
     @Test
     fun initial_state_is_blank() {
@@ -129,35 +139,85 @@ class DefaultRequestSpecialtyComponentTest {
         assertTrue(output is RequestSpecialtyComponent.Output.Back)
     }
 
-    // ── File picker state updates ─────────────────────────────────────────────
+    // ── File picker — real upload (bucket: specialty-request-docs) ───────────
 
     @Test
-    fun onPickCertification_stores_file_in_pendingCertification() {
+    fun onPickCertification_successful_upload_adds_url_to_documentUrls() = runTest {
+        fakeUpload.result = certResult("https://cdn.inclinic.com/specialty-request-docs/cert.pdf")
         val component = makeComponent()
         val file = PickedFile(byteArrayOf(1, 2, 3), "sunedu.pdf", "application/pdf")
 
         component.onPickCertification(file)
 
-        assertEquals("sunedu.pdf", component.state.value.pendingCertification?.fileName)
+        assertTrue(
+            component.state.value.documentUrls.contains("https://cdn.inclinic.com/specialty-request-docs/cert.pdf"),
+            "Expected server URL in documentUrls: ${component.state.value.documentUrls}"
+        )
+        assertFalse(component.state.value.isCertUploading)
     }
 
     @Test
-    fun onPickDiploma_stores_file_in_pendingDiploma() {
+    fun onPickDiploma_successful_upload_adds_url_to_documentUrls() = runTest {
+        fakeUpload.result = certResult("https://cdn.inclinic.com/specialty-request-docs/diploma.pdf")
         val component = makeComponent()
         val file = PickedFile(byteArrayOf(4, 5, 6), "diploma.pdf", "application/pdf")
 
         component.onPickDiploma(file)
 
-        assertEquals("diploma.pdf", component.state.value.pendingDiploma?.fileName)
+        assertTrue(
+            component.state.value.documentUrls.contains("https://cdn.inclinic.com/specialty-request-docs/diploma.pdf"),
+        )
+        assertFalse(component.state.value.isDiplomaUploading)
     }
 
     @Test
-    fun onPickCertification_replaces_previous_pick() {
+    fun onPickCertification_uses_correct_bucket() = runTest {
         val component = makeComponent()
-        component.onPickCertification(PickedFile(byteArrayOf(1), "old.pdf", "application/pdf"))
+        component.onPickCertification(PickedFile(byteArrayOf(1), "cert.pdf", "application/pdf"))
+        assertEquals("specialty-request-docs", fakeUpload.lastBucket)
+    }
 
-        component.onPickCertification(PickedFile(byteArrayOf(2), "new.pdf", "application/pdf"))
+    @Test
+    fun onPickDiploma_uses_correct_bucket() = runTest {
+        val component = makeComponent()
+        component.onPickDiploma(PickedFile(byteArrayOf(1), "diploma.pdf", "application/pdf"))
+        assertEquals("specialty-request-docs", fakeUpload.lastBucket)
+    }
 
-        assertEquals("new.pdf", component.state.value.pendingCertification?.fileName)
+    @Test
+    fun onPickCertification_upload_failure_sets_certUploadError() = runTest {
+        fakeUpload.result = Result.failure(RuntimeException("Upload rejected"))
+        val component = makeComponent()
+
+        component.onPickCertification(PickedFile(byteArrayOf(1), "cert.pdf", "application/pdf"))
+
+        assertFalse(component.state.value.isCertUploading)
+        assertNotNull(component.state.value.certUploadError)
+        assertTrue(component.state.value.documentUrls.isEmpty())
+    }
+
+    @Test
+    fun onPickDiploma_upload_failure_sets_diplomaUploadError() = runTest {
+        fakeUpload.result = Result.failure(RuntimeException("File too large"))
+        val component = makeComponent()
+
+        component.onPickDiploma(PickedFile(byteArrayOf(1), "diploma.pdf", "application/pdf"))
+
+        assertFalse(component.state.value.isDiplomaUploading)
+        assertNotNull(component.state.value.diplomaUploadError)
+        assertTrue(component.state.value.documentUrls.isEmpty())
+    }
+
+    @Test
+    fun both_cert_and_diploma_can_be_uploaded_independently() = runTest {
+        val component = makeComponent()
+
+        fakeUpload.result = certResult("https://cdn/cert.pdf")
+        component.onPickCertification(PickedFile(byteArrayOf(1), "cert.pdf", "application/pdf"))
+
+        fakeUpload.result = certResult("https://cdn/diploma.pdf")
+        component.onPickDiploma(PickedFile(byteArrayOf(2), "diploma.pdf", "application/pdf"))
+
+        assertEquals(2, component.state.value.documentUrls.size)
     }
 }

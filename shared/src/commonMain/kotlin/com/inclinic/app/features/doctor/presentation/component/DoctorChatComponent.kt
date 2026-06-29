@@ -1,6 +1,5 @@
 package com.inclinic.app.features.doctor.presentation.component
 
-import com.inclinic.app.core.error.toUserMessage
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
@@ -9,7 +8,9 @@ import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStart
 import com.arkivanov.essenty.lifecycle.doOnStop
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.error.toUserMessage
 import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase
 import com.inclinic.app.features.doctor.chat.application.SendDoctorChatMessageUseCase
 import com.inclinic.app.features.patient.chat.infrastructure.ChatPollingService
@@ -29,6 +30,7 @@ class DoctorChatComponent(
     private val appointmentId: String,
     private val getMessages: GetDoctorChatMessagesUseCase,
     private val sendMessage: SendDoctorChatMessageUseCase,
+    private val uploadAttachment: UploadFileUseCase,
     private val dispatchers: AppDispatchers,
 ) : ComponentContext by componentContext {
 
@@ -63,7 +65,7 @@ class DoctorChatComponent(
         if ((text.isBlank() && attachments.isEmpty()) || _state.value.isSending) return
         _state.update { it.copy(inputText = "", isSending = true, error = null) }
         scope.launch {
-            sendMessage(appointmentId, text)
+            sendMessage(appointmentId, text, attachments)
                 .onSuccess { message ->
                     _state.update {
                         it.copy(
@@ -79,9 +81,22 @@ class DoctorChatComponent(
         }
     }
 
-    /** Stores the picked file name as a local pending attachment (upload deferred to a future PR). */
+    /** Uploads the picked file to the medical-attachments bucket and enqueues the returned URL. */
     fun onAttachmentPicked(file: PickedFile) {
-        _state.update { it.copy(pendingAttachments = it.pendingAttachments + file.fileName) }
+        if (_state.value.isUploading) return
+        _state.update { it.copy(isUploading = true, error = null) }
+        scope.launch {
+            uploadAttachment(
+                bucket = ATTACHMENTS_BUCKET,
+                bytes = file.bytes,
+                fileName = file.fileName,
+                mimeType = file.mimeType,
+            ).onSuccess { url ->
+                _state.update { it.copy(isUploading = false, pendingAttachments = it.pendingAttachments + url) }
+            }.onFailure { err ->
+                _state.update { it.copy(isUploading = false, error = err.toUserMessage("Error al subir adjunto")) }
+            }
+        }
     }
 
     fun onRemovePendingAttachment(index: Int) {
@@ -92,4 +107,8 @@ class DoctorChatComponent(
     }
 
     fun onBack() {}
+
+    private companion object {
+        const val ATTACHMENTS_BUCKET = "medical-attachments"
+    }
 }

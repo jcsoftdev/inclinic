@@ -32,8 +32,10 @@ data class RequestSpecialtyState(
     val isSubmitting: Boolean = false,
     val error: String? = null,
     val submitSuccess: Boolean = false,
-    /** File selected for the SUNEDU certification slot (not yet uploaded). */
-    val pendingCertification: PickedFile? = null,
-    /** File selected for the Diploma slot (not yet uploaded). */
-    val pendingDiploma: PickedFile? = null,
+    // ── Upload progress for SUNEDU certification slot ─────────────────────────
+    val isCertUploading: Boolean = false,
+    val certUploadError: String? = null,
+    // ── Upload progress for Diploma slot ─────────────────────────────────────
+    val isDiplomaUploading: Boolean = false,
+    val diplomaUploadError: String? = null,
 )

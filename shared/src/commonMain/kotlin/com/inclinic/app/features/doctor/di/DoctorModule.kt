@@ -163,7 +163,7 @@ val doctorModule = module {
         DefaultEditMedicalRecordComponent(ctx, recordId, get(), get(), get(), onOutput)
     }
     factory<DoctorChatComponent> { (ctx: ComponentContext, apptId: String) ->
-        DoctorChatComponent(ctx, apptId, get(), get(), get())
+        DoctorChatComponent(ctx, apptId, get(), get(), get(), get())
     }
     factory<ScheduleConfigComponent> { (ctx: ComponentContext, doctorId: String, onOutput: (ScheduleConfigComponent.Output) -> Unit) ->
         DefaultScheduleConfigComponent(ctx, doctorId, get(), get(), get(), onOutput)

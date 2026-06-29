@@ -131,9 +131,12 @@ fun RequestSpecialtyScreen(
                     DocumentUploader(
                         label = "Certificación SUNEDU",
                         hint = "PDF · máx 5MB",
-                        state = state.pendingCertification?.let { DocUploadState.Done(it.fileName) }
-                            ?: state.documentUrls.getOrNull(0)?.let { DocUploadState.Done(it) }
-                            ?: DocUploadState.Empty,
+                        state = when {
+                            state.isCertUploading -> DocUploadState.Uploading(0f)
+                            state.certUploadError != null -> DocUploadState.Error(state.certUploadError!!)
+                            state.documentUrls.getOrNull(0) != null -> DocUploadState.Done(state.documentUrls[0])
+                            else -> DocUploadState.Empty
+                        },
                         onPickClick = { certPicker.launch() },
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -141,9 +144,12 @@ fun RequestSpecialtyScreen(
                     DocumentUploader(
                         label = "Diploma",
                         hint = "PDF · máx 5MB",
-                        state = state.pendingDiploma?.let { DocUploadState.Done(it.fileName) }
-                            ?: state.documentUrls.getOrNull(1)?.let { DocUploadState.Done(it) }
-                            ?: DocUploadState.Empty,
+                        state = when {
+                            state.isDiplomaUploading -> DocUploadState.Uploading(0f)
+                            state.diplomaUploadError != null -> DocUploadState.Error(state.diplomaUploadError!!)
+                            state.documentUrls.getOrNull(1) != null -> DocUploadState.Done(state.documentUrls[1])
+                            else -> DocUploadState.Empty
+                        },
                         onPickClick = { diplomaPicker.launch() },
                         modifier = Modifier.fillMaxWidth(),
                     )
