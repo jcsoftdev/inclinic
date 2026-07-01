@@ -23,6 +23,7 @@ data class Appointment(
     val specialtyName: String? = null,
     val isPackageSession: Boolean = false,
     val hasPendingReschedule: Boolean = false,
+    val needsClosure: Boolean = false,
 )
 
 @Serializable
