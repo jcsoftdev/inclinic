@@ -16,6 +16,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlin.time.Clock
@@ -196,6 +197,26 @@ class KtorPatientDataSource(
         }.body<ApiEnvelope<DeleteAccountResultDto>>()
         Unit
     }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = runCatching {
+        val response = client.patch {
+            url("$baseUrl/api/users/me/password")
+            contentType(ContentType.Application.Json)
+            setBody(ChangePasswordRequestDto(currentPassword, newPassword))
+        }
+        when {
+            response.status.value in 200..299 -> Unit
+            response.status.value == 400 -> {
+                val body = response.bodyAsText()
+                if (body.contains("INVALID_CREDENTIALS")) {
+                    error("INVALID_CREDENTIALS")
+                } else {
+                    error("Error al cambiar contraseña: ${response.status}")
+                }
+            }
+            else -> error("Error al cambiar contraseña: ${response.status}")
+        }
+    }
 }
 
 @Serializable
@@ -203,4 +224,10 @@ private data class DeleteAccountResultDto(
     val success: Boolean = true,
     val deletedAt: String? = null,
     val note: String? = null,
+)
+
+@Serializable
+private data class ChangePasswordRequestDto(
+    val currentPassword: String,
+    val newPassword: String,
 )

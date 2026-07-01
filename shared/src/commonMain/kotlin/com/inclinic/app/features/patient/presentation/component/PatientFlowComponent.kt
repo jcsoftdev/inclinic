@@ -66,6 +66,7 @@ interface PatientFlowComponent {
 
         // Profile & account management
         class ClinicalProfile(val component: ClinicalProfileComponent) : Child
+        class ChangePassword(val component: ChangePasswordComponent) : Child
         class DeleteAccount(val component: DeleteAccountComponent) : Child
         class Membership(val component: MembershipComponent) : Child
 

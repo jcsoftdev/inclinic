@@ -42,6 +42,8 @@ private class FakeSettingsPatientDataSource(
         Result.success(PatientDashboard(upcomingCount = 0, recentDoctors = emptyList()))
     override suspend fun deleteAccount(password: String, reason: String?): Result<Unit> =
         Result.failure(UnsupportedOperationException())
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> =
+        Result.failure(UnsupportedOperationException())
 }
 
 class DefaultSettingsComponentTest {

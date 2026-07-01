@@ -39,6 +39,9 @@ private class FakePatientDataSource : PatientDataSource {
 
     override suspend fun deleteAccount(password: String, reason: String?): Result<Unit> =
         Result.failure(UnsupportedOperationException())
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> =
+        Result.failure(UnsupportedOperationException())
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

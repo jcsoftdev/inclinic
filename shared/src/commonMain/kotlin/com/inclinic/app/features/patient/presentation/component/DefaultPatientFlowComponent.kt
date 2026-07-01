@@ -65,6 +65,7 @@ class DefaultPatientFlowComponent(
     private val reportUserFactory: (ComponentContext, userId: String, userName: String, (ReportUserComponent.Output) -> Unit) -> ReportUserComponent,
     private val blockUserFactory: (ComponentContext, userId: String, userName: String, (BlockUserComponent.Output) -> Unit) -> BlockUserComponent,
     private val clinicalProfileFactory: (ComponentContext, (ClinicalProfileComponent.Output) -> Unit) -> ClinicalProfileComponent,
+    private val changePasswordFactory: (ComponentContext, (ChangePasswordComponent.Output) -> Unit) -> ChangePasswordComponent,
     private val deleteAccountFactory: (ComponentContext, (DeleteAccountComponent.Output) -> Unit) -> DeleteAccountComponent,
     private val activeAccessesFactory: (ComponentContext, (ActiveAccessesComponent.Output) -> Unit) -> ActiveAccessesComponent,
     private val onOutput: (PatientFlowComponent.Output) -> Unit,
@@ -352,7 +353,8 @@ class DefaultPatientFlowComponent(
                 settingsFactory(ctx, patientId) { output ->
                     when (output) {
                         SettingsComponent.Output.Back -> navigation.pop()
-                        SettingsComponent.Output.NavigateToChangePassword -> navigation.pop()
+                        SettingsComponent.Output.NavigateToChangePassword ->
+                            navigation.push(PatientConfig.ChangePassword)
                         SettingsComponent.Output.NavigateToDeleteAccount ->
                             navigation.push(PatientConfig.DeleteAccount)
                     }
@@ -373,6 +375,13 @@ class DefaultPatientFlowComponent(
                         ClinicalProfileComponent.Output.Back -> navigation.pop()
                         ClinicalProfileComponent.Output.NavigateToDeleteAccount ->
                             navigation.push(PatientConfig.DeleteAccount)
+                    }
+                }
+            )
+            is PatientConfig.ChangePassword -> PatientFlowComponent.Child.ChangePassword(
+                changePasswordFactory(ctx) { output ->
+                    when (output) {
+                        ChangePasswordComponent.Output.Back -> navigation.pop()
                     }
                 }
             )

@@ -236,6 +236,15 @@ private class StubDeleteAccountComponent : DeleteAccountComponent {
     override fun onDismissError() = Unit
 }
 
+private class StubChangePasswordComponent : ChangePasswordComponent {
+    override val state: Value<ChangePasswordState> = MutableValue(ChangePasswordState())
+    override fun onCurrentPasswordChange(value: String) = Unit
+    override fun onNewPasswordChange(value: String) = Unit
+    override fun onConfirmNewPasswordChange(value: String) = Unit
+    override fun onSubmit() = Unit
+    override fun onBack() = Unit
+}
+
 private class StubAssistantChatComponent : AssistantChatComponent {
     override val state: Value<AssistantChatState> = MutableValue(AssistantChatState())
     override fun onInputChange(text: String) = Unit
@@ -442,6 +451,7 @@ class DefaultPatientFlowComponentTest {
 
     private fun createComponent(
         outputs: MutableList<PatientFlowComponent.Output> = mutableListOf(),
+        onSettingsOutput: ((SettingsComponent.Output) -> Unit) -> Unit = {},
     ): DefaultPatientFlowComponent = DefaultPatientFlowComponent(
         componentContext = ctx,
         patientId = "pat-1",
@@ -469,7 +479,7 @@ class DefaultPatientFlowComponentTest {
         confirmRatingFactory = { _, _, _ -> StubConfirmRatingComponent() },
         messagesListFactory = { _, _ -> StubMessagesListComponent() },
         notificationsFactory = { _, _ -> StubNotificationsComponent() },
-        settingsFactory = { _, _, _ -> StubFlowSettingsComponent() },
+        settingsFactory = { _, _, output -> onSettingsOutput(output); StubFlowSettingsComponent() },
         medicalRecordDetailFactory = { _, _, _ -> StubMedicalRecordDetailComponent() },
         prescriptionDetailFactory = { _, _, _ -> StubPrescriptionDetailComponent() },
         historyAccessLogsFactory = { _, _ -> StubHistoryAccessLogsComponent() },
@@ -484,6 +494,7 @@ class DefaultPatientFlowComponentTest {
         reportUserFactory = { _, _, _, _ -> StubReportUserComponent() },
         blockUserFactory = { _, _, _, _ -> StubBlockUserComponent() },
         clinicalProfileFactory = { _, _ -> StubClinicalProfileComponent() },
+        changePasswordFactory = { _, _ -> StubChangePasswordComponent() },
         deleteAccountFactory = { _, _ -> StubDeleteAccountComponent() },
         activeAccessesFactory = { _, _ -> StubActiveAccessesComponent() },
         onOutput = outputs::add,
@@ -546,6 +557,18 @@ class DefaultPatientFlowComponentTest {
 
         val active = component.stack.value.active
         assertTrue(active.instance is PatientFlowComponent.Child.Settings)
+    }
+
+    @Test
+    fun settings_NavigateToChangePassword_output_pushes_ChangePassword_child() = runTest {
+        var settingsOutput: ((SettingsComponent.Output) -> Unit)? = null
+        val component = createComponent(onSettingsOutput = { settingsOutput = it })
+        component.navigateTo(PatientConfig.Settings)
+
+        settingsOutput!!(SettingsComponent.Output.NavigateToChangePassword)
+
+        val active = component.stack.value.active
+        assertTrue(active.instance is PatientFlowComponent.Child.ChangePassword)
     }
 
     @Test

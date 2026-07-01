@@ -67,6 +67,7 @@ import com.inclinic.app.features.patient.presentation.component.ApproveShareRequ
 import com.inclinic.app.features.patient.presentation.component.AvailabilityCalendarComponent
 import com.inclinic.app.features.patient.presentation.component.BookingComponent
 import com.inclinic.app.features.patient.presentation.component.CancelAppointmentComponent
+import com.inclinic.app.features.patient.presentation.component.ChangePasswordComponent
 import com.inclinic.app.features.patient.presentation.component.ChangeVisitTypeComponent
 import com.inclinic.app.features.patient.presentation.component.ChatComponent
 import com.inclinic.app.features.patient.presentation.component.ConfirmRatingComponent
@@ -76,6 +77,7 @@ import com.inclinic.app.features.patient.presentation.component.DefaultApproveSh
 import com.inclinic.app.features.patient.presentation.component.DefaultAvailabilityCalendarComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultBookingComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultCancelAppointmentComponent
+import com.inclinic.app.features.patient.presentation.component.DefaultChangePasswordComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultChangeVisitTypeComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultChatComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultConfirmRatingComponent
@@ -140,6 +142,7 @@ import com.inclinic.app.features.patient.profile.application.GetPatientProfileUs
 import com.inclinic.app.features.patient.profile.application.UpdateClinicalProfileUseCase
 import com.inclinic.app.features.patient.profile.application.UpdatePatientProfileUseCase
 import com.inclinic.app.features.patient.profile.application.GetMedicalProfileUseCase
+import com.inclinic.app.features.patient.profile.application.ChangePasswordUseCase
 import com.inclinic.app.features.patient.profile.application.DeleteAccountUseCase
 import com.inclinic.app.features.patient.assistant.di.assistantChatModule
 import com.inclinic.app.features.patient.moderation.di.moderationModule
@@ -247,6 +250,7 @@ val patientModule = module {
     factory { GetMedicalProfileUseCase(get(), get()) }
     factory { UpdateClinicalProfileUseCase(get(), get()) }
     factory { DeleteAccountUseCase(get(), get()) }
+    factory { ChangePasswordUseCase(get(), get()) }
     factory { GetPrescriptionPdfUrlUseCase(get()) }
     factory { DownloadPrescriptionPdfUseCase(get(), get()) }
     factory { UploadChatAttachmentUseCase(get(), get()) }
@@ -386,6 +390,9 @@ val patientModule = module {
     factory<ClinicalProfileComponent> { (ctx: ComponentContext, patientId: String, onOutput: (ClinicalProfileComponent.Output) -> Unit) ->
         DefaultClinicalProfileComponent(ctx, patientId, get(), get(), get(), onOutput)
     }
+    factory<ChangePasswordComponent> { (ctx: ComponentContext, onOutput: (ChangePasswordComponent.Output) -> Unit) ->
+        DefaultChangePasswordComponent(ctx, get(), get(), onOutput)
+    }
     factory<DeleteAccountComponent> { (ctx: ComponentContext, onOutput: (DeleteAccountComponent.Output) -> Unit) ->
         DefaultDeleteAccountComponent(ctx, get(), get(), get(), onOutput)
     }
@@ -437,6 +444,7 @@ val patientModule = module {
             reportUserFactory = { c, userId, userName, out -> get { parametersOf(c, userId, userName, out) } },
             blockUserFactory = { c, userId, userName, out -> get { parametersOf(c, userId, userName, out) } },
             clinicalProfileFactory = { c, out -> get { parametersOf(c, patientId, out) } },
+            changePasswordFactory = { c, out -> get { parametersOf(c, out) } },
             deleteAccountFactory = { c, out -> get { parametersOf(c, out) } },
             activeAccessesFactory = { c, out -> get { parametersOf(c, out) } },
             onOutput = {},

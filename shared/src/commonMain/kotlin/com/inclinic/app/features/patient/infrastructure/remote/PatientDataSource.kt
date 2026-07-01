@@ -29,6 +29,12 @@ interface PatientDataSource {
      * no es un borrado físico por obligación legal médica.
      */
     suspend fun deleteAccount(password: String, reason: String? = null): Result<Unit>
+
+    /**
+     * Change the authenticated user's password via PATCH /api/users/me/password.
+     * Returns failure with message "INVALID_CREDENTIALS" when the current password is wrong.
+     */
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
 }
 
 data class PatientDashboard(

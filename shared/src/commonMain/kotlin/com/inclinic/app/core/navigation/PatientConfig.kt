@@ -55,6 +55,7 @@ sealed interface PatientConfig {
     // Profile & account management
     @Serializable data object EditProfile : PatientConfig
     @Serializable data object ClinicalProfile : PatientConfig
+    @Serializable data object ChangePassword : PatientConfig
     @Serializable data object DeleteAccount : PatientConfig
     @Serializable data object Membership : PatientConfig
 
