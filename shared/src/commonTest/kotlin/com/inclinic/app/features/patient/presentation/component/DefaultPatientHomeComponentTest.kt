@@ -71,6 +71,9 @@ private class FakeHomePatientDataSource(
 
     override suspend fun deleteAccount(password: String, reason: String?): Result<Unit> =
         Result.success(Unit)
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> =
+        Result.success(Unit)
 }
 
 class DefaultPatientHomeComponentTest {
