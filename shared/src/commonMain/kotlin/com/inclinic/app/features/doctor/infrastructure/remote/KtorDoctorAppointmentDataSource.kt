@@ -14,6 +14,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // ── No-Show DTOs ──────────────────────────────────────────────────────────────
@@ -89,13 +90,18 @@ private data class DaySummaryDto(
 /**
  * Mirrors the nested `patient.user` / `specialty` shape from the backend's
  * GET /api/appointments?needsClosure=true payload (see appointment.service.ts).
+ *
+ * The Prisma `Appointment` model's visit-type column is named `type` (see
+ * prisma/schema.prisma on the ClinicAI repo), and `getAppointments` returns
+ * Prisma rows as-is with no field renaming — hence `@SerialName("type")` below
+ * to map the wire key onto the more descriptive `visitType` Kotlin property.
  */
 @Serializable
 private data class PendingClosureItemDto(
     val id: String = "",
     val startTime: String = "",
     val price: Double = 0.0,
-    val visitType: String = "CLINIC",
+    @SerialName("type") val visitType: String = "CLINIC",
     val patient: PendingClosurePatientDto = PendingClosurePatientDto(),
     val specialty: PendingClosureSpecialtyDto = PendingClosureSpecialtyDto(),
 )
