@@ -27,7 +27,7 @@ interface PatientAppointmentsListComponent {
     }
 }
 
-enum class AppointmentsTab { ACTIVE, COMPLETED, CANCELLED }
+enum class AppointmentsTab { ACTIVE, NEEDS_CLOSURE, COMPLETED, CANCELLED }
 
 data class PatientAppointmentsListState(
     val selectedTab: AppointmentsTab = AppointmentsTab.ACTIVE,

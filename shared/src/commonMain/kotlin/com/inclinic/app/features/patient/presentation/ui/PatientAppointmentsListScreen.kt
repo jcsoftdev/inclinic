@@ -372,6 +372,7 @@ private fun StatusBadge(text: String, background: Color, foreground: Color) {
 private val AppointmentsTab.label: String
     get() = when (this) {
         AppointmentsTab.ACTIVE -> "Activas"
+        AppointmentsTab.NEEDS_CLOSURE -> "Por confirmar"
         AppointmentsTab.COMPLETED -> "Completadas"
         AppointmentsTab.CANCELLED -> "Canceladas"
     }
