@@ -2,6 +2,7 @@ package com.inclinic.app.features.doctor.infrastructure.remote
 
 import com.inclinic.app.core.model.Appointment
 import com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem
+import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosureItem
 
 interface DoctorAppointmentDataSource {
     suspend fun getDashboard(doctorId: String): Result<DoctorDashboard>
@@ -22,6 +23,20 @@ interface DoctorAppointmentDataSource {
         from: String? = null,
         to: String? = null,
     ): Result<List<NoShowItem>>
+
+    /**
+     * Fetch all appointments for the authenticated doctor that need manual closure —
+     * CONFIRMED or IN_PROGRESS whose scheduled end time passed more than 2 hours ago
+     * without the doctor marking it COMPLETED or NO_SHOW.
+     *
+     * Backend: GET /api/appointments?needsClosure=true[&from=…&to=…]
+     * The doctor JWT auto-injects doctorId scoping server-side, same as the other
+     * doctor-scoped appointment endpoints on this interface.
+     */
+    suspend fun getPendingClosureAppointments(
+        from: String? = null,
+        to: String? = null,
+    ): Result<List<PendingClosureItem>>
 }
 
 data class DoctorDashboard(

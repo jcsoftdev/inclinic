@@ -11,6 +11,7 @@ import com.inclinic.app.features.doctor.dashboard.application.GetDoctorDashboard
 import com.inclinic.app.features.doctor.infrastructure.remote.DaySummary
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorAppointmentDataSource
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorDashboard
+import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosureItem
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,6 +28,7 @@ private class StubDashboardDataSource(
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun getNoShowAppointments(from: String?, to: String?) =
         Result.success(emptyList<com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem>())
+    override suspend fun getPendingClosureAppointments(from: String?, to: String?): Result<List<PendingClosureItem>> = Result.failure(UnsupportedOperationException())
 }
 
 class DefaultDoctorDashboardComponentTest {
