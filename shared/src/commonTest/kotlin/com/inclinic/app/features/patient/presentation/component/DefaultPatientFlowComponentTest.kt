@@ -448,6 +448,7 @@ class DefaultPatientFlowComponentTest {
 
     private fun createComponent(
         outputs: MutableList<PatientFlowComponent.Output> = mutableListOf(),
+        onSettingsOutput: ((SettingsComponent.Output) -> Unit) -> Unit = {},
     ): DefaultPatientFlowComponent = DefaultPatientFlowComponent(
         componentContext = ctx,
         patientId = "pat-1",
@@ -475,7 +476,7 @@ class DefaultPatientFlowComponentTest {
         confirmRatingFactory = { _, _, _ -> StubConfirmRatingComponent() },
         messagesListFactory = { _, _ -> StubMessagesListComponent() },
         notificationsFactory = { _, _ -> StubNotificationsComponent() },
-        settingsFactory = { _, _, _ -> StubFlowSettingsComponent() },
+        settingsFactory = { _, _, output -> onSettingsOutput(output); StubFlowSettingsComponent() },
         medicalRecordDetailFactory = { _, _, _ -> StubMedicalRecordDetailComponent() },
         prescriptionDetailFactory = { _, _, _ -> StubPrescriptionDetailComponent() },
         historyAccessLogsFactory = { _, _ -> StubHistoryAccessLogsComponent() },
@@ -553,6 +554,18 @@ class DefaultPatientFlowComponentTest {
 
         val active = component.stack.value.active
         assertTrue(active.instance is PatientFlowComponent.Child.Settings)
+    }
+
+    @Test
+    fun settings_NavigateToChangePassword_output_pushes_ChangePassword_child() = runTest {
+        var settingsOutput: ((SettingsComponent.Output) -> Unit)? = null
+        val component = createComponent(onSettingsOutput = { settingsOutput = it })
+        component.navigateTo(PatientConfig.Settings)
+
+        settingsOutput!!(SettingsComponent.Output.NavigateToChangePassword)
+
+        val active = component.stack.value.active
+        assertTrue(active.instance is PatientFlowComponent.Child.ChangePassword)
     }
 
     @Test

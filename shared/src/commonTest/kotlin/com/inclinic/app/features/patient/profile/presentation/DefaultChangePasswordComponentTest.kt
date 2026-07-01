@@ -131,6 +131,8 @@ class DefaultChangePasswordComponentTest {
         assertNull(component.state.value.error)
         assertFalse(component.state.value.isLoading)
         assertEquals(1, fakeDataSource.changePasswordCallCount)
+        assertEquals("current123", fakeDataSource.lastChangePasswordCurrent)
+        assertEquals("newpass123", fakeDataSource.lastChangePasswordNew)
     }
 
     // ── INVALID_CREDENTIALS ───────────────────────────────────────────────────
