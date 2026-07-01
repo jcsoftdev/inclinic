@@ -234,6 +234,15 @@ private class StubDeleteAccountComponent : DeleteAccountComponent {
     override fun onDismissError() = Unit
 }
 
+private class StubChangePasswordComponent : ChangePasswordComponent {
+    override val state: Value<ChangePasswordState> = MutableValue(ChangePasswordState())
+    override fun onCurrentPasswordChange(value: String) = Unit
+    override fun onNewPasswordChange(value: String) = Unit
+    override fun onConfirmNewPasswordChange(value: String) = Unit
+    override fun onSubmit() = Unit
+    override fun onBack() = Unit
+}
+
 private class StubAssistantChatComponent : AssistantChatComponent {
     override val state: Value<AssistantChatState> = MutableValue(AssistantChatState())
     override fun onInputChange(text: String) = Unit
@@ -481,6 +490,7 @@ class DefaultPatientFlowComponentTest {
         reportUserFactory = { _, _, _, _ -> StubReportUserComponent() },
         blockUserFactory = { _, _, _, _ -> StubBlockUserComponent() },
         clinicalProfileFactory = { _, _ -> StubClinicalProfileComponent() },
+        changePasswordFactory = { _, _ -> StubChangePasswordComponent() },
         deleteAccountFactory = { _, _ -> StubDeleteAccountComponent() },
         activeAccessesFactory = { _, _ -> StubActiveAccessesComponent() },
         onOutput = outputs::add,

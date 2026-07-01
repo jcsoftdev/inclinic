@@ -85,6 +85,7 @@ fun PatientFlowContent(component: PatientFlowComponent, modifier: Modifier = Mod
                 // Profile & account management
                 is PatientFlowComponent.Child.Membership -> MembershipScreen(c.component)
                 is PatientFlowComponent.Child.ClinicalProfile -> ClinicalProfileScreen(c.component)
+                is PatientFlowComponent.Child.ChangePassword -> ChangePasswordScreen(c.component)
                 is PatientFlowComponent.Child.DeleteAccount -> DeleteAccountScreen(c.component)
 
                 // Sharing management
