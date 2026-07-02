@@ -100,7 +100,8 @@ class DefaultPatientAppointmentsListComponent(
     }
 
     private fun matchesTab(appt: Appointment, tab: AppointmentsTab): Boolean = when (tab) {
-        AppointmentsTab.ACTIVE -> appt.status in ACTIVE_STATUSES
+        AppointmentsTab.ACTIVE -> appt.status in ACTIVE_STATUSES && !appt.needsClosure
+        AppointmentsTab.NEEDS_CLOSURE -> appt.needsClosure
         AppointmentsTab.COMPLETED -> appt.status in COMPLETED_STATUSES
         AppointmentsTab.CANCELLED -> appt.status in CANCELLED_STATUSES
     }

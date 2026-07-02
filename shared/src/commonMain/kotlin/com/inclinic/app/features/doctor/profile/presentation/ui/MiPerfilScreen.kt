@@ -315,6 +315,12 @@ private fun ProfCard(
             value = "Ver pacientes que no se presentaron",
             onClick = component::onNavigateNoShowQueue,
         )
+        Divider()
+        ClickableDataRow(
+            label = "Citas por cerrar",
+            value = "Marcar como completadas o no-show",
+            onClick = component::onNavigatePendingClosure,
+        )
     }
 }
 

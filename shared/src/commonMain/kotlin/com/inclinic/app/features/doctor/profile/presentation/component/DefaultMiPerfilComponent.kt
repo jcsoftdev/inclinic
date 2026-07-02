@@ -47,6 +47,7 @@ class DefaultMiPerfilComponent(
     override fun onNavigateSettings() = onOutput(MiPerfilComponent.Output.Settings)
     override fun onNavigateTherapyOffers() = onOutput(MiPerfilComponent.Output.TherapyOffers)
     override fun onNavigateNoShowQueue() = onOutput(MiPerfilComponent.Output.NoShowQueue)
+    override fun onNavigatePendingClosure() = onOutput(MiPerfilComponent.Output.PendingClosure)
     override fun onNavigateChangePassword() = onOutput(MiPerfilComponent.Output.ChangePassword)
 
     override fun onLogout() {

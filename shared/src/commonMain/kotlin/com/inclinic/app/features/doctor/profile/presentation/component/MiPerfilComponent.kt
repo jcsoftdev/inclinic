@@ -19,6 +19,7 @@ interface MiPerfilComponent {
     fun onNavigateSettings()
     fun onNavigateTherapyOffers()
     fun onNavigateNoShowQueue()
+    fun onNavigatePendingClosure()
     fun onNavigateChangePassword()
     fun onLogout()
 
@@ -35,6 +36,7 @@ interface MiPerfilComponent {
         data object Settings : Output
         data object TherapyOffers : Output
         data object NoShowQueue : Output
+        data object PendingClosure : Output
         data object ChangePassword : Output
         data object Logout : Output
     }

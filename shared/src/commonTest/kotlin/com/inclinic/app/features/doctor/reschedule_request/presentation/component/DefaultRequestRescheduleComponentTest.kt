@@ -15,6 +15,7 @@ import com.inclinic.app.features.doctor.appointments.application.GetDoctorAppoin
 import com.inclinic.app.features.doctor.infrastructure.remote.DaySummary
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorAppointmentDataSource
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorDashboard
+import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosureItem
 import com.inclinic.app.features.doctor.reschedule_request.application.RequestRescheduleUseCase
 import com.inclinic.app.features.doctor.reschedule_request.core.port.RescheduleRequestRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -62,6 +63,8 @@ private class FakeDetailDataSource(
         Result.failure(UnsupportedOperationException())
     override suspend fun getNoShowAppointments(from: String?, to: String?) =
         Result.success(emptyList<com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem>())
+    override suspend fun getPendingClosureAppointments(from: String?, to: String?): Result<List<PendingClosureItem>> =
+        Result.failure(UnsupportedOperationException())
 }
 
 private class FakeRescheduleRequestRepository : RescheduleRequestRepository {

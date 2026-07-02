@@ -28,14 +28,17 @@ private fun listTestAppointment(
     id: String = "apt-1",
     visitType: VisitType = VisitType.VIRTUAL,
     doctorId: String = "doc-1",
+    status: AppointmentStatus = AppointmentStatus.CONFIRMED,
+    needsClosure: Boolean = false,
 ): Appointment {
     val now = Clock.System.now()
     return Appointment(
         id = id, doctorId = doctorId, patientId = "pat-1", specialtyId = "sp-1",
-        visitType = visitType, status = AppointmentStatus.CONFIRMED,
+        visitType = visitType, status = status,
         consultationFee = 120.0, commissionAmount = 18.0,
         startsAt = now + 72.hours, endsAt = now + 73.hours,
         rescheduleCount = 0, paymentDeadline = null, notes = null, createdAt = now,
+        needsClosure = needsClosure,
     )
 }
 
@@ -220,5 +223,39 @@ class DefaultPatientAppointmentsListComponentTest {
         assertEquals(1, outputs.size)
         val output = outputs.first() as PatientAppointmentsListComponent.Output.NavigateToRescheduleResponse
         assertEquals("apt-1", output.appointmentId)
+    }
+
+    @Test
+    fun confirmed_appointment_needing_closure_excluded_from_active_and_cancelled() = runTest {
+        val stale = listTestAppointment(
+            id = "a1",
+            status = AppointmentStatus.CONFIRMED,
+            needsClosure = true,
+        )
+        val ds = FakeListAppointmentDataSource(appointments = listOf(stale))
+        val component = createComponent(dataSource = ds)
+
+        component.onTabChange(AppointmentsTab.ACTIVE)
+        assertTrue(component.state.value.appointments.none { it.id == "a1" })
+
+        component.onTabChange(AppointmentsTab.CANCELLED)
+        assertTrue(component.state.value.appointments.none { it.id == "a1" })
+
+        component.onTabChange(AppointmentsTab.NEEDS_CLOSURE)
+        assertTrue(component.state.value.appointments.any { it.id == "a1" })
+    }
+
+    @Test
+    fun confirmed_appointment_not_yet_needing_closure_stays_in_active() = runTest {
+        val stillActive = listTestAppointment(
+            id = "a2",
+            status = AppointmentStatus.CONFIRMED,
+            needsClosure = false,
+        )
+        val ds = FakeListAppointmentDataSource(appointments = listOf(stillActive))
+        val component = createComponent(dataSource = ds)
+
+        component.onTabChange(AppointmentsTab.ACTIVE)
+        assertTrue(component.state.value.appointments.any { it.id == "a2" })
     }
 }

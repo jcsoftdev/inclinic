@@ -65,6 +65,7 @@ private data class AppointmentDto(
     val doctor: AppointmentDoctorDto? = null,
     val specialty: AppointmentSpecialtyDto? = null,
     val rescheduleRequests: List<RescheduleRequestMinDto>? = null,
+    val needsClosure: Boolean = false,
 ) {
     fun toDomain(): Appointment {
         val now = Clock.System.now()
@@ -97,6 +98,7 @@ private data class AppointmentDto(
             doctorName = fullName,
             specialtyName = specialty?.name,
             hasPendingReschedule = rescheduleRequests?.any { it.status == "PENDING" } == true,
+            needsClosure = needsClosure,
         )
     }
 }

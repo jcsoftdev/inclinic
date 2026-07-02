@@ -14,6 +14,7 @@ import com.inclinic.app.features.doctor.appointments.application.NoShowUseCase
 import com.inclinic.app.features.doctor.infrastructure.remote.DaySummary
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorAppointmentDataSource
 import com.inclinic.app.features.doctor.infrastructure.remote.DoctorDashboard
+import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosureItem
 import kotlinx.coroutines.test.runTest
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
@@ -65,6 +66,9 @@ private class FakeMarkNoShowDataSource(
         Result.failure(UnsupportedOperationException())
     override suspend fun getNoShowAppointments(from: String?, to: String?) =
         Result.success(emptyList<com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem>())
+
+    override suspend fun getPendingClosureAppointments(from: String?, to: String?): Result<List<PendingClosureItem>> =
+        Result.failure(UnsupportedOperationException())
 }
 
 class DefaultMarkNoShowComponentTest {

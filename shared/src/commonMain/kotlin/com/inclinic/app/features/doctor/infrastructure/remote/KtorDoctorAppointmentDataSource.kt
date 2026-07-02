@@ -4,6 +4,7 @@ import com.inclinic.app.core.model.Appointment
 import com.inclinic.app.core.network.ApiEnvelope
 import com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem
 import com.inclinic.app.features.doctor.no_shows.core.model.PaymentHoldStatus
+import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosureItem
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -83,6 +84,40 @@ private data class DashboardDto(
 private data class DaySummaryDto(
     val date: String,
     val appointmentCount: Int,
+)
+
+/**
+ * Mirrors the nested `patient.user` / `specialty` shape from the backend's
+ * GET /api/appointments?needsClosure=true payload (see appointment.service.ts).
+ *
+ * The Prisma `Appointment` model's `type` column is an `AppointmentType` enum
+ * (CONSULTATION | FOLLOW_UP | THERAPY | TELEMEDICINE) — it does NOT carry the
+ * visit modality (clinic/home/virtual). That modality is instead carried by
+ * the two independent `isTelemedicine` / `isHomeVisit` booleans, same as on
+ * the patient-side `AppointmentDto` (see KtorAppointmentDataSource.kt).
+ */
+@Serializable
+private data class PendingClosureItemDto(
+    val id: String = "",
+    val startTime: String = "",
+    val price: Double = 0.0,
+    val isTelemedicine: Boolean = false,
+    val isHomeVisit: Boolean = false,
+    val patient: NoShowPatientDto = NoShowPatientDto(),
+    val specialty: NoShowSpecialtyDto = NoShowSpecialtyDto(),
+)
+
+private fun PendingClosureItemDto.toDomain() = PendingClosureItem(
+    id = id,
+    patientName = "${patient.user.firstName} ${patient.user.lastName}".trim(),
+    startTime = startTime,
+    price = price,
+    specialtyName = specialty.name,
+    visitType = when {
+        isTelemedicine -> "VIRTUAL"
+        isHomeVisit -> "HOME"
+        else -> "CLINIC"
+    },
 )
 
 class KtorDoctorAppointmentDataSource(
@@ -165,6 +200,19 @@ class KtorDoctorAppointmentDataSource(
             from?.let { parameter("from", it) }
             to?.let { parameter("to", it) }
         }.body<ApiEnvelope<List<NoShowItemDto>>>().data ?: emptyList()
+        dtos.map { it.toDomain() }
+    }
+
+    override suspend fun getPendingClosureAppointments(
+        from: String?,
+        to: String?,
+    ): Result<List<PendingClosureItem>> = runCatching {
+        val dtos = client.get {
+            url("$baseUrl/api/appointments")
+            parameter("needsClosure", "true")
+            from?.let { parameter("from", it) }
+            to?.let { parameter("to", it) }
+        }.body<ApiEnvelope<List<PendingClosureItemDto>>>().data ?: emptyList()
         dtos.map { it.toDomain() }
     }
 }

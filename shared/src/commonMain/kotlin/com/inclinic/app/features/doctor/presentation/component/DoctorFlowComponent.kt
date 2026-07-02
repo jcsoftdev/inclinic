@@ -30,6 +30,7 @@ import com.inclinic.app.features.doctor.therapy_offers.presentation.component.Cr
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListComponent
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
 import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
+import com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent
 
 interface DoctorFlowComponent {
     val currentTab: Value<DoctorTab>
@@ -91,6 +92,7 @@ interface DoctorFlowComponent {
         class EditPrescription(val component: EditPrescriptionComponent) : Child
         class DeleteAccount(val component: DeleteAccountComponent) : Child
         class NoShowQueue(val component: NoShowQueueComponent) : Child
+        class PendingClosure(val component: PendingClosureQueueComponent) : Child
         class ChangePassword(val component: ChangePasswordComponent) : Child
     }
 
