@@ -14,7 +14,6 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // ── No-Show DTOs ──────────────────────────────────────────────────────────────
@@ -91,17 +90,19 @@ private data class DaySummaryDto(
  * Mirrors the nested `patient.user` / `specialty` shape from the backend's
  * GET /api/appointments?needsClosure=true payload (see appointment.service.ts).
  *
- * The Prisma `Appointment` model's visit-type column is named `type` (see
- * prisma/schema.prisma on the ClinicAI repo), and `getAppointments` returns
- * Prisma rows as-is with no field renaming — hence `@SerialName("type")` below
- * to map the wire key onto the more descriptive `visitType` Kotlin property.
+ * The Prisma `Appointment` model's `type` column is an `AppointmentType` enum
+ * (CONSULTATION | FOLLOW_UP | THERAPY | TELEMEDICINE) — it does NOT carry the
+ * visit modality (clinic/home/virtual). That modality is instead carried by
+ * the two independent `isTelemedicine` / `isHomeVisit` booleans, same as on
+ * the patient-side `AppointmentDto` (see KtorAppointmentDataSource.kt).
  */
 @Serializable
 private data class PendingClosureItemDto(
     val id: String = "",
     val startTime: String = "",
     val price: Double = 0.0,
-    @SerialName("type") val visitType: String = "CLINIC",
+    val isTelemedicine: Boolean = false,
+    val isHomeVisit: Boolean = false,
     val patient: NoShowPatientDto = NoShowPatientDto(),
     val specialty: NoShowSpecialtyDto = NoShowSpecialtyDto(),
 )
@@ -112,7 +113,11 @@ private fun PendingClosureItemDto.toDomain() = PendingClosureItem(
     startTime = startTime,
     price = price,
     specialtyName = specialty.name,
-    visitType = visitType,
+    visitType = when {
+        isTelemedicine -> "VIRTUAL"
+        isHomeVisit -> "HOME"
+        else -> "CLINIC"
+    },
 )
 
 class KtorDoctorAppointmentDataSource(
