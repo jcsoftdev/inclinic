@@ -611,8 +611,13 @@ class DefaultDoctorFlowComponent(
                 pendingClosureQueueFactory(ctx) { output ->
                     when (output) {
                         PendingClosureQueueComponent.Output.Back -> activeNav().pop()
-                        is PendingClosureQueueComponent.Output.NavigateToDetail ->
-                            activeNav().push(DoctorConfig.AppointmentDetail(output.appointmentId))
+                        is PendingClosureQueueComponent.Output.NavigateToDetail -> {
+                            // Cross-tab: AppointmentDetail's Back handler is hardcoded to
+                            // agendaNav.pop(), so it must always be pushed onto agendaNav
+                            // (mirrors DoctorDashboardComponent.Output.NavigateToAppointmentDetail).
+                            _currentTab.value = DoctorTab.Agenda
+                            agendaNav.push(DoctorConfig.AppointmentDetail(output.appointmentId))
+                        }
                     }
                 }
             )
