@@ -205,6 +205,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onNavigateSettings() { out(MiPerfilComponent.Output.Settings) }
                 override fun onNavigateTherapyOffers() { out(MiPerfilComponent.Output.TherapyOffers) }
                 override fun onNavigateNoShowQueue() { out(MiPerfilComponent.Output.NoShowQueue) }
+                override fun onNavigatePendingClosure() { out(MiPerfilComponent.Output.PendingClosure) }
                 override fun onNavigateChangePassword() { out(MiPerfilComponent.Output.ChangePassword) }
                 override fun onLogout() { out(MiPerfilComponent.Output.Logout) }
             }
@@ -388,6 +389,17 @@ class DefaultDoctorFlowComponentTest {
                 override fun onTabSelected(tab: com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowTab) {}
                 override fun onRetry() {}
                 override fun onBack() { out(com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent.Output.Back) }
+            }
+        },
+        pendingClosureQueueFactory = { ctx, out ->
+            object : com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent {
+                override val state: Value<com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueState> =
+                    MutableValue(com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueState())
+                override fun onAppointmentTapped(appointmentId: String) {
+                    out(com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent.Output.NavigateToDetail(appointmentId))
+                }
+                override fun onRetry() {}
+                override fun onBack() { out(com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent.Output.Back) }
             }
         },
         changePasswordFactory = { ctx, out ->

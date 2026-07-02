@@ -58,6 +58,9 @@ import com.inclinic.app.features.doctor.presentation.component.DefaultWeeklySche
 import com.inclinic.app.features.doctor.no_shows.application.GetNoShowQueueUseCase
 import com.inclinic.app.features.doctor.no_shows.presentation.component.DefaultNoShowQueueComponent
 import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
+import com.inclinic.app.features.doctor.pending_closure.application.GetPendingClosureQueueUseCase
+import com.inclinic.app.features.doctor.pending_closure.presentation.component.DefaultPendingClosureQueueComponent
+import com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorAppointmentDetailComponent
 import com.inclinic.app.features.doctor.presentation.component.DoctorChatComponent
@@ -134,10 +137,14 @@ val doctorModule = module {
     factory { GetDoctorPriceConfigUseCase(get(), get()) }
     factory { UpdateDoctorPriceConfigUseCase(get(), get()) }
     factory { GetNoShowQueueUseCase(get(), get()) }
+    factory { GetPendingClosureQueueUseCase(get(), get()) }
 
     // ── Component factories ───────────────────────────────────────────────────
     factory<NoShowQueueComponent> { (ctx: ComponentContext, onOutput: (NoShowQueueComponent.Output) -> Unit) ->
         DefaultNoShowQueueComponent(ctx, get(), get(), onOutput)
+    }
+    factory<PendingClosureQueueComponent> { (ctx: ComponentContext, onOutput: (PendingClosureQueueComponent.Output) -> Unit) ->
+        DefaultPendingClosureQueueComponent(ctx, get(), get(), onOutput)
     }
     factory<DoctorDashboardComponent> { (ctx: ComponentContext, doctorId: String, onOutput: (DoctorDashboardComponent.Output) -> Unit) ->
         DefaultDoctorDashboardComponent(ctx, doctorId, get(), get(), onOutput, get())
@@ -222,6 +229,7 @@ val doctorModule = module {
             editPrescriptionFactory = { c, prescriptionId, out -> get<EditPrescriptionComponent> { parametersOf(c, prescriptionId, out) } },
             deleteAccountFactory = { c, out -> get<DeleteAccountComponent> { parametersOf(c, out) } },
             noShowQueueFactory = { c, out -> get<NoShowQueueComponent> { parametersOf(c, out) } },
+            pendingClosureQueueFactory = { c, out -> get<PendingClosureQueueComponent> { parametersOf(c, out) } },
             changePasswordFactory = { c, out -> get<ChangePasswordComponent> { parametersOf(c, doctorId, out) } },
             onOutput = {},
         )

@@ -46,6 +46,7 @@ import com.inclinic.app.features.doctor.reschedule.presentation.component.Resche
 import com.inclinic.app.features.doctor.reschedule_request.presentation.component.RequestRescheduleComponent
 import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSettingsComponent
 import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
+import com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.DefaultRequestShareComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.DefaultShareRequestsListComponent
@@ -99,6 +100,7 @@ class DefaultDoctorFlowComponent(
     private val editPrescriptionFactory: (ComponentContext, String, (EditPrescriptionComponent.Output) -> Unit) -> EditPrescriptionComponent,
     private val deleteAccountFactory: (ComponentContext, (DeleteAccountComponent.Output) -> Unit) -> DeleteAccountComponent,
     private val noShowQueueFactory: (ComponentContext, (NoShowQueueComponent.Output) -> Unit) -> NoShowQueueComponent,
+    private val pendingClosureQueueFactory: (ComponentContext, (PendingClosureQueueComponent.Output) -> Unit) -> PendingClosureQueueComponent,
     private val changePasswordFactory: (ComponentContext, (ChangePasswordComponent.Output) -> Unit) -> ChangePasswordComponent,
     private val onOutput: (DoctorFlowComponent.Output) -> Unit,
 ) : DoctorFlowComponent, ComponentContext by componentContext {
@@ -424,6 +426,8 @@ class DefaultDoctorFlowComponent(
                             perfilNav.push(DoctorConfig.TherapyOffers)
                         MiPerfilComponent.Output.NoShowQueue ->
                             perfilNav.push(DoctorConfig.NoShowQueue)
+                        MiPerfilComponent.Output.PendingClosure ->
+                            perfilNav.push(DoctorConfig.PendingClosure)
                         MiPerfilComponent.Output.ChangePassword ->
                             perfilNav.push(DoctorConfig.ChangePassword)
                         MiPerfilComponent.Output.Logout ->
@@ -599,6 +603,16 @@ class DefaultDoctorFlowComponent(
                 noShowQueueFactory(ctx) { output ->
                     when (output) {
                         NoShowQueueComponent.Output.Back -> activeNav().pop()
+                    }
+                }
+            )
+
+            is DoctorConfig.PendingClosure -> DoctorFlowComponent.Child.PendingClosure(
+                pendingClosureQueueFactory(ctx) { output ->
+                    when (output) {
+                        PendingClosureQueueComponent.Output.Back -> activeNav().pop()
+                        is PendingClosureQueueComponent.Output.NavigateToDetail ->
+                            activeNav().push(DoctorConfig.AppointmentDetail(output.appointmentId))
                     }
                 }
             )
