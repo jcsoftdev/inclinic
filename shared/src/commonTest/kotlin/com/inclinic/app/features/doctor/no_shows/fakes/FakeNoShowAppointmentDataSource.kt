@@ -8,6 +8,7 @@ import com.inclinic.app.features.doctor.infrastructure.remote.DoctorDashboard
 import com.inclinic.app.features.doctor.infrastructure.remote.DaySummary
 import com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem
 import com.inclinic.app.features.doctor.no_shows.core.model.PaymentHoldStatus
+import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosureItem
 import kotlin.time.Clock
 
 /** Minimal test double for [DoctorAppointmentDataSource].
@@ -47,6 +48,9 @@ class FakeNoShowAppointmentDataSource : DoctorAppointmentDataSource {
         Result.failure(UnsupportedOperationException())
 
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> =
+        Result.failure(UnsupportedOperationException())
+
+    override suspend fun getPendingClosureAppointments(from: String?, to: String?): Result<List<PendingClosureItem>> =
         Result.failure(UnsupportedOperationException())
 }
 
