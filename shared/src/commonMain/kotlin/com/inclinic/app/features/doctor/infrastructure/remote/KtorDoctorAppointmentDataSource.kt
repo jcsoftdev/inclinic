@@ -102,24 +102,8 @@ private data class PendingClosureItemDto(
     val startTime: String = "",
     val price: Double = 0.0,
     @SerialName("type") val visitType: String = "CLINIC",
-    val patient: PendingClosurePatientDto = PendingClosurePatientDto(),
-    val specialty: PendingClosureSpecialtyDto = PendingClosureSpecialtyDto(),
-)
-
-@Serializable
-private data class PendingClosurePatientDto(
-    val user: PendingClosureUserDto = PendingClosureUserDto(),
-)
-
-@Serializable
-private data class PendingClosureUserDto(
-    val firstName: String = "",
-    val lastName: String = "",
-)
-
-@Serializable
-private data class PendingClosureSpecialtyDto(
-    val name: String = "",
+    val patient: NoShowPatientDto = NoShowPatientDto(),
+    val specialty: NoShowSpecialtyDto = NoShowSpecialtyDto(),
 )
 
 private fun PendingClosureItemDto.toDomain() = PendingClosureItem(
