@@ -8,6 +8,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.model.AppointmentStatus
+import com.inclinic.app.core.model.PaymentResult
 import com.inclinic.app.core.model.RawCard
 import com.inclinic.app.core.port.TelemetryService
 import com.inclinic.app.features.patient.appointments.application.GetAppointmentDetailUseCase
@@ -124,6 +125,20 @@ class DefaultPaymentComponent(
     override fun onDocNumberChange(value: String) { _state.update { it.copy(docNumber = value) } }
     override fun onErrorDismissed() { _state.update { it.copy(error = null) } }
 
+    // ── Método de pago (Tarjeta / Yape) ───────────────────────────────────────
+
+    override fun onSelectMethod(method: PaymentMethodChoice) {
+        _state.update { it.copy(selectedMethod = method, error = null) }
+    }
+
+    override fun onYapePhoneChange(value: String) {
+        _state.update { it.copy(yapePhone = value.filter { c -> c.isDigit() }.take(9)) }
+    }
+
+    override fun onYapeOtpChange(value: String) {
+        _state.update { it.copy(yapeOtp = value.filter { c -> c.isDigit() }.take(6)) }
+    }
+
     // ── Payment submission ────────────────────────────────────────────────────
 
     override fun onSubmit() {
@@ -137,6 +152,13 @@ class DefaultPaymentComponent(
             _state.update { it.copy(error = "El plazo de pago ha expirado") }
             return
         }
+        when (s.selectedMethod) {
+            PaymentMethodChoice.YAPE -> submitYape(s)
+            PaymentMethodChoice.CARD -> submitCard(s)
+        }
+    }
+
+    private fun submitCard(s: PaymentState) {
         val pan = s.cardNumber.filter { it.isDigit() }
         val expiryParts = s.expiry.split("/")
         val expMonth = expiryParts.getOrNull(0)?.trim()?.toIntOrNull() ?: run {
@@ -167,38 +189,63 @@ class DefaultPaymentComponent(
             } else {
                 processPayment.payPackage(rawCard, therapyPackageId!!)
             }
-            paymentResult
-                .onSuccess { result ->
-                    _state.update { it.copy(isLoading = false) }
-                    if (appointmentId != null) {
-                        telemetry?.track("payment_completed", mapOf("appointmentId" to appointmentId))
-                        onOutput(PaymentComponent.Output.NavigateToSuccess(result.appointmentId))
-                    } else {
-                        telemetry?.track("payment_completed", mapOf("therapyPackageId" to therapyPackageId!!))
-                        onOutput(PaymentComponent.Output.NavigateToPackages)
-                    }
-                }
-                .onFailure { err ->
-                    val expired = err is PaymentDeadlineExpiredException
-                    val isInProcess = err.message?.contains("revisión", ignoreCase = true) == true ||
-                        err.message?.contains("in_process", ignoreCase = true) == true
-                    when {
-                        isInProcess -> {
-                            _state.update { it.copy(isLoading = false, paymentStatus = PaymentStatus.PROCESSING, error = null) }
-                        }
-                        else -> {
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    isExpired = it.isExpired || expired,
-                                    paymentStatus = if (!expired) PaymentStatus.REJECTED else PaymentStatus.FORM,
-                                    error = if (expired) "El plazo de pago ha expirado" else null,
-                                )
-                            }
-                        }
-                    }
-                }
+            handlePaymentResult(paymentResult)
         }
+    }
+
+    private fun submitYape(s: PaymentState) {
+        if (s.yapePhone.length != 9) {
+            _state.update { it.copy(error = "Ingresa un celular válido (9 dígitos)") }
+            return
+        }
+        if (s.yapeOtp.length != 6) {
+            _state.update { it.copy(error = "Ingresa el código de 6 dígitos de tu app Yape") }
+            return
+        }
+        _state.update { it.copy(isLoading = true, error = null) }
+        scope.launch {
+            val paymentResult = if (appointmentId != null) {
+                processPayment.payWithYape(s.yapePhone, s.yapeOtp, appointmentId)
+            } else {
+                processPayment.payPackageWithYape(s.yapePhone, s.yapeOtp, therapyPackageId!!)
+            }
+            handlePaymentResult(paymentResult)
+        }
+    }
+
+    /** Manejo compartido del resultado del pago (tarjeta o Yape). */
+    private fun handlePaymentResult(paymentResult: Result<PaymentResult>) {
+        paymentResult
+            .onSuccess { result ->
+                _state.update { it.copy(isLoading = false) }
+                if (appointmentId != null) {
+                    telemetry?.track("payment_completed", mapOf("appointmentId" to appointmentId))
+                    onOutput(PaymentComponent.Output.NavigateToSuccess(result.appointmentId))
+                } else {
+                    telemetry?.track("payment_completed", mapOf("therapyPackageId" to therapyPackageId!!))
+                    onOutput(PaymentComponent.Output.NavigateToPackages)
+                }
+            }
+            .onFailure { err ->
+                val expired = err is PaymentDeadlineExpiredException
+                val isInProcess = err.message?.contains("revisión", ignoreCase = true) == true ||
+                    err.message?.contains("in_process", ignoreCase = true) == true
+                when {
+                    isInProcess -> {
+                        _state.update { it.copy(isLoading = false, paymentStatus = PaymentStatus.PROCESSING, error = null) }
+                    }
+                    else -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isExpired = it.isExpired || expired,
+                                paymentStatus = if (!expired) PaymentStatus.REJECTED else PaymentStatus.FORM,
+                                error = if (expired) "El plazo de pago ha expirado" else null,
+                            )
+                        }
+                    }
+                }
+            }
     }
 
     override fun onBack() { onOutput(PaymentComponent.Output.Back) }

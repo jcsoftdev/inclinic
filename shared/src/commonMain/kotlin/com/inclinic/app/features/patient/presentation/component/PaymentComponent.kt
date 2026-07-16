@@ -13,6 +13,10 @@ interface PaymentComponent {
     fun onCardholderNameChange(value: String)
     fun onDocTypeChange(value: String)
     fun onDocNumberChange(value: String)
+    // ── Método de pago (Tarjeta / Yape) ───────────────────────────────────────
+    fun onSelectMethod(method: PaymentMethodChoice)
+    fun onYapePhoneChange(value: String)
+    fun onYapeOtpChange(value: String)
     fun onSubmit()
     fun onBack()
     fun onErrorDismissed()
@@ -51,6 +55,9 @@ enum class PaymentStatus {
 
 enum class CardType { VISA, MASTERCARD, UNKNOWN }
 
+/** Método de pago elegido en el formulario. */
+enum class PaymentMethodChoice { CARD, YAPE }
+
 data class PaymentState(
     val appointment: Appointment? = null,
     val doctor: Doctor? = null,
@@ -66,6 +73,10 @@ data class PaymentState(
     val docType: String = "DNI",
     val docNumber: String = "",
     val cardType: CardType = CardType.UNKNOWN,
+    // ── Método de pago + campos Yape ──────────────────────────────────────────
+    val selectedMethod: PaymentMethodChoice = PaymentMethodChoice.CARD,
+    val yapePhone: String = "",
+    val yapeOtp: String = "",
     // ── Async state ───────────────────────────────────────────────────────────
     val isLoading: Boolean = false,
     val isExpired: Boolean = false,

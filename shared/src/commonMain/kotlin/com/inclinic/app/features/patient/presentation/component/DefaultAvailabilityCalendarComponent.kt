@@ -20,6 +20,7 @@ import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import kotlinx.datetime.toLocalDateTime
 
 class DefaultAvailabilityCalendarComponent(
     componentContext: ComponentContext,
@@ -100,11 +101,22 @@ class DefaultAvailabilityCalendarComponent(
         scope.launch {
             getAvailability(doctorId, date.toString())
                 .onSuccess { slots ->
-                    _state.update { it.copy(isLoading = false, slots = slots) }
+                    _state.update { it.copy(isLoading = false, slots = applyPastTimeGuard(date, slots)) }
                 }
                 .onFailure { err ->
                     _state.update { it.copy(isLoading = false, error = err.toUserMessage("Failed to load availability")) }
                 }
+        }
+    }
+
+    /** Belt-and-suspenders: hides today's past-time slots even if the backend
+     *  response is stale (e.g. screen left open past a slot's start time). */
+    private fun applyPastTimeGuard(date: LocalDate, slots: List<AvailabilitySlot>): List<AvailabilitySlot> {
+        if (date != today) return slots
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
+        val currentTime = "${now.hour.toString().padStart(2, '0')}:${now.minute.toString().padStart(2, '0')}"
+        return slots.map { slot ->
+            if (slot.isAvailable && slot.startTime <= currentTime) slot.copy(isAvailable = false) else slot
         }
     }
 

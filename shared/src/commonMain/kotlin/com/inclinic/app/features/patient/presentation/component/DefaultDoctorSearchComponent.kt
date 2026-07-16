@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.patient.infrastructure.remote.DoctorFilters
 import com.inclinic.app.features.patient.infrastructure.remote.PagedDoctors
 import com.inclinic.app.features.patient.search.application.SearchDoctorsUseCase
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 class DefaultDoctorSearchComponent(
     componentContext: ComponentContext,
     private val searchDoctors: SearchDoctorsUseCase,
+    private val getSpecialties: GetSpecialtiesUseCase,
     private val dispatchers: AppDispatchers,
     private val onOutput: (DoctorSearchComponent.Output) -> Unit,
 ) : DoctorSearchComponent, ComponentContext by componentContext {
@@ -46,6 +48,15 @@ class DefaultDoctorSearchComponent(
         // process is torn down (Android rotation, RAM pressure, etc.).
         stateKeeper.register("search_state", DoctorSearchState.serializer()) { _state.value }
         search(page = 1, reset = true)
+        loadSpecialties()
+    }
+
+    private fun loadSpecialties() {
+        scope.launch {
+            getSpecialties().onSuccess { specialties ->
+                _state.update { it.copy(specialties = specialties) }
+            }
+        }
     }
 
     override fun onQueryChange(query: String) {

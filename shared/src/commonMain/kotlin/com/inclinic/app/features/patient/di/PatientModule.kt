@@ -3,6 +3,8 @@ package com.inclinic.app.features.patient.di
 import com.arkivanov.decompose.ComponentContext
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.port.CardTokenizer
+import com.inclinic.app.core.port.YapeTokenizer
+import com.inclinic.app.features.payment.KtorYapeTokenizer
 import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.di.APP_HTTP_CLIENT
 import com.inclinic.app.features.patient.appointments.application.CancelAppointmentUseCase
@@ -212,7 +214,11 @@ val patientModule = module {
     factory { GetAvailabilityUseCase(get(), get()) }
     factory { GetMonthAvailabilityUseCase(get(), get()) }
     factory { CreateAppointmentUseCase(get(), get()) }
-    factory { ProcessPaymentUseCase(get(), get(), get()) }
+    // Yape tokenizer vive en commonMain (HTTP puro) — funciona en Android e iOS.
+    // Public key stub por ahora (mismo patrón que el card tokenizer); con una
+    // APP_USR-... real hace la tokenización real contra MercadoPago.
+    single<YapeTokenizer> { KtorYapeTokenizer(get(APP_HTTP_CLIENT), publicKey = "TEST-mp-public-key") }
+    factory { ProcessPaymentUseCase(get(), get(), get(), get()) }
     factory { GetPatientAppointmentsUseCase(get(), get()) }
     factory { GetAppointmentDetailUseCase(get(), get()) }
     factory { CancelAppointmentUseCase(get(), get()) }
@@ -264,7 +270,7 @@ val patientModule = module {
         DefaultPatientHomeComponent(ctx, patientId, get(), get(), onOutput)
     }
     factory<DoctorSearchComponent> { (ctx: ComponentContext, onOutput: (DoctorSearchComponent.Output) -> Unit) ->
-        DefaultDoctorSearchComponent(ctx, get(), get(), onOutput)
+        DefaultDoctorSearchComponent(ctx, get(), get(), get(), onOutput)
     }
     factory<DoctorProfileComponent> { (ctx: ComponentContext, doctorId: String, onOutput: (DoctorProfileComponent.Output) -> Unit) ->
         DefaultDoctorProfileComponent(ctx, doctorId, get(), get(), get(), onOutput)

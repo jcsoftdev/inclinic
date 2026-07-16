@@ -10,6 +10,7 @@ import com.inclinic.app.core.model.PaymentResult
 import com.inclinic.app.core.model.RawCard
 import com.inclinic.app.core.model.VisitType
 import com.inclinic.app.core.port.CardTokenizer
+import com.inclinic.app.core.port.YapeTokenizer
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.patient.infrastructure.remote.AppointmentDataSource
 import com.inclinic.app.features.patient.payment.application.ProcessPaymentUseCase
@@ -30,14 +31,30 @@ private class FakeCardTokenizer : CardTokenizer {
     }
 }
 
+private class FakeYapeTokenizer : YapeTokenizer {
+    var result: Result<String> = Result.success("mp_stub_yape_9999")
+    var callCount = 0
+    var lastPhone: String? = null
+    var lastOtp: String? = null
+
+    override suspend fun tokenize(phoneNumber: String, otp: String): Result<String> {
+        callCount++
+        lastPhone = phoneNumber
+        lastOtp = otp
+        return result
+    }
+}
+
 private class FakeAppointmentDataSource : AppointmentDataSource {
     var paymentResult: Result<PaymentResult> = Result.success(
         PaymentResult(appointmentId = "apt-1", status = "approved", transactionId = "txn-1")
     )
     var processPaymentCallCount = 0
+    var lastPaymentMethodId: String? = null
 
     override suspend fun processPayment(cardToken: String, paymentMethodId: String, appointmentId: String): Result<PaymentResult> {
         processPaymentCallCount++
+        lastPaymentMethodId = paymentMethodId
         return paymentResult
     }
 
@@ -76,11 +93,13 @@ private class FakeAppointmentDataSource : AppointmentDataSource {
 class ProcessPaymentUseCaseTest {
 
     private val fakeTokenizer = FakeCardTokenizer()
+    private val fakeYapeTokenizer = FakeYapeTokenizer()
     private val fakeDataSource = FakeAppointmentDataSource()
     private val dispatchers = TestAppDispatchers()
 
     private val useCase = ProcessPaymentUseCase(
         cardTokenizer = fakeTokenizer,
+        yapeTokenizer = fakeYapeTokenizer,
         dataSource = fakeDataSource,
         dispatchers = dispatchers,
     )
@@ -132,5 +151,35 @@ class ProcessPaymentUseCaseTest {
         assertTrue(result.isFailure)
         assertEquals(1, fakeTokenizer.callCount)
         assertEquals(1, fakeDataSource.processPaymentCallCount)
+    }
+
+    @Test
+    fun payWithYape_tokenizes_and_processes_with_yape_method() = runTest {
+        fakeYapeTokenizer.result = Result.success("yape_tok_1")
+        fakeDataSource.paymentResult = Result.success(
+            PaymentResult(appointmentId = "apt-1", status = "approved")
+        )
+
+        val result = useCase.payWithYape("987654321", "123456", "apt-1")
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, fakeYapeTokenizer.callCount)
+        assertEquals("987654321", fakeYapeTokenizer.lastPhone)
+        assertEquals("123456", fakeYapeTokenizer.lastOtp)
+        assertEquals(1, fakeDataSource.processPaymentCallCount)
+        assertEquals("yape", fakeDataSource.lastPaymentMethodId)
+        // El card tokenizer NO se usa en el flujo Yape.
+        assertEquals(0, fakeTokenizer.callCount)
+    }
+
+    @Test
+    fun payWithYape_tokenize_failure_makes_no_network_call() = runTest {
+        fakeYapeTokenizer.result = Result.failure(Exception("OTP inválido"))
+
+        val result = useCase.payWithYape("987654321", "000000", "apt-1")
+
+        assertTrue(result.isFailure)
+        assertEquals(1, fakeYapeTokenizer.callCount)
+        assertEquals(0, fakeDataSource.processPaymentCallCount)
     }
 }

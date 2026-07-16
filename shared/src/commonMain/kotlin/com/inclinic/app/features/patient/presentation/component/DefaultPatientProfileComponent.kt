@@ -80,7 +80,7 @@ class DefaultPatientProfileComponent(
                     onOutput(PatientProfileComponent.Output.Saved)
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isSaving = false, error = err.toUserMessage("Save failed")) }
+                    _state.update { it.copy(isSaving = false, error = err.toUserMessage("No se pudieron guardar los cambios")) }
                 }
         }
     }
@@ -99,7 +99,7 @@ class DefaultPatientProfileComponent(
                     ) }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("Failed to load profile")) }
+                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("No se pudo cargar el perfil")) }
                 }
         }
     }

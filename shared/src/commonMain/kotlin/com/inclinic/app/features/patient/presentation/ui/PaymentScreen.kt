@@ -49,6 +49,7 @@ import com.inclinic.app.core.model.TherapyPackage
 import com.inclinic.app.core.model.VisitType
 import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.patient.presentation.component.CardType
+import com.inclinic.app.features.patient.presentation.component.PaymentMethodChoice
 import com.inclinic.app.features.patient.presentation.component.PaymentComponent
 import com.inclinic.app.features.patient.presentation.component.PaymentState
 import com.inclinic.app.features.patient.presentation.component.PaymentStatus
@@ -459,8 +460,18 @@ private fun PaymentFormContent(
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    PaymentTab(label = "Tarjeta", selected = true, modifier = Modifier.weight(1f))
-                    PaymentTab(label = "Yape", selected = false, modifier = Modifier.weight(1f))
+                    PaymentTab(
+                        label = "Tarjeta",
+                        selected = state.selectedMethod == PaymentMethodChoice.CARD,
+                        modifier = Modifier.weight(1f),
+                        onClick = { component.onSelectMethod(PaymentMethodChoice.CARD) },
+                    )
+                    PaymentTab(
+                        label = "Yape",
+                        selected = state.selectedMethod == PaymentMethodChoice.YAPE,
+                        modifier = Modifier.weight(1f),
+                        onClick = { component.onSelectMethod(PaymentMethodChoice.YAPE) },
+                    )
                 }
             }
 
@@ -473,6 +484,7 @@ private fun PaymentFormContent(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                if (state.selectedMethod == PaymentMethodChoice.CARD) {
                 PaymentInput(
                     label = "Número de tarjeta",
                     value = state.cardNumber,
@@ -518,6 +530,27 @@ private fun PaymentFormContent(
                     keyboardType = KeyboardType.Number,
                     onValueChange = component::onDocNumberChange,
                 )
+                } else {
+                    PaymentInput(
+                        label = "Número de celular",
+                        value = state.yapePhone,
+                        placeholder = "987654321",
+                        keyboardType = KeyboardType.Number,
+                        onValueChange = component::onYapePhoneChange,
+                    )
+                    PaymentInput(
+                        label = "Código Yape (6 dígitos)",
+                        value = state.yapeOtp,
+                        placeholder = "123456",
+                        keyboardType = KeyboardType.Number,
+                        onValueChange = component::onYapeOtpChange,
+                    )
+                    Text(
+                        text = "Abre tu app Yape → \"Aprobar pagos\" → copia el código de 6 dígitos.",
+                        color = colors.muted,
+                        fontSize = 11.sp,
+                    )
+                }
             }
 
             Row(
@@ -702,13 +735,19 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun PaymentTab(label: String, selected: Boolean, modifier: Modifier = Modifier) {
+private fun PaymentTab(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
     val colors = AppTheme.colors
     Box(
         modifier = modifier
             .height(40.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(if (selected) colors.navyTint else Color.Transparent),
+            .background(if (selected) colors.navyTint else Color.Transparent)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(

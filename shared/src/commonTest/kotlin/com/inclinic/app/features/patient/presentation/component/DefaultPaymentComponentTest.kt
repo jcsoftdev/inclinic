@@ -21,6 +21,7 @@ import com.inclinic.app.core.model.TherapyOffer
 import com.inclinic.app.core.model.TherapyPackage
 import com.inclinic.app.core.model.VisitType
 import com.inclinic.app.core.port.CardTokenizer
+import com.inclinic.app.core.port.YapeTokenizer
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
 import com.inclinic.app.features.patient.appointments.application.CancelAppointmentUseCase
 import com.inclinic.app.features.patient.appointments.application.GetAppointmentDetailUseCase
@@ -104,6 +105,12 @@ private class FakeCardTokenizer(
     override suspend fun tokenize(card: RawCard): Result<CardToken> = result
 }
 
+private class FakeYapeTokenizer(
+    private val result: Result<String> = Result.success("mp_stub_yape_4321"),
+) : YapeTokenizer {
+    override suspend fun tokenize(phoneNumber: String, otp: String): Result<String> = result
+}
+
 private class FakePaymentTherapyPackageDataSource(
     private val detail: Result<Pair<TherapyPackage, List<PackageSession>>> = Result.failure(Exception("Not found")),
 ) : TherapyPackageDataSource {
@@ -127,13 +134,14 @@ class DefaultPaymentComponentTest {
         apptDataSource: AppointmentDataSource = FakePaymentAppointmentDataSource(),
         doctorDataSource: DoctorSearchDataSource = FakePaymentDoctorDataSource(),
         cardTokenizer: CardTokenizer = FakeCardTokenizer(),
+        yapeTokenizer: YapeTokenizer = FakeYapeTokenizer(),
         outputs: MutableList<PaymentComponent.Output> = mutableListOf(),
     ): DefaultPaymentComponent {
         return DefaultPaymentComponent(
             componentContext = ctx,
             appointmentId = "apt-1",
             therapyPackageId = null,
-            processPayment = ProcessPaymentUseCase(cardTokenizer, apptDataSource, dispatchers),
+            processPayment = ProcessPaymentUseCase(cardTokenizer, yapeTokenizer, apptDataSource, dispatchers),
             getAppointmentDetail = GetAppointmentDetailUseCase(apptDataSource, dispatchers),
             getDoctorDetail = GetDoctorDetailUseCase(doctorDataSource, dispatchers),
             cancelAppointment = CancelAppointmentUseCase(apptDataSource, dispatchers),
@@ -236,6 +244,36 @@ class DefaultPaymentComponentTest {
         val output = outputs.first()
         assertTrue(output is PaymentComponent.Output.NavigateToSuccess)
         assertEquals("apt-1", (output as PaymentComponent.Output.NavigateToSuccess).appointmentId)
+    }
+
+    @Test
+    fun onSubmit_yape_success_emits_NavigateToSuccess() = runTest {
+        val outputs = mutableListOf<PaymentComponent.Output>()
+        val component = createComponent(outputs = outputs)
+        component.onSelectMethod(PaymentMethodChoice.YAPE)
+        component.onYapePhoneChange("987654321")
+        component.onYapeOtpChange("123456")
+
+        component.onSubmit()
+
+        assertEquals(1, outputs.size)
+        val output = outputs.first()
+        assertTrue(output is PaymentComponent.Output.NavigateToSuccess)
+        assertEquals("apt-1", (output as PaymentComponent.Output.NavigateToSuccess).appointmentId)
+    }
+
+    @Test
+    fun onSubmit_yape_short_otp_sets_error_and_does_not_navigate() = runTest {
+        val outputs = mutableListOf<PaymentComponent.Output>()
+        val component = createComponent(outputs = outputs)
+        component.onSelectMethod(PaymentMethodChoice.YAPE)
+        component.onYapePhoneChange("987654321")
+        component.onYapeOtpChange("12")
+
+        component.onSubmit()
+
+        assertTrue(outputs.isEmpty())
+        assertNotNull(component.state.value.error)
     }
 
     @Test
@@ -506,7 +544,7 @@ class DefaultPaymentComponentTest {
             componentContext = ctx,
             appointmentId = "apt-1",
             therapyPackageId = null,
-            processPayment = ProcessPaymentUseCase(FakeCardTokenizer(), ds, dispatchers),
+            processPayment = ProcessPaymentUseCase(FakeCardTokenizer(), FakeYapeTokenizer(), ds, dispatchers),
             getAppointmentDetail = GetAppointmentDetailUseCase(ds, dispatchers),
             getDoctorDetail = GetDoctorDetailUseCase(FakePaymentDoctorDataSource(), dispatchers),
             cancelAppointment = CancelAppointmentUseCase(ds, dispatchers),
@@ -536,7 +574,7 @@ class DefaultPaymentComponentTest {
             componentContext = ctx,
             appointmentId = "apt-1",
             therapyPackageId = null,
-            processPayment = ProcessPaymentUseCase(FakeCardTokenizer(), ds, dispatchers),
+            processPayment = ProcessPaymentUseCase(FakeCardTokenizer(), FakeYapeTokenizer(), ds, dispatchers),
             getAppointmentDetail = GetAppointmentDetailUseCase(ds, dispatchers),
             getDoctorDetail = GetDoctorDetailUseCase(FakePaymentDoctorDataSource(), dispatchers),
             cancelAppointment = CancelAppointmentUseCase(ds, dispatchers),
@@ -567,7 +605,7 @@ class DefaultPaymentComponentTest {
             componentContext = ctx,
             appointmentId = "apt-1",
             therapyPackageId = null,
-            processPayment = ProcessPaymentUseCase(FakeCardTokenizer(), ds, dispatchers),
+            processPayment = ProcessPaymentUseCase(FakeCardTokenizer(), FakeYapeTokenizer(), ds, dispatchers),
             getAppointmentDetail = GetAppointmentDetailUseCase(ds, dispatchers),
             getDoctorDetail = GetDoctorDetailUseCase(FakePaymentDoctorDataSource(), dispatchers),
             cancelAppointment = CancelAppointmentUseCase(ds, dispatchers),

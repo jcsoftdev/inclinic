@@ -2,6 +2,7 @@ package com.inclinic.app.features.patient.presentation.component
 
 import com.arkivanov.decompose.value.Value
 import com.inclinic.app.core.model.Doctor
+import com.inclinic.app.core.model.Specialty
 import kotlinx.serialization.Serializable
 
 enum class DoctorSortOrder { Recent, TopRated, PriceAsc, PriceDesc }
@@ -64,4 +65,6 @@ data class DoctorSearchState(
     val page: Int = 1,
     val hasMore: Boolean = true,
     @kotlinx.serialization.Transient val error: String? = null,
+    /** Specialty catalog for the filter chips (id + name). Re-fetched on restore, not persisted. */
+    @kotlinx.serialization.Transient val specialties: List<Specialty> = emptyList(),
 )

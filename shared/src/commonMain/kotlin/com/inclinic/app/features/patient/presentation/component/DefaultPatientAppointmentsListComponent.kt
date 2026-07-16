@@ -100,11 +100,19 @@ class DefaultPatientAppointmentsListComponent(
     }
 
     private fun matchesTab(appt: Appointment, tab: AppointmentsTab): Boolean = when (tab) {
-        AppointmentsTab.ACTIVE -> appt.status in ACTIVE_STATUSES && !appt.needsClosure
+        // PENDING_PAYMENT past its deadline is functionally dead (backend's cleanup-unpaid
+        // cron deletes it, at latest within its 5-minute schedule) — don't show it as active
+        // in the meantime, it would just confuse the patient.
+        AppointmentsTab.ACTIVE -> appt.status in ACTIVE_STATUSES && !isExpiredPendingPayment(appt) && !appt.needsClosure
         AppointmentsTab.NEEDS_CLOSURE -> appt.needsClosure
         AppointmentsTab.COMPLETED -> appt.status in COMPLETED_STATUSES
-        AppointmentsTab.CANCELLED -> appt.status in CANCELLED_STATUSES
+        AppointmentsTab.CANCELLED -> appt.status in CANCELLED_STATUSES || isExpiredPendingPayment(appt)
     }
+
+    private fun isExpiredPendingPayment(appt: Appointment): Boolean =
+        appt.status == AppointmentStatus.PENDING_PAYMENT &&
+            appt.paymentDeadline != null &&
+            appt.paymentDeadline <= kotlin.time.Clock.System.now()
 
     private companion object {
         val ACTIVE_STATUSES = setOf(

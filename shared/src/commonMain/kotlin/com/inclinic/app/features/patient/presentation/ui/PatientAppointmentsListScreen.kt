@@ -5,6 +5,7 @@ import kotlinx.datetime.number
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -133,6 +135,7 @@ private fun AppointmentTabs(
             .clip(outerShape)
             .background(AppTheme.colors.surface)
             .border(1.dp, colors.border.copy(alpha = 0.55f), outerShape)
+            .horizontalScroll(rememberScrollState())
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -141,11 +144,11 @@ private fun AppointmentTabs(
             val isSelected = selected == tab
             Box(
                 modifier = Modifier
-                    .weight(1f)
                     .height(44.dp)
                     .clip(tabShape)
                     .background(if (isSelected) colors.navy else Color.Transparent)
-                    .clickable { onSelected(tab) },
+                    .clickable { onSelected(tab) }
+                    .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -153,6 +156,8 @@ private fun AppointmentTabs(
                     color = if (isSelected) Color.White else colors.muted,
                     fontSize = 14.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
         }
@@ -165,10 +170,10 @@ private fun AppointmentCard(appt: Appointment, onClick: () -> Unit, onPayNow: ()
     val now = kotlin.time.Clock.System.now()
     val isPaymentExpired = appt.status == AppointmentStatus.PENDING_PAYMENT &&
         appt.paymentDeadline != null && appt.paymentDeadline <= now
-    val statusUi = if (isPaymentExpired) {
-        StatusUi("PAGO VENCIDO", colors.redBg, colors.red)
-    } else {
-        statusUi(appt.status)
+    val statusUi = when {
+        isPaymentExpired -> StatusUi("PAGO VENCIDO", colors.redBg, colors.red)
+        appt.needsClosure -> StatusUi("POR CONFIRMAR", colors.amberBg, colors.amber)
+        else -> statusUi(appt.status)
     }
 
     Column(

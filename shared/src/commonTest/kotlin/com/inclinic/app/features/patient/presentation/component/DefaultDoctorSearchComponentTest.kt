@@ -9,7 +9,10 @@ import com.inclinic.app.core.model.Doctor
 import com.inclinic.app.core.model.DoctorPlan
 import com.inclinic.app.core.model.OnboardingStatus
 import com.inclinic.app.core.model.Review
+import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
+import com.inclinic.app.features.auth.fakes.FakeAuthRemoteDataSource
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
+import com.inclinic.app.features.auth.infrastructure.local.SpecialtyCacheDataSource
 import com.inclinic.app.features.patient.infrastructure.remote.DoctorFilters
 import com.inclinic.app.features.patient.infrastructure.remote.DoctorSearchDataSource
 import com.inclinic.app.features.patient.infrastructure.remote.PagedDoctors
@@ -64,6 +67,10 @@ class DefaultDoctorSearchComponentTest {
         return DefaultDoctorSearchComponent(
             componentContext = ctx,
             searchDoctors = SearchDoctorsUseCase(dataSource, dispatchers),
+            getSpecialties = GetSpecialtiesUseCase(
+                cache = SpecialtyCacheDataSource(remote = FakeAuthRemoteDataSource()),
+                dispatchers = dispatchers,
+            ),
             dispatchers = dispatchers,
             onOutput = outputs::add,
         )

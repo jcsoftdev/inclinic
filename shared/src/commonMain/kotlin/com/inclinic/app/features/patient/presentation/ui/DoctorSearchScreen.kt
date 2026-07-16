@@ -58,6 +58,7 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.SlidersHorizontal
 import com.composables.icons.lucide.Star
 import com.inclinic.app.core.model.Doctor
+import com.inclinic.app.core.model.Specialty
 import com.inclinic.app.features.patient.presentation.component.DoctorSearchComponent
 import com.inclinic.app.features.patient.presentation.component.DoctorSearchState
 import com.inclinic.app.features.patient.presentation.component.DoctorSortOrder
@@ -65,8 +66,6 @@ import com.inclinic.app.ui.atoms.ChipSpecialty
 import com.inclinic.app.ui.atoms.PatientTab
 import com.inclinic.app.ui.atoms.SearchBar
 import com.inclinic.app.ui.theme.AppTheme
-
-private val specialties = listOf(null, "Cardiología", "Dermatología", "Nutrición")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,12 +162,13 @@ fun DoctorSearchScreen(
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState()),
                     ) {
-                        specialties.forEach { specialty ->
-                            val isSelected = state.selectedSpecialty == specialty
+                        val specialtyOptions: List<Specialty?> = listOf(null) + state.specialties
+                        specialtyOptions.forEach { specialty ->
+                            val isSelected = state.selectedSpecialty == specialty?.id
                             ChipSpecialty(
-                                label    = specialty ?: "Todas",
+                                label    = specialty?.name ?: "Todas",
                                 selected = isSelected,
-                                onClick  = { component.onSpecialtyChange(specialty) },
+                                onClick  = { component.onSpecialtyChange(specialty?.id) },
                             )
                         }
                     }

@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
+import com.arkivanov.essenty.lifecycle.doOnResume
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.features.auth.application.LogoutUseCase
 import com.inclinic.app.features.patient.profile.application.GetMedicalProfileUseCase
@@ -31,9 +32,14 @@ class DefaultProfileOverviewComponent(
     private val _state = MutableValue(ProfileOverviewState())
     override val state: Value<ProfileOverviewState> = _state
 
+    // Recarga cada vez que la pantalla vuelve a estar activa (p.ej. al regresar
+    // de "Editar perfil" tras guardar), para que la UI refleje los cambios sin
+    // depender de reconstruir el componente.
     init {
-        load()
-        loadMedicalProfile()
+        lifecycle.doOnResume {
+            load()
+            loadMedicalProfile()
+        }
     }
 
     override fun onEditProfile() { onOutput(ProfileOverviewComponent.Output.NavigateToEditProfile) }
@@ -44,14 +50,17 @@ class DefaultProfileOverviewComponent(
     override fun onLogout() { scope.launch { logout() } }
 
     private fun load() {
-        _state.update { it.copy(isLoading = true, error = null) }
+        // Spinner solo en la primera carga; los refrescos al volver son silenciosos
+        // para no parpadear sobre datos ya visibles.
+        val showSpinner = _state.value.profile == null
+        _state.update { it.copy(isLoading = showSpinner, error = null) }
         scope.launch {
             getProfile(patientId)
                 .onSuccess { profile ->
                     _state.update { it.copy(isLoading = false, profile = profile) }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("Failed to load profile")) }
+                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("No se pudo cargar el perfil")) }
                 }
         }
     }

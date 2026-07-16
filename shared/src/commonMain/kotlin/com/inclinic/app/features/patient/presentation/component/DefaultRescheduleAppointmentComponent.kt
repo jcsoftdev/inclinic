@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import kotlinx.datetime.toLocalDateTime
 
 class DefaultRescheduleAppointmentComponent(
     componentContext: ComponentContext,
@@ -37,11 +38,11 @@ class DefaultRescheduleAppointmentComponent(
     private val scope = CoroutineScope(dispatchers.main + SupervisorJob())
     init { lifecycle.doOnDestroy { scope.cancel() } }
 
+    private val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+
     private val _state = MutableValue(
         RescheduleAppointmentState(
-            displayMonth = Clock.System.todayIn(TimeZone.currentSystemDefault()).let {
-                LocalDate(it.year, it.month.number, 1)
-            }
+            displayMonth = LocalDate(today.year, today.month.number, 1)
         )
     )
     override val state: Value<RescheduleAppointmentState> = _state
@@ -136,11 +137,22 @@ class DefaultRescheduleAppointmentComponent(
         scope.launch {
             getAvailability(doctorId, date.toString())
                 .onSuccess { slots ->
-                    _state.update { it.copy(isLoadingSlots = false, slots = slots) }
+                    _state.update { it.copy(isLoadingSlots = false, slots = applyPastTimeGuard(date, slots)) }
                 }
                 .onFailure { err ->
                     _state.update { it.copy(isLoadingSlots = false, error = err.toUserMessage()) }
                 }
+        }
+    }
+
+    /** Belt-and-suspenders: hides today's past-time slots even if the backend
+     *  response is stale (e.g. screen left open past a slot's start time). */
+    private fun applyPastTimeGuard(date: LocalDate, slots: List<AvailabilitySlot>): List<AvailabilitySlot> {
+        if (date != today) return slots
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
+        val currentTime = "${now.hour.toString().padStart(2, '0')}:${now.minute.toString().padStart(2, '0')}"
+        return slots.map { slot ->
+            if (slot.isAvailable && slot.startTime <= currentTime) slot.copy(isAvailable = false) else slot
         }
     }
 }

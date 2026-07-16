@@ -111,6 +111,9 @@ private class StubPaymentComponent : PaymentComponent {
     override fun onCardholderNameChange(value: String) = Unit
     override fun onDocTypeChange(value: String) = Unit
     override fun onDocNumberChange(value: String) = Unit
+    override fun onSelectMethod(method: PaymentMethodChoice) = Unit
+    override fun onYapePhoneChange(value: String) = Unit
+    override fun onYapeOtpChange(value: String) = Unit
     override fun onSubmit() = Unit
     override fun onBack() = Unit
     override fun onErrorDismissed() = Unit
