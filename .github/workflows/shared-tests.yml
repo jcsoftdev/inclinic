@@ -22,7 +22,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Run shared unit tests
-        run: ./gradlew :shared:commonTest --no-daemon
+        run: ./gradlew :shared:testAndroidHostTest --no-daemon
 
       - name: Upload test report
         if: always()
