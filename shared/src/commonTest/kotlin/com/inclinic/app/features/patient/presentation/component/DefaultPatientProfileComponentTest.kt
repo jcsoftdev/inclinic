@@ -171,7 +171,7 @@ class DefaultPatientProfileComponentTest {
         component.onSave()
 
         assertFalse(component.state.value.isSaving)
-        assertEquals("Save failed", component.state.value.error)
+        assertEquals("No se pudieron guardar los cambios", component.state.value.error)
     }
 
     @Test
