@@ -18,9 +18,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build KMP shared XCFramework
-        run: ./gradlew :shared:assembleXCFramework --no-daemon
-
       - name: Build iOS (xcodebuild)
         run: |
           xcodebuild \

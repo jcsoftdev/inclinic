@@ -22,11 +22,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Run shared unit tests
-        run: ./gradlew :shared:testDebugUnitTest --no-daemon
+        run: ./gradlew :shared:commonTest --no-daemon
 
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: shared/build/reports/tests/
+          path: |
+            shared/build/reports/tests/
+            shared/build/test-results/
