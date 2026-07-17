@@ -1,5 +1,6 @@
 package com.inclinic.app.features.doctor.prescriptions.fakes
 
+import com.inclinic.app.features.doctor.prescriptions.core.model.CreatePrescriptionDraft
 import com.inclinic.app.features.doctor.prescriptions.core.model.Prescription
 import com.inclinic.app.features.doctor.prescriptions.core.model.PrescriptionItem
 import com.inclinic.app.features.doctor.prescriptions.core.model.UpdatePrescriptionDraft
@@ -7,11 +8,18 @@ import com.inclinic.app.features.doctor.prescriptions.core.port.DoctorPrescripti
 
 class FakeDoctorPrescriptionsRepository : DoctorPrescriptionsRepository {
     var getResult: Result<Prescription> = Result.success(prescriptionFixture())
+    var createResult: Result<Prescription> = Result.success(prescriptionFixture())
     var updateResult: Result<Prescription> = Result.success(prescriptionFixture())
+    var lastCreatedDraft: CreatePrescriptionDraft? = null
     var lastUpdatedId: String? = null
     var lastUpdatedDraft: UpdatePrescriptionDraft? = null
 
     override suspend fun getPrescription(id: String): Result<Prescription> = getResult
+
+    override suspend fun createPrescription(draft: CreatePrescriptionDraft): Result<Prescription> {
+        lastCreatedDraft = draft
+        return createResult
+    }
 
     override suspend fun updatePrescription(id: String, draft: UpdatePrescriptionDraft): Result<Prescription> {
         lastUpdatedId = id
