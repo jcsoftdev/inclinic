@@ -1,11 +1,13 @@
 package com.inclinic.app.features.doctor.prescriptions.infrastructure.remote
 
 import com.inclinic.app.core.network.ApiEnvelope
+import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.CreatePrescriptionRequestDto
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.PrescriptionDto
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.UpdatePrescriptionRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -22,6 +24,15 @@ class KtorDoctorPrescriptionsDataSource(
         client.get {
             url("$baseUrl/api/prescriptions/$id")
         }.body<ApiEnvelope<PrescriptionDto>>().data ?: error("No data in prescription response")
+    }
+
+    /** POST /api/prescriptions */
+    override suspend fun createPrescription(body: CreatePrescriptionRequestDto): Result<PrescriptionDto> = runCatching {
+        client.post {
+            url("$baseUrl/api/prescriptions")
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }.body<ApiEnvelope<PrescriptionDto>>().data ?: error("No data in create prescription response")
     }
 
     /** PUT /api/prescriptions/{id} */

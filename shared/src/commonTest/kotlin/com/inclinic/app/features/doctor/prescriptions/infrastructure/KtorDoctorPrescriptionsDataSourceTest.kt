@@ -1,6 +1,7 @@
 package com.inclinic.app.features.doctor.prescriptions.infrastructure
 
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.KtorDoctorPrescriptionsDataSource
+import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.CreatePrescriptionRequestDto
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.UpdatePrescriptionRequestDto
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.UpdatePrescriptionItemDto
 import io.ktor.client.HttpClient
@@ -74,6 +75,37 @@ class KtorDoctorPrescriptionsDataSourceTest {
         assertTrue(result.isSuccess)
         assertEquals("/api/prescriptions/rx-1", capturedPath)
         assertEquals(HttpMethod.Put, capturedMethod)
+    }
+
+    @Test
+    fun createPrescription_posts_to_prescriptions_and_returns_dto() = runTest {
+        val prescriptionCreateJson = """
+            {"success":true,"data":{
+                "id":"rx-new","appointmentId":"apt-1","doctorId":"doc-1","patientId":"pat-1",
+                "instructions":"","doctorFullName":"Dr. Lopez","doctorSignature":"RX-SIG","createdAt":"2026-06-01T10:00:00Z",
+                "items":[{"id":"item-1","medicationName":"Amoxicilina 500mg"}]
+            }}
+        """.trimIndent()
+        val client = buildClient {
+            assertEquals("/api/prescriptions", it.url.encodedPath)
+            assertEquals(HttpMethod.Post, it.method)
+            respond(
+                content = prescriptionCreateJson,
+                status = HttpStatusCode.Created,
+                headers = jsonHeaders,
+            )
+        }
+        val ds = KtorDoctorPrescriptionsDataSource(client, "https://api.test")
+
+        val result = ds.createPrescription(
+            CreatePrescriptionRequestDto(
+                appointmentId = "apt-1",
+                items = listOf(UpdatePrescriptionItemDto(medicationName = "Amoxicilina 500mg")),
+            )
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals("rx-new", result.getOrThrow().id)
     }
 
     @Test
