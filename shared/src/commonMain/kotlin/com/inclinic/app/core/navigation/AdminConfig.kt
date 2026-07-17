@@ -25,9 +25,6 @@ sealed interface AdminConfig {
     // Finance screen (reached from Dashboard)
     @Serializable data object Finance : AdminConfig
 
-    // Placeholder destinations for tabs not yet implemented in this increment.
-    @Serializable data object DoctorApprovals : AdminConfig
-
     // Más tab — hub menu + lane configs
     @Serializable data object More : AdminConfig           // root: MasMenu hub
     @Serializable data object MasPatients : AdminConfig

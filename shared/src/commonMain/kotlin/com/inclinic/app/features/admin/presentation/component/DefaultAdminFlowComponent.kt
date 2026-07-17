@@ -49,7 +49,6 @@ class DefaultAdminFlowComponent(
     private val subscriptionsFactory: (ComponentContext, (AdminSubscriptionsComponent.Output) -> Unit) -> AdminSubscriptionsComponent,
     private val profileFactory: (ComponentContext, () -> Unit, () -> Unit, () -> Unit) -> AdminProfileComponent,
     private val configFactory: (ComponentContext, () -> Unit, () -> Unit) -> AdminConfigComponent,
-    private val placeholderFactory: (ComponentContext, String) -> AdminPlaceholderComponent,
     private val securityFactory: (ComponentContext, () -> Unit, () -> Unit) -> com.inclinic.app.features.admin.twofactor.presentation.component.AdminSecurityComponent,
     private val twoFactorSetupFactory: (ComponentContext, () -> Unit, () -> Unit) -> com.inclinic.app.features.admin.twofactor.presentation.component.AdminTwoFactorSetupComponent,
     private val patientAppointmentsFactory: (ComponentContext, String, (AdminPatientAppointmentsComponent.Output) -> Unit) -> AdminPatientAppointmentsComponent,
@@ -158,9 +157,6 @@ class DefaultAdminFlowComponent(
                         AdminNotificationsComponent.Output.Back -> inicioNav.pop()
                     }
                 }
-            )
-            is AdminConfig.DoctorApprovals -> AdminFlowComponent.Child.DoctorApprovals(
-                placeholderFactory(ctx, "Aprobaciones de doctores")
             )
             is AdminConfig.Disputes -> AdminFlowComponent.Child.DisputasRoot(
                 disputasFactory(ctx) { output ->

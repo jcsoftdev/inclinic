@@ -18,7 +18,6 @@ interface AdminFlowComponent {
         // Inicio tab
         class Dashboard(val component: AdminDashboardComponent) : Child
         class Notifications(val component: AdminNotificationsComponent) : Child
-        class DoctorApprovals(val component: AdminPlaceholderComponent) : Child
         class Finance(val component: AdminFinanceComponent) : Child
 
         // Citas tab
