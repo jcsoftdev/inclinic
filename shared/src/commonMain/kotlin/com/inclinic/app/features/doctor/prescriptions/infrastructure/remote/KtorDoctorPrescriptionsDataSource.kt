@@ -8,6 +8,7 @@ import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.UpdatePrescriptionRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -25,6 +26,7 @@ class KtorDoctorPrescriptionsDataSource(
     override suspend fun getPrescription(id: String): Result<PrescriptionDto> = runApi {
         client.get {
             url("$baseUrl/api/prescriptions/$id")
+            expectSuccess = true
         }.body<ApiEnvelope<PrescriptionDto>>().data ?: error("No data in prescription response")
     }.toResult()
 
@@ -33,6 +35,7 @@ class KtorDoctorPrescriptionsDataSource(
         client.post {
             url("$baseUrl/api/prescriptions")
             contentType(ContentType.Application.Json)
+            expectSuccess = true
             setBody(body)
         }.body<ApiEnvelope<PrescriptionDto>>().data ?: error("No data in create prescription response")
     }.toResult()
@@ -42,6 +45,7 @@ class KtorDoctorPrescriptionsDataSource(
         client.put {
             url("$baseUrl/api/prescriptions/$id")
             contentType(ContentType.Application.Json)
+            expectSuccess = true
             setBody(body)
         }.body<ApiEnvelope<PrescriptionDto>>().data ?: error("No data in update prescription response")
     }.toResult()

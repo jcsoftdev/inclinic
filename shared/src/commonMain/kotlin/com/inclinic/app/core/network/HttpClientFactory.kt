@@ -18,7 +18,6 @@ import kotlinx.serialization.json.Json
 object HttpClientFactory {
 
     fun create(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
-        expectSuccess = true
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true; isLenient = false; encodeDefaults = true })
         }
@@ -32,7 +31,6 @@ object HttpClientFactory {
         tokenStorage: TokenStorage,
         refreshCoordinator: RefreshCoordinator,
     ): HttpClient = HttpClient(engine) {
-        expectSuccess = true
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true; isLenient = false; encodeDefaults = true })
         }
