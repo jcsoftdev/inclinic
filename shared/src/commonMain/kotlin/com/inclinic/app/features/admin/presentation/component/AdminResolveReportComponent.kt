@@ -28,6 +28,17 @@ interface AdminResolveReportComponent {
     fun onConfirm()
     fun onBack()
 
+    /** Top-bar overflow menu → "Descartar". Reuses the same resolve path/status
+     *  ([ReportDecision.Dismissed]) as picking the Dismissed decision card + confirming. */
+    fun onQuickDismiss()
+
+    /** Top-bar overflow menu → "Escalar". Sends `status = "ESCALATED"` — not one of the
+     *  [ReportDecision] card options on purpose, so it doesn't also render as a 4th card.
+     *  NOTE: "ESCALATED" is a best-guess status value pending backend confirmation of the
+     *  report-resolution escalated status field — correct here if the backend uses a
+     *  different literal. */
+    fun onEscalate()
+
     sealed interface Output {
         data object Back : Output
         data object ResolvedSuccess : Output

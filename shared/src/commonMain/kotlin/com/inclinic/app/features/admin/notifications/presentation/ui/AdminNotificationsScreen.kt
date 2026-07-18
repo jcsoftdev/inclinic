@@ -156,6 +156,7 @@ fun AdminNotificationsScreen(
                     NotificationCard(
                         notification = notification,
                         isActing = state.isActing,
+                        onCardClick = { component.onNotificationClick(notification) },
                         onMarkRead = { component.onMarkRead(notification.id) },
                         onDelete = { component.onDelete(notification.id) },
                     )
@@ -171,6 +172,7 @@ fun AdminNotificationsScreen(
 private fun NotificationCard(
     notification: AdminNotification,
     isActing: Boolean,
+    onCardClick: () -> Unit,
     onMarkRead: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
@@ -185,6 +187,11 @@ private fun NotificationCard(
             .clip(RoundedCornerShape(dimens.radiusLarge))
             .background(colors.surface)
             .border(1.dp, if (notification.isRead) colors.border else colors.navy.copy(alpha = 0.25f), RoundedCornerShape(dimens.radiusLarge))
+            // Tapping anywhere on the card marks it read and deep-links by kind (see
+            // AdminNotificationsComponent.onNotificationClick). Unmapped kinds / links just
+            // mark read and stay here — never crash. The explicit "Marcar leída" / "Eliminar"
+            // buttons below still work independently (Button consumes its own click).
+            .clickable(onClick = onCardClick)
             .padding(dimens.spacing12),
         verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
     ) {
@@ -265,7 +272,6 @@ private fun NotificationCard(
                     variant = AppButtonVariant.Navy,
                     size = AppButtonSize.Sm,
                     modifier = Modifier.weight(1f),
-                    // TODO: future deep-link by kind (e.g. open appointment detail for APPOINTMENT type)
                 )
             } else {
                 Spacer(Modifier.weight(1f))

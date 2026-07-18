@@ -11,6 +11,8 @@ import com.inclinic.app.features.admin.notifications.application.DeleteAdminNoti
 import com.inclinic.app.features.admin.notifications.application.GetAdminNotificationsUseCase
 import com.inclinic.app.features.admin.notifications.application.MarkAdminNotificationReadUseCase
 import com.inclinic.app.features.admin.notifications.application.MarkAllAdminNotificationsReadUseCase
+import com.inclinic.app.features.admin.notifications.core.model.AdminNotification
+import com.inclinic.app.features.admin.notifications.core.model.AdminNotificationKind
 import com.inclinic.app.features.admin.notifications.core.port.AdminNotificationFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -93,6 +95,27 @@ class DefaultAdminNotificationsComponent(
 
     override fun onBack() {
         onOutput(AdminNotificationsComponent.Output.Back)
+    }
+
+    override fun onNotificationClick(notification: AdminNotification) {
+        if (!notification.isRead) onMarkRead(notification.id)
+
+        val id = notification.link
+            ?.trimEnd('/')
+            ?.substringAfterLast('/')
+            ?.takeIf { it.isNotBlank() }
+
+        val output = when (notification.kind) {
+            AdminNotificationKind.APPOINTMENT ->
+                id?.let { AdminNotificationsComponent.Output.NavigateToAppointment(it) }
+            AdminNotificationKind.DOCTOR ->
+                id?.let { AdminNotificationsComponent.Output.NavigateToDoctor(it) }
+            AdminNotificationKind.SPECIALTY -> AdminNotificationsComponent.Output.NavigateToSpecialtyRequests
+            AdminNotificationKind.PAYMENT -> AdminNotificationsComponent.Output.NavigateToFinance
+            // No admin destination for chat messages or system notices — mark read only.
+            AdminNotificationKind.MESSAGE, AdminNotificationKind.SYSTEM -> null
+        }
+        output?.let(onOutput)
     }
 
     private fun load() {

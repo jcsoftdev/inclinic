@@ -155,6 +155,20 @@ class DefaultAdminFlowComponent(
                 notificationsFactory(ctx) { output ->
                     when (output) {
                         AdminNotificationsComponent.Output.Back -> inicioNav.pop()
+                        is AdminNotificationsComponent.Output.NavigateToAppointment -> {
+                            _currentTab.value = AdminTab.Citas
+                            citasNav.push(AdminConfig.AppointmentDetail(output.appointmentId))
+                        }
+                        is AdminNotificationsComponent.Output.NavigateToDoctor -> {
+                            _currentTab.value = AdminTab.Doctores
+                            doctoresNav.push(AdminConfig.DoctorDetail(output.doctorId))
+                        }
+                        AdminNotificationsComponent.Output.NavigateToSpecialtyRequests -> {
+                            _currentTab.value = AdminTab.Mas
+                            masNav.push(AdminConfig.MasSpecialtyRequests)
+                        }
+                        AdminNotificationsComponent.Output.NavigateToFinance ->
+                            inicioNav.push(AdminConfig.Finance)
                     }
                 }
             )
@@ -371,6 +385,20 @@ class DefaultAdminFlowComponent(
                 notificationsFactory(ctx) { output ->
                     when (output) {
                         AdminNotificationsComponent.Output.Back -> masNav.pop()
+                        is AdminNotificationsComponent.Output.NavigateToAppointment -> {
+                            _currentTab.value = AdminTab.Citas
+                            citasNav.push(AdminConfig.AppointmentDetail(output.appointmentId))
+                        }
+                        is AdminNotificationsComponent.Output.NavigateToDoctor -> {
+                            _currentTab.value = AdminTab.Doctores
+                            doctoresNav.push(AdminConfig.DoctorDetail(output.doctorId))
+                        }
+                        AdminNotificationsComponent.Output.NavigateToSpecialtyRequests ->
+                            masNav.push(AdminConfig.MasSpecialtyRequests)
+                        AdminNotificationsComponent.Output.NavigateToFinance -> {
+                            _currentTab.value = AdminTab.Inicio
+                            inicioNav.push(AdminConfig.Finance)
+                        }
                     }
                 }
             )
