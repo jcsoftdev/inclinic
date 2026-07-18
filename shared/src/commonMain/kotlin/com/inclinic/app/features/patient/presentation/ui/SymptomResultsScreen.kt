@@ -38,6 +38,7 @@ import com.composables.icons.lucide.Pencil
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Sparkles
 import com.composables.icons.lucide.Star
+import com.composables.icons.lucide.TriangleAlert
 import com.composables.icons.lucide.User
 import com.inclinic.app.core.model.RecommendedDoctor
 import com.inclinic.app.features.patient.presentation.component.SymptomResultsComponent
@@ -89,6 +90,12 @@ fun SymptomResultsScreen(component: SymptomResultsComponent, modifier: Modifier 
                 state.analysis?.let { analysis ->
                     item {
                         AnalysisSummaryCard(analysis)
+                    }
+
+                    if (shouldShowUrgentCareNotice(analysis.severity)) {
+                        item {
+                            UrgentCareNoticeCard(analysis.severity)
+                        }
                     }
                 }
 
@@ -262,8 +269,8 @@ private fun AnalysisSummaryCard(analysis: com.inclinic.app.core.model.SymptomAna
                     .padding(horizontal = dimens.spacingSm, vertical = 3.dp),
             ) {
                 Text(
-                    text = analysis.severity.name,
-                    color = Color.White,
+                    text = severityLabel(analysis.severity),
+                    color = severityColor(analysis.severity, colors),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -297,6 +304,49 @@ private fun AnalysisSummaryCard(analysis: com.inclinic.app.core.model.SymptomAna
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Urgent-care alert card — red, high-contrast notice urging the patient toward
+ * in-person/emergency care. Rendered for HIGH and EMERGENCY severities only;
+ * see [shouldShowUrgentCareNotice].
+ */
+@Composable
+private fun UrgentCareNoticeCard(severity: com.inclinic.app.core.model.AnalysisSeverity) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+    val message = urgentCareNoticeMessage(severity) ?: return
+
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(dimens.radiusLarge))
+            .background(colors.errorBg)
+            .padding(dimens.spacingMd),
+    ) {
+        Icon(
+            imageVector = Lucide.TriangleAlert,
+            contentDescription = null,
+            tint = colors.error,
+            modifier = Modifier.size(20.dp),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "Atención urgente recomendada",
+                color = colors.error,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = message,
+                color = colors.error,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
+            )
         }
     }
 }
