@@ -58,6 +58,8 @@ import com.inclinic.app.features.doctor.therapy_offers.presentation.component.Cr
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.CreateTherapyOfferState
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListComponent
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListState
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionComponent
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionState
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionState
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
@@ -371,6 +373,22 @@ class DefaultDoctorFlowComponentTest {
                 override fun onRemoveItem(index: Int) {}
                 override fun onSubmit() {}
                 override fun onBack() { out(EditPrescriptionComponent.Output.Back) }
+            }
+        },
+        createPrescriptionFactory = { ctx, appointmentId, out ->
+            object : CreatePrescriptionComponent {
+                override val state: Value<CreatePrescriptionState> = MutableValue(CreatePrescriptionState())
+                override fun onUpdateItemName(index: Int, v: String) {}
+                override fun onUpdateItemDose(index: Int, v: String) {}
+                override fun onUpdateItemFrequency(index: Int, v: String) {}
+                override fun onUpdateItemDuration(index: Int, v: String) {}
+                override fun onUpdateItemNotes(index: Int, v: String) {}
+                override fun onAddItem() {}
+                override fun onRemoveItem(index: Int) {}
+                override fun onDiagnosisChange(v: String) {}
+                override fun onInstructionsChange(v: String) {}
+                override fun onSubmit() {}
+                override fun onBack() { out(CreatePrescriptionComponent.Output.Back) }
             }
         },
         deleteAccountFactory = { ctx, out ->
