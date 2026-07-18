@@ -11,4 +11,5 @@ data class UserDto(
     val role: String,
     val doctorId: String? = null,
     val patientId: String? = null,
+    val phone: String? = null,
 )

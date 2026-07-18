@@ -16,4 +16,6 @@ data class AuthUser(
     val role: UserRole,
     val doctorId: String? = null,
     val patientId: String? = null,
+    /** Populated by GET /api/users/me; absent from the login/register response shape. */
+    val phone: String? = null,
 )
