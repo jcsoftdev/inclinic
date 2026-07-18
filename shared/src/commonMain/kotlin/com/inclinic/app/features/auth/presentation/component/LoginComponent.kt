@@ -32,4 +32,11 @@ interface LoginComponent {
 
     /** Called when user taps register link. */
     fun onRegister()
+
+    /**
+     * Called when the user taps "Reenviar correo de activación" shown for
+     * [com.inclinic.app.features.auth.core.error.AuthError.InactiveAccount].
+     * No-op when [LoginState.canResendActivation] is false.
+     */
+    fun onResendActivation()
 }

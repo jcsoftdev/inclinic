@@ -104,6 +104,7 @@ class DefaultAuthFlowComponent(
                     is RegisterPatientComponent.Output.Success ->
                         navigation.push(AuthNavigationConfig.AccountCreated(email = output.email))
                     is RegisterPatientComponent.Output.Back -> navigation.pop()
+                    is RegisterPatientComponent.Output.RateLimited -> navigation.push(AuthNavigationConfig.RateLimit)
                 }
             }
         )
@@ -122,6 +123,7 @@ class DefaultAuthFlowComponent(
             forgotPasswordComponentFactory(ctx) { output ->
                 when (output) {
                     is ForgotPasswordComponent.Output.Back -> navigation.pop()
+                    is ForgotPasswordComponent.Output.RateLimited -> navigation.push(AuthNavigationConfig.RateLimit)
                 }
             }
         )

@@ -51,6 +51,12 @@ class DefaultForgotPasswordComponent(
                     // Exception: network/server errors surface normally so user knows to retry
                     val authError = error as? AuthError ?: AuthError.Unknown(error)
                     when (authError) {
+                        is AuthError.TooManyAttempts -> {
+                            // 429 gets a standalone screen instead of an inline banner or the
+                            // silent-success path — same experience as Login (design-gap-closure).
+                            _state.update { it.copy(isLoading = false) }
+                            onOutput(ForgotPasswordComponent.Output.RateLimited)
+                        }
                         is AuthError.NetworkError, is AuthError.ServerError ->
                             _state.update { it.copy(isLoading = false, error = authError) }
                         else ->

@@ -2,6 +2,7 @@ package com.inclinic.app.features.auth.application
 
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.events.SessionEvents
+import com.inclinic.app.core.events.SessionExpiryReason
 import com.inclinic.app.features.auth.core.port.TokenStorage
 import kotlinx.coroutines.withContext
 
@@ -18,6 +19,6 @@ class LogoutUseCase(
 ) {
     suspend operator fun invoke() = withContext(dispatchers.io) {
         tokenStorage.clear()
-        sessionEvents.emitExpired()
+        sessionEvents.emitExpired(SessionExpiryReason.USER_INITIATED)
     }
 }
