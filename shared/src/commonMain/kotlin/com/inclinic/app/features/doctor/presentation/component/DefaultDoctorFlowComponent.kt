@@ -269,6 +269,10 @@ class DefaultDoctorFlowComponent(
                             agendaNav.push(DoctorConfig.Chat(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule ->
                             agendaNav.push(DoctorConfig.RequestReschedule(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription ->
+                            agendaNav.push(DoctorConfig.CreatePrescription(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription ->
+                            agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             // Real appointmentId from the loaded appointment — links the new record.
                             _currentTab.value = DoctorTab.Pacientes
@@ -294,6 +298,10 @@ class DefaultDoctorFlowComponent(
                             agendaNav.push(DoctorConfig.Chat(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule ->
                             agendaNav.push(DoctorConfig.RequestReschedule(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription ->
+                            agendaNav.push(DoctorConfig.CreatePrescription(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription ->
+                            agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             _currentTab.value = DoctorTab.Pacientes
                             pacientesNav.push(

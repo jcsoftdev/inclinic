@@ -558,6 +558,43 @@ class DefaultDoctorFlowComponentTest {
     }
 
     @Test
+    fun appointmentDetail_navigateToCreatePrescription_pushes_CreatePrescription_with_appointmentId() = runTest {
+        val component = makeComponent()
+        component.onTabSelected(DoctorTab.Agenda)
+        component.navigateTo(DoctorConfig.AppointmentDetail("appt-77"))
+
+        val child = component.agendaStack.value.active.instance
+        assertIs<DoctorFlowComponent.Child.AppointmentDetail>(child)
+        // Stub emits NavigateToCreatePrescription(appointmentId = "appt-77").
+        child.component.onNavigateToCreatePrescription()
+
+        // Stays on Agenda's own stack — no cross-tab switch needed.
+        assertEquals(DoctorTab.Agenda, component.currentTab.value)
+        assertEquals(
+            DoctorConfig.CreatePrescription("appt-77"),
+            component.agendaStack.value.active.configuration,
+        )
+    }
+
+    @Test
+    fun appointmentDetail_navigateToEditPrescription_pushes_EditPrescription_with_prescriptionId() = runTest {
+        val component = makeComponent()
+        component.onTabSelected(DoctorTab.Agenda)
+        component.navigateTo(DoctorConfig.AppointmentDetail("appt-77"))
+
+        val child = component.agendaStack.value.active.instance
+        assertIs<DoctorFlowComponent.Child.AppointmentDetail>(child)
+        // Stub emits NavigateToEditPrescription(prescriptionId = "presc-1").
+        child.component.onNavigateToEditPrescription()
+
+        assertEquals(DoctorTab.Agenda, component.currentTab.value)
+        assertEquals(
+            DoctorConfig.EditPrescription("presc-1"),
+            component.agendaStack.value.active.configuration,
+        )
+    }
+
+    @Test
     fun pendingClosure_navigateToDetail_pushes_AppointmentDetail_onto_Agenda_not_Perfil() = runTest {
         val component = makeComponent()
         component.onTabSelected(DoctorTab.Perfil)

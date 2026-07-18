@@ -48,6 +48,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.composables.icons.lucide.Building2
 import com.composables.icons.lucide.EllipsisVertical
 import com.composables.icons.lucide.CalendarClock
+import com.composables.icons.lucide.FileCheck
 import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Lucide
@@ -183,6 +184,20 @@ fun DoctorAppointmentDetailScreen(
                 // registrar la ficha del paciente.
                 if (appt.status == AppointmentStatus.COMPLETED) {
                     OutlineCta(text = "Crear ficha", icon = Lucide.Stethoscope, onClick = component::onCreateMedicalRecord)
+                }
+
+                // Backend doesn't populate prescriptionId on GET /api/appointments/:id yet
+                // (see Appointment.prescriptionId doc comment), so this always renders as
+                // "Emitir receta" today; the "Ver receta" branch is ready for when it does.
+                if (appt.status == AppointmentStatus.CONFIRMED ||
+                    appt.status == AppointmentStatus.IN_PROGRESS ||
+                    appt.status == AppointmentStatus.COMPLETED
+                ) {
+                    if (appt.prescriptionId == null) {
+                        NavyCta(text = "Emitir receta", onClick = component::onNavigateToCreatePrescription)
+                    } else {
+                        OutlineCta(text = "Ver receta", icon = Lucide.FileCheck, onClick = component::onNavigateToEditPrescription)
+                    }
                 }
 
                 OutlineCta(text = "Ver historial paciente", icon = Lucide.FileText, onClick = component::onNavigateToPatient)
