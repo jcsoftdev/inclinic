@@ -37,6 +37,8 @@ interface AdminDataSource {
     // ── Doctors ──────────────────────────────────────────────────────────────
     suspend fun getDoctors(status: String?, q: String?): Result<List<AdminDoctorListItem>>
     suspend fun getPendingDoctors(): Result<List<AdminPendingDoctor>>
+    /** Full pending-doctor detail via GET /api/doctors/:id/pending (documents, specialty configs, correctionCount). */
+    suspend fun getPendingDoctorById(id: String): Result<AdminPendingDoctor>
     suspend fun getDoctorDetail(id: String): Result<AdminDoctorDetail>
     suspend fun approveDoctor(id: String): Result<Unit>
     suspend fun rejectDoctor(id: String, reason: String): Result<Unit>
@@ -213,7 +215,26 @@ data class AdminDoctorDetail(
     val specialties: List<AdminDoctorSpecialty>,
 )
 
-/** Pending-approval doctor from GET /api/doctors/pending. */
+/**
+ * Per-specialty visit-type + pricing configuration for a pending doctor.
+ * Only populated via [AdminDataSource.getPendingDoctorById] — the list call
+ * (GET /api/doctors/pending) leaves [AdminPendingDoctor.specialtyConfigs] empty.
+ */
+data class AdminPendingDoctorSpecialtyConfig(
+    val specialtyId: String,
+    val specialtyName: String,
+    val isPrimary: Boolean,
+    val offersOfficeVisit: Boolean,
+    val offersHomeVisit: Boolean,
+    val officePrice: Double?,
+    val homeVisitPrice: Double?,
+)
+
+/**
+ * Pending-approval doctor from GET /api/doctors/pending (list) or GET /api/doctors/:id/pending (detail).
+ * [documents], [correctionCount] and [specialtyConfigs] are only populated by the by-id detail call —
+ * the list call leaves them at their defaults ([documentCount] remains the only document signal there).
+ */
 data class AdminPendingDoctor(
     val id: String,
     val createdAt: String?,
@@ -222,6 +243,9 @@ data class AdminPendingDoctor(
     val user: AdminDoctorUser,
     val specialties: List<AdminDoctorSpecialty>,
     val documentCount: Int,
+    val documents: List<String> = emptyList(),
+    val correctionCount: Int = 0,
+    val specialtyConfigs: List<AdminPendingDoctorSpecialtyConfig> = emptyList(),
 ) {
     val fullName: String get() = user.fullName
     val initials: String get() = user.initials

@@ -161,6 +161,61 @@ private data class AdminDoctorDocumentDto(
     val type: String? = null,
 )
 
+// ── Pending-doctor detail DTOs (GET /api/doctors/:id/pending) ────────────────
+//
+// Backend returns the raw Prisma Doctor row (all scalars) + user{email,firstName,
+// lastName,phone,createdAt} + specialties{specialtyId,isPrimary,offersOfficeVisit,
+// offersHomeVisit,officePrice,homeVisitPrice,specialty:{name}} + documents (String[]
+// of filenames, NOT objects — unlike the simplified list-endpoint shape modeled by
+// [AdminPendingDoctorDto] above). `licenseNumber` (not `cmpNumber`) is the real JSON
+// key for the CMP number field — mapped explicitly in [toDomain] below.
+
+@Serializable
+private data class AdminPendingDoctorDetailSpecialtyDto(
+    val specialtyId: String = "",
+    val isPrimary: Boolean = false,
+    val offersOfficeVisit: Boolean = true,
+    val offersHomeVisit: Boolean = false,
+    val officePrice: Double? = null,
+    val homeVisitPrice: Double? = null,
+    val specialty: AdminDoctorSpecialtyNameDto = AdminDoctorSpecialtyNameDto(),
+)
+
+@Serializable
+private data class AdminPendingDoctorDetailDto(
+    val id: String = "",
+    val createdAt: String? = null,
+    val licenseNumber: String? = null,
+    val bio: String? = null,
+    val correctionCount: Int = 0,
+    val documents: List<String> = emptyList(),
+    val user: AdminDoctorUserDto = AdminDoctorUserDto(),
+    val specialties: List<AdminPendingDoctorDetailSpecialtyDto> = emptyList(),
+)
+
+private fun AdminPendingDoctorDetailDto.toDomain() = AdminPendingDoctor(
+    id = id,
+    createdAt = createdAt,
+    cmpNumber = licenseNumber,
+    bio = bio,
+    user = user.toDomain(),
+    specialties = specialties.map { AdminDoctorSpecialty(name = it.specialty.name) },
+    documentCount = documents.size,
+    documents = documents,
+    correctionCount = correctionCount,
+    specialtyConfigs = specialties.map {
+        AdminPendingDoctorSpecialtyConfig(
+            specialtyId = it.specialtyId,
+            specialtyName = it.specialty.name,
+            isPrimary = it.isPrimary,
+            offersOfficeVisit = it.offersOfficeVisit,
+            offersHomeVisit = it.offersHomeVisit,
+            officePrice = it.officePrice,
+            homeVisitPrice = it.homeVisitPrice,
+        )
+    },
+)
+
 @Serializable
 private data class RejectDoctorBodyDto(val rejectionReason: String)
 
@@ -792,6 +847,15 @@ class KtorAdminDataSource(
                     documentCount = dto.documents?.size ?: 0,
                 )
             }
+        }
+
+    override suspend fun getPendingDoctorById(id: String): Result<AdminPendingDoctor> =
+        runCatching {
+            val dto = client.get {
+                url("$baseUrl/api/doctors/$id/pending")
+            }.body<ApiEnvelope<AdminPendingDoctorDetailDto>>().data
+                ?: error("Pending doctor detail data missing")
+            dto.toDomain()
         }
 
     override suspend fun getDoctorDetail(id: String): Result<AdminDoctorDetail> =

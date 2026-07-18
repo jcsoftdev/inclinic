@@ -11,6 +11,7 @@ import com.inclinic.app.features.admin.doctors.application.ApproveDoctorUseCase
 import com.inclinic.app.features.admin.doctors.application.GetAdminDoctorDetailUseCase
 import com.inclinic.app.features.admin.doctors.application.GetAdminDoctorsUseCase
 import com.inclinic.app.features.admin.doctors.application.GetPendingDoctorsUseCase
+import com.inclinic.app.features.admin.doctors.application.GetPendingDoctorByIdUseCase
 import com.inclinic.app.features.admin.specialties.application.CreateSpecialtyUseCase
 import com.inclinic.app.features.admin.specialties.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.admin.specialties.application.GetSpecialtyRequestsUseCase
@@ -135,6 +136,7 @@ val adminModule = module {
     factory { GetAdminAppointmentDetailUseCase(get(), get()) }
     factory { GetAdminDoctorsUseCase(get(), get()) }
     factory { GetPendingDoctorsUseCase(get(), get()) }
+    factory { GetPendingDoctorByIdUseCase(get(), get()) }
     factory { GetAdminDoctorDetailUseCase(get(), get()) }
     factory { ApproveDoctorUseCase(get(), get()) }
     factory { RejectDoctorUseCase(get(), get()) }
@@ -182,7 +184,7 @@ val adminModule = module {
         DefaultAdminDoctorsComponent(ctx, get(), get(), onOutput)
     }
     factory<AdminDoctorDetailComponent> { (ctx: ComponentContext, doctorId: String, onOutput: (AdminDoctorDetailComponent.Output) -> Unit) ->
-        DefaultAdminDoctorDetailComponent(ctx, doctorId, get(), get(), onOutput)
+        DefaultAdminDoctorDetailComponent(ctx, doctorId, get(), get(), get(), get(), onOutput)
     }
     factory<AdminPendingDoctorsComponent> { (ctx: ComponentContext, onOutput: (AdminPendingDoctorsComponent.Output) -> Unit) ->
         DefaultAdminPendingDoctorsComponent(ctx, get(), get(), onOutput)
@@ -193,11 +195,12 @@ val adminModule = module {
     factory<AdminFinanceComponent> { (ctx: ComponentContext, onOutput: (AdminFinanceComponent.Output) -> Unit) ->
         DefaultAdminFinanceComponent(ctx, get(), get(), get(), onOutput)
     }
-    // AdminProfileComponent — reuses GetCurrentUserUseCase and LogoutUseCase from authModule
+    // AdminProfileComponent — reuses GetCurrentUserUseCase, UpdateUserProfileUseCase and LogoutUseCase from authModule
     factory<AdminProfileComponent> { (ctx: ComponentContext, onOpenSecurity: () -> Unit, onLogout: () -> Unit, onBack: () -> Unit) ->
         DefaultAdminProfileComponent(
             componentContext = ctx,
             getCurrentUserUseCase = get(),
+            updateUserProfileUseCase = get(),
             logoutUseCase = get(),
             dispatchers = get(),
             onOpenSecurity = onOpenSecurity,

@@ -67,6 +67,7 @@ private class FakeAdminDataSourceForAppointments(
     override suspend fun getAppointmentDetail(id: String): Result<AdminAppointmentDetail> = Result.failure(UnsupportedOperationException())
     override suspend fun getDoctors(status: String?, q: String?): Result<List<AdminDoctorListItem>> = Result.failure(UnsupportedOperationException())
     override suspend fun getPendingDoctors(): Result<List<AdminPendingDoctor>> = Result.failure(UnsupportedOperationException())
+    override suspend fun getPendingDoctorById(id: String): Result<AdminPendingDoctor> = Result.failure(UnsupportedOperationException())
     override suspend fun getDoctorDetail(id: String): Result<AdminDoctorDetail> = Result.failure(UnsupportedOperationException())
     override suspend fun approveDoctor(id: String): Result<Unit> = Result.failure(UnsupportedOperationException())
     override suspend fun rejectDoctor(id: String, reason: String): Result<Unit> = Result.failure(UnsupportedOperationException())
