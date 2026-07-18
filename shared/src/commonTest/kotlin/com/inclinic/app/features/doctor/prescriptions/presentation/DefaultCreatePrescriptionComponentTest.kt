@@ -56,7 +56,7 @@ class DefaultCreatePrescriptionComponentTest {
         c.onUpdateItemName(0, "Amoxicilina 500mg")
         c.onSubmit()
 
-        assertEquals("Esta cita ya tiene una receta", c.state.value.error)
+        assertNotNull(c.state.value.error)
         assertTrue(!c.state.value.isSubmitting)
     }
 

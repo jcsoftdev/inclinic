@@ -1,5 +1,6 @@
 package com.inclinic.app.features.doctor.prescriptions.presentation.component
 
+import com.inclinic.app.core.error.toUserMessage
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
@@ -90,7 +91,7 @@ class DefaultCreatePrescriptionComponent(
                 onFailure = { e ->
                     _state.value = _state.value.copy(
                         isSubmitting = false,
-                        error = e.message ?: "No se pudo crear la receta",
+                        error = e.toUserMessage("No se pudo crear la receta"),
                     )
                 },
             )
