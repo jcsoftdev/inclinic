@@ -15,6 +15,9 @@ sealed class AuthError : Throwable() {
     /** Account is administratively suspended. 403 + code=ACCOUNT_SUSPENDED. */
     data object SuspendedAccount : AuthError()
 
+    /** Too many requests in a short window (login/register/forgot-password rate limit). 429. */
+    data object TooManyAttempts : AuthError()
+
     /** No connectivity or request timed out. No tokens must be stored on this error. */
     data object NetworkError : AuthError()
 

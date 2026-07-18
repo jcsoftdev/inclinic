@@ -43,3 +43,13 @@ data class PrescriptionItemDraft(
     val notes: String?,
     val order: Int? = null,
 )
+
+/** Payload for POST /api/prescriptions. */
+data class CreatePrescriptionDraft(
+    val appointmentId: String,
+    val diagnosis: String?,
+    val instructions: String?,
+    val notes: String?,
+    val validUntil: String?,
+    val items: List<PrescriptionItemDraft>,
+)

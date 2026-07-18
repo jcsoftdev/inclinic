@@ -18,6 +18,7 @@ fun AuthError?.toUserMessage(): String? = when (this) {
     is AuthError.InvalidCredentials       -> "Email o contraseña incorrectos."
     is AuthError.InactiveAccount          -> "Tu cuenta no está activada. Revisa tu correo."
     is AuthError.SuspendedAccount         -> "Tu cuenta está suspendida. Contacta soporte."
+    is AuthError.TooManyAttempts          -> "Demasiados intentos. Intenta de nuevo en unos minutos."
     is AuthError.EmailAlreadyExists       -> "Este email ya está registrado."
     is AuthError.InvalidToken             -> "El código o enlace no es válido o ha expirado."
     is AuthError.NetworkError             -> "Sin conexión. Verifica tu internet."

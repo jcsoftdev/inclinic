@@ -94,6 +94,15 @@ class DefaultDoctorAppointmentDetailComponent(
         )
     }
 
+    override fun onNavigateToCreatePrescription() {
+        onOutput(DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription(appointmentId))
+    }
+
+    override fun onNavigateToEditPrescription() {
+        val prescriptionId = _state.value.appointment?.prescriptionId ?: return
+        onOutput(DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription(prescriptionId))
+    }
+
     override fun onBack() { onOutput(DoctorAppointmentDetailComponent.Output.Back) }
 
     private fun load() {

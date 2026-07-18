@@ -24,6 +24,12 @@ data class Appointment(
     val isPackageSession: Boolean = false,
     val hasPendingReschedule: Boolean = false,
     val needsClosure: Boolean = false,
+    // NOTE: GET /api/appointments/:id does not currently populate this relation
+    // (only the list endpoint's `prescription: { select: { id: true } }` include does —
+    // see ClinicAI appointment.service.ts getAppointments vs getAppointmentById). Defaults
+    // to null until the backend adds it there; the doctor-side CTA treats null as "no
+    // prescription yet" and always offers "Emitir receta" in the meantime.
+    val prescriptionId: String? = null,
 )
 
 @Serializable
