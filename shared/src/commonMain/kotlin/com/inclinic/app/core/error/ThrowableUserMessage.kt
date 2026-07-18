@@ -56,6 +56,22 @@ private fun ApiError.apiErrorMessage(fallback: String?): String = when (this) {
     is ApiError.Server      -> SERVER_MESSAGE
 }
 
+/**
+ * True when [this] represents an HTTP 404 — either the typed [ApiError.NotFound]
+ * (data sources routed through `runApi`) or a raw Ktor [ClientRequestException]
+ * with a 404 status (data sources that `runCatching { client.get { ... } }`
+ * directly, e.g. `KtorAdminDataSource`'s by-id lookups).
+ *
+ * Used by detail screens to distinguish a genuine "resource doesn't exist"
+ * (404) from any other load failure, so they can render a not-found affordance
+ * instead of a generic retry — see [com.inclinic.app.core.util.DetailLoadState].
+ */
+fun Throwable.isNotFoundError(): Boolean = when (this) {
+    is ApiError.NotFound -> true
+    is ClientRequestException -> response.status == HttpStatusCode.NotFound
+    else -> false
+}
+
 private fun ClientRequestException.clientErrorMessage(): String = when (response.status) {
     HttpStatusCode.Unauthorized -> "Tu sesión expiró. Inicia sesión nuevamente."
     HttpStatusCode.Forbidden    -> "No tienes permisos para esta acción."

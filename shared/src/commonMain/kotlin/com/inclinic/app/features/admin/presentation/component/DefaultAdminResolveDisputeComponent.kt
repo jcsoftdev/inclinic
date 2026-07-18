@@ -66,7 +66,7 @@ class DefaultAdminResolveDisputeComponent(
     }
 
     private fun load() {
-        _state.update { it.copy(isLoading = true, loadError = null) }
+        _state.update { it.copy(isLoading = true, loadError = null, notFound = false) }
         scope.launch {
             getDisputes(null)
                 .onSuccess { items ->
@@ -74,7 +74,7 @@ class DefaultAdminResolveDisputeComponent(
                     if (dispute != null) {
                         _state.update { it.copy(isLoading = false, dispute = dispute) }
                     } else {
-                        _state.update { it.copy(isLoading = false, loadError = "Disputa no encontrada") }
+                        _state.update { it.copy(isLoading = false, loadError = "Disputa no encontrada", notFound = true) }
                     }
                 }
                 .onFailure { err ->

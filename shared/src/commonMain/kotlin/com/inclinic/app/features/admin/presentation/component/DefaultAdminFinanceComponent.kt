@@ -75,6 +75,7 @@ class DefaultAdminFinanceComponent(
                     _state.update {
                         it.copy(
                             isLoading = false,
+                            hasLoadedOnce = true,
                             balanceTotal = "S/ ${formatCompactMoney(balanceTotal)}",
                             released = "S/ ${formatCompactMoney(data.totalReleasedRevenue)}",
                             held = "S/ ${formatCompactMoney(data.held.total)}",

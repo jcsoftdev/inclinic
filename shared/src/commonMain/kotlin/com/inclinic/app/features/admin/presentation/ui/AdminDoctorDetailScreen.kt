@@ -45,14 +45,17 @@ import com.composables.icons.lucide.Phone
 import com.composables.icons.lucide.Star
 import com.composables.icons.lucide.Stethoscope
 import com.composables.icons.lucide.Users
+import com.inclinic.app.core.util.DetailLoadState
 import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.admin.infrastructure.remote.AdminDoctorDetail
 import com.inclinic.app.features.admin.presentation.component.AdminDoctorDetailComponent
+import com.inclinic.app.features.admin.presentation.component.toDetailLoadState
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.AppTextField
 import com.inclinic.app.ui.atoms.ChipStatus
+import com.inclinic.app.ui.atoms.DetailErrorState
 import com.inclinic.app.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,24 +84,24 @@ fun AdminDoctorDetailScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.surface),
         )
 
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when (val loadState = state.toDetailLoadState()) {
+            is DetailLoadState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colors.navy)
             }
 
-            state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
-                    modifier = Modifier.padding(dimens.spacingLg),
-                ) {
-                    Icon(Lucide.CircleAlert, contentDescription = null, tint = colors.red, modifier = Modifier.size(40.dp))
-                    Text(state.error!!, color = colors.red, style = AppTheme.typography.body)
-                }
-            }
+            is DetailLoadState.NotFound -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+                notFound = true,
+            )
 
-            state.detail != null -> DoctorDetailContent(
-                detail = state.detail!!,
+            is DetailLoadState.Failed -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+            )
+
+            is DetailLoadState.Content -> DoctorDetailContent(
+                detail = loadState.value,
                 isSuspending = state.isSuspending,
                 suspendError = state.suspendError,
                 onSuspend = component::onSuspend,

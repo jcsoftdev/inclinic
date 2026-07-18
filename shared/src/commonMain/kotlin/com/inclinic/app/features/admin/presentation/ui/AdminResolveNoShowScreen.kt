@@ -32,18 +32,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.composables.icons.lucide.CircleAlert
 import com.composables.icons.lucide.CircleCheck
 import com.composables.icons.lucide.HandCoins
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.RotateCcw
 import com.composables.icons.lucide.TriangleAlert
+import com.inclinic.app.core.util.DetailLoadState
 import com.inclinic.app.features.admin.infrastructure.remote.AdminNoShowItem
 import com.inclinic.app.features.admin.presentation.component.AdminResolveNoShowComponent
+import com.inclinic.app.features.admin.presentation.component.toDetailLoadState
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.AppTextField
+import com.inclinic.app.ui.atoms.DetailErrorState
 import com.inclinic.app.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,24 +71,21 @@ fun AdminResolveNoShowScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.surface),
         )
 
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when (val loadState = state.toDetailLoadState()) {
+            is DetailLoadState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colors.navy)
             }
-            state.loadError != null && state.noShow == null -> Box(
-                Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.spacingSm),
-                    modifier = Modifier.padding(AppTheme.dimens.spacingLg),
-                ) {
-                    Icon(Lucide.CircleAlert, contentDescription = null, tint = colors.red, modifier = Modifier.size(40.dp))
-                    Text(state.loadError!!, color = colors.red, style = AppTheme.typography.body)
-                }
-            }
-            state.noShow != null -> ResolveNoShowContent(
-                noShow = state.noShow!!,
+            is DetailLoadState.NotFound -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+                notFound = true,
+            )
+            is DetailLoadState.Failed -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+            )
+            is DetailLoadState.Content -> ResolveNoShowContent(
+                noShow = loadState.value,
                 selectedResolution = state.selectedResolution,
                 note = state.note,
                 submitError = state.submitError,

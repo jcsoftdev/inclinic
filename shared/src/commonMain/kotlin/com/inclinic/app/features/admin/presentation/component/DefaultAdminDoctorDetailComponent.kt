@@ -1,5 +1,6 @@
 package com.inclinic.app.features.admin.presentation.component
 
+import com.inclinic.app.core.error.isNotFoundError
 import com.inclinic.app.core.error.toUserMessage
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -76,14 +77,20 @@ class DefaultAdminDoctorDetailComponent(
     }
 
     private fun load() {
-        _state.update { it.copy(isLoading = true, error = null) }
+        _state.update { it.copy(isLoading = true, error = null, notFound = false) }
         scope.launch {
             getDetail(doctorId)
                 .onSuccess { detail ->
                     _state.update { it.copy(isLoading = false, detail = detail) }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("Error cargando doctor")) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = err.toUserMessage("Error cargando doctor"),
+                            notFound = err.isNotFoundError(),
+                        )
+                    }
                 }
         }
     }
