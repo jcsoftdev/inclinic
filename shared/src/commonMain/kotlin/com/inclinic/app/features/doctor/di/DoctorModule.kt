@@ -87,6 +87,7 @@ import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSe
 import com.inclinic.app.features.doctor.profile.presentation.component.RequestSpecialtyComponent
 import com.inclinic.app.features.doctor.schedule.application.GetDailyScheduleUseCase
 import com.inclinic.app.features.doctor.schedule.application.GetWeeklyScheduleUseCase
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.RequestShareComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.ShareRequestsListComponent
@@ -227,6 +228,7 @@ val doctorModule = module {
                 }
             },
             editPrescriptionFactory = { c, prescriptionId, out -> get<EditPrescriptionComponent> { parametersOf(c, prescriptionId, out) } },
+            createPrescriptionFactory = { c, appointmentId, out -> get<CreatePrescriptionComponent> { parametersOf(c, appointmentId, out) } },
             deleteAccountFactory = { c, out -> get<DeleteAccountComponent> { parametersOf(c, out) } },
             noShowQueueFactory = { c, out -> get<NoShowQueueComponent> { parametersOf(c, out) } },
             pendingClosureQueueFactory = { c, out -> get<PendingClosureQueueComponent> { parametersOf(c, out) } },
