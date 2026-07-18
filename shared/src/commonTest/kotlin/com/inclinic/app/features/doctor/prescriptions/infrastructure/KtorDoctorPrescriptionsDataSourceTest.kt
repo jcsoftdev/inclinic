@@ -1,5 +1,6 @@
 package com.inclinic.app.features.doctor.prescriptions.infrastructure
 
+import com.inclinic.app.core.error.ApiError
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.KtorDoctorPrescriptionsDataSource
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.CreatePrescriptionRequestDto
 import com.inclinic.app.features.doctor.prescriptions.infrastructure.remote.dto.UpdatePrescriptionRequestDto
@@ -21,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class KtorDoctorPrescriptionsDataSourceTest {
@@ -32,6 +34,7 @@ class KtorDoctorPrescriptionsDataSourceTest {
         handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ): HttpClient = HttpClient(MockEngine { handler(it) }) {
         install(ContentNegotiation) { json(json) }
+        expectSuccess = true
     }
 
     private val prescriptionJson = """
@@ -106,6 +109,29 @@ class KtorDoctorPrescriptionsDataSourceTest {
 
         assertTrue(result.isSuccess)
         assertEquals("rx-new", result.getOrThrow().id)
+    }
+
+    @Test
+    fun createPrescription_conflict_surfaces_backend_message() = runTest {
+        val conflictJson = """
+            {"error":"Esta cita ya tiene una receta. Edítala en su lugar.","code":"PRESCRIPTION_ALREADY_EXISTS"}
+        """.trimIndent()
+        val client = buildClient {
+            respond(content = conflictJson, status = HttpStatusCode.Conflict, headers = jsonHeaders)
+        }
+        val ds = KtorDoctorPrescriptionsDataSource(client, "https://api.test")
+
+        val result = ds.createPrescription(
+            CreatePrescriptionRequestDto(
+                appointmentId = "apt-1",
+                items = listOf(UpdatePrescriptionItemDto(medicationName = "Amoxicilina 500mg")),
+            )
+        )
+
+        assertTrue(result.isFailure)
+        val error = result.exceptionOrNull()
+        assertIs<ApiError.Conflict>(error)
+        assertEquals("Esta cita ya tiene una receta. Edítala en su lugar.", error.message)
     }
 
     @Test
