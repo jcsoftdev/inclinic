@@ -32,3 +32,6 @@ docs/
 # Release signing key — NEVER commit
 *.keystore
 *.jks
+
+# Local git worktrees (subagent-driven-development scratch workspaces)
+.worktrees/

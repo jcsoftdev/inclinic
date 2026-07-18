@@ -49,7 +49,6 @@ class DefaultAdminFlowComponent(
     private val subscriptionsFactory: (ComponentContext, (AdminSubscriptionsComponent.Output) -> Unit) -> AdminSubscriptionsComponent,
     private val profileFactory: (ComponentContext, () -> Unit, () -> Unit, () -> Unit) -> AdminProfileComponent,
     private val configFactory: (ComponentContext, () -> Unit, () -> Unit) -> AdminConfigComponent,
-    private val placeholderFactory: (ComponentContext, String) -> AdminPlaceholderComponent,
     private val securityFactory: (ComponentContext, () -> Unit, () -> Unit) -> com.inclinic.app.features.admin.twofactor.presentation.component.AdminSecurityComponent,
     private val twoFactorSetupFactory: (ComponentContext, () -> Unit, () -> Unit) -> com.inclinic.app.features.admin.twofactor.presentation.component.AdminTwoFactorSetupComponent,
     private val patientAppointmentsFactory: (ComponentContext, String, (AdminPatientAppointmentsComponent.Output) -> Unit) -> AdminPatientAppointmentsComponent,
@@ -156,11 +155,22 @@ class DefaultAdminFlowComponent(
                 notificationsFactory(ctx) { output ->
                     when (output) {
                         AdminNotificationsComponent.Output.Back -> inicioNav.pop()
+                        is AdminNotificationsComponent.Output.NavigateToAppointment -> {
+                            _currentTab.value = AdminTab.Citas
+                            citasNav.push(AdminConfig.AppointmentDetail(output.appointmentId))
+                        }
+                        is AdminNotificationsComponent.Output.NavigateToDoctor -> {
+                            _currentTab.value = AdminTab.Doctores
+                            doctoresNav.push(AdminConfig.DoctorDetail(output.doctorId))
+                        }
+                        AdminNotificationsComponent.Output.NavigateToSpecialtyRequests -> {
+                            _currentTab.value = AdminTab.Mas
+                            masNav.push(AdminConfig.MasSpecialtyRequests)
+                        }
+                        AdminNotificationsComponent.Output.NavigateToFinance ->
+                            inicioNav.push(AdminConfig.Finance)
                     }
                 }
-            )
-            is AdminConfig.DoctorApprovals -> AdminFlowComponent.Child.DoctorApprovals(
-                placeholderFactory(ctx, "Aprobaciones de doctores")
             )
             is AdminConfig.Disputes -> AdminFlowComponent.Child.DisputasRoot(
                 disputasFactory(ctx) { output ->
@@ -375,6 +385,20 @@ class DefaultAdminFlowComponent(
                 notificationsFactory(ctx) { output ->
                     when (output) {
                         AdminNotificationsComponent.Output.Back -> masNav.pop()
+                        is AdminNotificationsComponent.Output.NavigateToAppointment -> {
+                            _currentTab.value = AdminTab.Citas
+                            citasNav.push(AdminConfig.AppointmentDetail(output.appointmentId))
+                        }
+                        is AdminNotificationsComponent.Output.NavigateToDoctor -> {
+                            _currentTab.value = AdminTab.Doctores
+                            doctoresNav.push(AdminConfig.DoctorDetail(output.doctorId))
+                        }
+                        AdminNotificationsComponent.Output.NavigateToSpecialtyRequests ->
+                            masNav.push(AdminConfig.MasSpecialtyRequests)
+                        AdminNotificationsComponent.Output.NavigateToFinance -> {
+                            _currentTab.value = AdminTab.Inicio
+                            inicioNav.push(AdminConfig.Finance)
+                        }
                     }
                 }
             )

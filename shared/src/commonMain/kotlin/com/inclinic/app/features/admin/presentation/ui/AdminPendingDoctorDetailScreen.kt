@@ -39,6 +39,7 @@ import com.composables.icons.lucide.Mail
 import com.composables.icons.lucide.Stethoscope
 import com.composables.icons.lucide.X
 import com.inclinic.app.features.admin.infrastructure.remote.AdminPendingDoctor
+import com.inclinic.app.features.admin.infrastructure.remote.AdminPendingDoctorSpecialtyConfig
 import com.inclinic.app.features.admin.presentation.component.AdminPendingDoctorDetailComponent
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
@@ -178,6 +179,48 @@ private fun PendingDoctorDetailContent(
             PendingInfoRow(icon = Lucide.Mail, label = "Email", value = doctor.user.email)
             PendingInfoRow(icon = Lucide.Stethoscope, label = "Especialidad", value = doctor.primarySpecialty)
             PendingInfoRow(icon = Lucide.FileText, label = "Docs subidos", value = "${doctor.documentCount}")
+            if (doctor.correctionCount > 0) {
+                PendingInfoRow(icon = Lucide.CircleAlert, label = "Correcciones", value = "${doctor.correctionCount}")
+            }
+        }
+
+        // Document file list (only populated by the by-id detail call)
+        if (doctor.documents.isNotEmpty()) {
+            PendingSectionLabel("ARCHIVOS")
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(dimens.radiusLarge))
+                    .background(colors.surface)
+                    .border(1.dp, colors.border, RoundedCornerShape(dimens.radiusLarge))
+                    .padding(dimens.spacing12),
+                verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+            ) {
+                doctor.documents.forEachIndexed { index, fileName ->
+                    if (index > 0) RowDivider()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+                        modifier = Modifier.padding(vertical = 6.dp),
+                    ) {
+                        Icon(Lucide.FileText, contentDescription = null, tint = colors.muted, modifier = Modifier.size(14.dp))
+                        Text(fileName, fontSize = 12.sp, color = colors.text, modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+
+        // Per-specialty visit-type + pricing config (only populated by the by-id detail call)
+        if (doctor.specialtyConfigs.isNotEmpty()) {
+            PendingSectionLabel("CONFIGURACIÓN POR ESPECIALIDAD")
+            Column(
+                Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+            ) {
+                doctor.specialtyConfigs.forEach { config ->
+                    SpecialtyConfigCard(config)
+                }
+            }
         }
 
         // Action error banner
@@ -250,6 +293,56 @@ private fun PendingDoctorDetailContent(
         }
 
         Spacer(Modifier.height(dimens.spacingLg))
+    }
+}
+
+@Composable
+private fun RowDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(AppTheme.colors.border),
+    )
+}
+
+@Composable
+private fun SpecialtyConfigCard(config: AdminPendingDoctorSpecialtyConfig) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(dimens.radiusLarge))
+            .background(colors.surface)
+            .border(1.dp, colors.border, RoundedCornerShape(dimens.radiusLarge))
+            .padding(dimens.spacing12),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(dimens.spacingXs),
+        ) {
+            Text(config.specialtyName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colors.text)
+            if (config.isPrimary) {
+                Text("· Principal", fontSize = 11.sp, color = colors.navy, fontWeight = FontWeight.Medium)
+            }
+        }
+        if (config.offersOfficeVisit) {
+            Text(
+                "Consultorio" + (config.officePrice?.let { " · S/ ${it}" } ?: ""),
+                fontSize = 12.sp,
+                color = colors.muted,
+            )
+        }
+        if (config.offersHomeVisit) {
+            Text(
+                "Domicilio" + (config.homeVisitPrice?.let { " · S/ ${it}" } ?: ""),
+                fontSize = 12.sp,
+                color = colors.muted,
+            )
+        }
     }
 }
 

@@ -25,6 +25,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +49,9 @@ import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.admin.infrastructure.remote.AdminDoctorDetail
 import com.inclinic.app.features.admin.presentation.component.AdminDoctorDetailComponent
 import com.inclinic.app.ui.atoms.AppBackButton
+import com.inclinic.app.ui.atoms.AppButton
+import com.inclinic.app.ui.atoms.AppButtonVariant
+import com.inclinic.app.ui.atoms.AppTextField
 import com.inclinic.app.ui.atoms.ChipStatus
 import com.inclinic.app.ui.theme.AppTheme
 
@@ -91,7 +97,13 @@ fun AdminDoctorDetailScreen(
                 }
             }
 
-            state.detail != null -> DoctorDetailContent(detail = state.detail!!)
+            state.detail != null -> DoctorDetailContent(
+                detail = state.detail!!,
+                isSuspending = state.isSuspending,
+                suspendError = state.suspendError,
+                onSuspend = component::onSuspend,
+                onUnsuspend = component::onUnsuspend,
+            )
         }
     }
 }
@@ -99,7 +111,13 @@ fun AdminDoctorDetailScreen(
 // ── Private sub-composables ───────────────────────────────────────────────────
 
 @Composable
-private fun DoctorDetailContent(detail: AdminDoctorDetail) {
+private fun DoctorDetailContent(
+    detail: AdminDoctorDetail,
+    isSuspending: Boolean,
+    suspendError: String?,
+    onSuspend: (reason: String) -> Unit,
+    onUnsuspend: () -> Unit,
+) {
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
 
@@ -224,30 +242,105 @@ private fun DoctorDetailContent(detail: AdminDoctorDetail) {
             }
         }
 
-        // Admin note: full suspend/unsuspend action is a backend TODO
+        // Suspend / unsuspend actions — wired to SuspendUserUseCase / UnsuspendUserUseCase
+        // via AdminDoctorDetailComponent.onSuspend / onUnsuspend (detail.user.id, not detail.id).
         DocSectionLabel("ACCIONES")
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(dimens.radius))
-                .background(colors.amberBg)
-                .border(1.dp, colors.amber, RoundedCornerShape(dimens.radius))
-                .padding(dimens.spacing12),
-        ) {
+        DoctorSuspendActionsCard(
+            isSuspended = detail.user.isSuspended,
+            isSuspending = isSuspending,
+            suspendError = suspendError,
+            onSuspend = onSuspend,
+            onUnsuspend = onUnsuspend,
+        )
+
+        Spacer(Modifier.height(dimens.spacingLg))
+    }
+}
+
+/**
+ * Suspend/reactivate action card.
+ * - Active doctor: reveals an inline reason field (>= 10 chars, mirrors the backend minimum
+ *   enforced by [com.inclinic.app.features.admin.presentation.component.AdminSuspendUserState.canSubmit])
+ *   before enabling "Suspender".
+ * - Suspended doctor: single "Reactivar" button, no reason required (matches UnsuspendUserUseCase).
+ */
+@Composable
+private fun DoctorSuspendActionsCard(
+    isSuspended: Boolean,
+    isSuspending: Boolean,
+    suspendError: String?,
+    onSuspend: (reason: String) -> Unit,
+    onUnsuspend: () -> Unit,
+) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+    var reason by remember { mutableStateOf("") }
+    val bg = if (isSuspended) colors.greenBg else colors.redBg
+    val border = if (isSuspended) colors.green else colors.red
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(dimens.radius))
+            .background(bg)
+            .border(1.dp, border, RoundedCornerShape(dimens.radius))
+            .padding(dimens.spacing12),
+        verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+    ) {
+        if (isSuspended) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(dimens.spacingSm),
             ) {
-                Icon(Lucide.CircleAlert, contentDescription = null, tint = colors.amber, modifier = Modifier.size(14.dp))
+                Icon(Lucide.Ban, contentDescription = null, tint = colors.green, modifier = Modifier.size(14.dp))
                 Text(
-                    "Suspender/reactivar doctor — pendiente de implementación backend (POST /api/admin/users/:id/suspend).",
+                    "Este doctor está suspendido — puede reactivar su cuenta.",
                     fontSize = 11.sp,
-                    color = colors.muted,
+                    color = colors.text,
+                    modifier = Modifier.weight(1f),
                 )
             }
+            AppButton(
+                text = "Reactivar doctor",
+                onClick = onUnsuspend,
+                loading = isSuspending,
+                enabled = !isSuspending,
+                variant = AppButtonVariant.Navy,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+            ) {
+                Icon(Lucide.CircleAlert, contentDescription = null, tint = colors.red, modifier = Modifier.size(14.dp))
+                Text(
+                    "Suspender bloquea el acceso del doctor a la plataforma.",
+                    fontSize = 11.sp,
+                    color = colors.text,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            AppTextField(
+                value = reason,
+                onValueChange = { reason = it },
+                label = "Motivo de suspensión",
+                placeholder = "Describe el motivo (mín. 10 caracteres)",
+                enabled = !isSuspending,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            AppButton(
+                text = "Suspender doctor",
+                onClick = { onSuspend(reason.trim()) },
+                loading = isSuspending,
+                enabled = !isSuspending && reason.trim().length >= 10,
+                variant = AppButtonVariant.Danger,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
-
-        Spacer(Modifier.height(dimens.spacingLg))
+        suspendError?.let {
+            Text(it, fontSize = 11.sp, color = colors.red)
+        }
     }
 }
 

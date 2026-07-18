@@ -11,6 +11,7 @@ import com.inclinic.app.features.admin.doctors.application.ApproveDoctorUseCase
 import com.inclinic.app.features.admin.doctors.application.GetAdminDoctorDetailUseCase
 import com.inclinic.app.features.admin.doctors.application.GetAdminDoctorsUseCase
 import com.inclinic.app.features.admin.doctors.application.GetPendingDoctorsUseCase
+import com.inclinic.app.features.admin.doctors.application.GetPendingDoctorByIdUseCase
 import com.inclinic.app.features.admin.specialties.application.CreateSpecialtyUseCase
 import com.inclinic.app.features.admin.specialties.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.admin.specialties.application.GetSpecialtyRequestsUseCase
@@ -92,7 +93,6 @@ import com.inclinic.app.features.admin.presentation.component.AdminPendingDoctor
 import com.inclinic.app.features.admin.presentation.component.AdminPendingDoctorsComponent
 import com.inclinic.app.features.admin.presentation.component.AdminMasMenuComponent
 import com.inclinic.app.features.admin.presentation.component.AdminConfigComponent
-import com.inclinic.app.features.admin.presentation.component.AdminPlaceholderComponent
 import com.inclinic.app.features.admin.presentation.component.AdminProfileComponent
 import com.inclinic.app.features.admin.presentation.component.DefaultAdminAppointmentDetailComponent
 import com.inclinic.app.features.admin.presentation.component.DefaultAdminConfigComponent
@@ -136,6 +136,7 @@ val adminModule = module {
     factory { GetAdminAppointmentDetailUseCase(get(), get()) }
     factory { GetAdminDoctorsUseCase(get(), get()) }
     factory { GetPendingDoctorsUseCase(get(), get()) }
+    factory { GetPendingDoctorByIdUseCase(get(), get()) }
     factory { GetAdminDoctorDetailUseCase(get(), get()) }
     factory { ApproveDoctorUseCase(get(), get()) }
     factory { RejectDoctorUseCase(get(), get()) }
@@ -183,7 +184,7 @@ val adminModule = module {
         DefaultAdminDoctorsComponent(ctx, get(), get(), onOutput)
     }
     factory<AdminDoctorDetailComponent> { (ctx: ComponentContext, doctorId: String, onOutput: (AdminDoctorDetailComponent.Output) -> Unit) ->
-        DefaultAdminDoctorDetailComponent(ctx, doctorId, get(), get(), onOutput)
+        DefaultAdminDoctorDetailComponent(ctx, doctorId, get(), get(), get(), get(), onOutput)
     }
     factory<AdminPendingDoctorsComponent> { (ctx: ComponentContext, onOutput: (AdminPendingDoctorsComponent.Output) -> Unit) ->
         DefaultAdminPendingDoctorsComponent(ctx, get(), get(), onOutput)
@@ -194,14 +195,12 @@ val adminModule = module {
     factory<AdminFinanceComponent> { (ctx: ComponentContext, onOutput: (AdminFinanceComponent.Output) -> Unit) ->
         DefaultAdminFinanceComponent(ctx, get(), get(), get(), onOutput)
     }
-    factory<AdminPlaceholderComponent> { (ctx: ComponentContext, title: String) ->
-        AdminPlaceholderComponent(ctx, title)
-    }
-    // AdminProfileComponent — reuses GetCurrentUserUseCase and LogoutUseCase from authModule
+    // AdminProfileComponent — reuses GetCurrentUserUseCase, UpdateUserProfileUseCase and LogoutUseCase from authModule
     factory<AdminProfileComponent> { (ctx: ComponentContext, onOpenSecurity: () -> Unit, onLogout: () -> Unit, onBack: () -> Unit) ->
         DefaultAdminProfileComponent(
             componentContext = ctx,
             getCurrentUserUseCase = get(),
+            updateUserProfileUseCase = get(),
             logoutUseCase = get(),
             dispatchers = get(),
             onOpenSecurity = onOpenSecurity,
@@ -304,7 +303,6 @@ val adminModule = module {
             profileFactory = { c, onSec, onLogout, onBack -> get { parametersOf(c, onSec, onLogout, onBack) } },
             configFactory = { c, onSec, onBack -> get { parametersOf(c, onSec, onBack) } },
             notificationsFactory = { c, out -> get { parametersOf(c, out) } },
-            placeholderFactory = { c, title -> get { parametersOf(c, title) } },
             securityFactory = { c, onSetup, onBack -> get { parametersOf(c, onSetup, onBack) } },
             twoFactorSetupFactory = { c, onActivated, onBack -> get { parametersOf(c, onActivated, onBack) } },
             patientAppointmentsFactory = { c, patientId, out -> get { parametersOf(c, patientId, out) } },

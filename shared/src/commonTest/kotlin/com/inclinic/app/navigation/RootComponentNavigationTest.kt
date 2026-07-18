@@ -62,7 +62,7 @@ class RootComponentNavigationTest {
             sessionEvents = sessionEvents,
             getStoredTokens = localGetStoredTokens,
             tokenStorage = fakeTokenStorage,
-            loginComponentFactory = { _, _, _, _, _ -> StubLoginComponent() },
+            loginComponentFactory = { _, _, _, _, _, _ -> StubLoginComponent() },
             twoFactorVerifyComponentFactory = { _, _, _, _ -> StubTwoFactorVerifyComponent() },
             registerPatientComponentFactory = { _, _ -> StubRegisterPatientComponent() },
             registerDoctorComponentFactory = { _, _ -> StubRegisterDoctorComponent() },

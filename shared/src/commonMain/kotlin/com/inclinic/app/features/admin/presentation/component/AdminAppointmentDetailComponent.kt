@@ -12,7 +12,8 @@ interface AdminAppointmentDetailComponent {
     sealed interface Output {
         data object Back : Output
         /** Navigates to dispute resolution for the current appointment.
-         *  Target screen does not exist yet — wired to a no-op / TODO placeholder. */
+         *  Only emitted when [AdminAppointmentDetail.hasDispute] is true — see
+         *  [DefaultAdminAppointmentDetailComponent.onNavigateToResolveDispute]. */
         data class NavigateToResolveDispute(val appointmentId: String) : Output
     }
 }

@@ -46,7 +46,7 @@ class DefaultRootComponent(
     private val sessionEvents: SessionEvents,
     private val getStoredTokens: GetStoredTokensUseCase,
     private val tokenStorage: TokenStorage,
-    private val loginComponentFactory: (ComponentContext, (AuthUser) -> Unit, (String) -> Unit, () -> Unit, () -> Unit) -> LoginComponent,
+    private val loginComponentFactory: (ComponentContext, (AuthUser) -> Unit, (String) -> Unit, () -> Unit, () -> Unit, () -> Unit) -> LoginComponent,
     private val twoFactorVerifyComponentFactory: (ComponentContext, String, (AuthUser) -> Unit, () -> Unit) -> TwoFactorVerifyComponent,
     private val registerPatientComponentFactory: (ComponentContext, (RegisterPatientComponent.Output) -> Unit) -> RegisterPatientComponent,
     private val registerDoctorComponentFactory: (ComponentContext, (RegisterDoctorComponent.Output) -> Unit) -> RegisterDoctorComponent,

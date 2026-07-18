@@ -49,6 +49,7 @@ private open class StubAdminDataSource : AdminDataSource {
     override suspend fun getAppointmentDetail(id: String): Result<AdminAppointmentDetail> = Result.failure(NotImplementedError())
     override suspend fun getDoctors(status: String?, q: String?): Result<List<AdminDoctorListItem>> = Result.success(emptyList())
     override suspend fun getPendingDoctors(): Result<List<AdminPendingDoctor>> = Result.success(emptyList())
+    override suspend fun getPendingDoctorById(id: String): Result<AdminPendingDoctor> = Result.failure(NotImplementedError())
     override suspend fun getDoctorDetail(id: String): Result<AdminDoctorDetail> = Result.failure(NotImplementedError())
     override suspend fun approveDoctor(id: String): Result<Unit> = Result.success(Unit)
     override suspend fun rejectDoctor(id: String, reason: String): Result<Unit> = Result.success(Unit)

@@ -1,6 +1,7 @@
 package com.inclinic.app.features.patient.presentation.component
 
 import com.inclinic.app.core.error.toUserMessage
+import com.inclinic.app.core.model.HistoryAccessLog
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
@@ -31,6 +32,9 @@ class DefaultHistoryAccessLogsComponent(
     override fun onRefresh() { load() }
     override fun onBack() { onOutput(HistoryAccessLogsComponent.Output.Back) }
     override fun onManageAccess() { onOutput(HistoryAccessLogsComponent.Output.NavigateToManageAccess) }
+    override fun onLogClick(entry: HistoryAccessLog) {
+        onOutput(HistoryAccessLogsComponent.Output.NavigateToDetail(entry))
+    }
 
     private fun load() {
         _state.update { it.copy(isLoading = true, error = null) }

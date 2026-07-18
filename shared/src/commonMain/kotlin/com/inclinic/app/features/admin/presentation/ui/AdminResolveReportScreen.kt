@@ -18,13 +18,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,15 +70,36 @@ fun AdminResolveReportScreen(
             },
             navigationIcon = { AppBackButton(onClick = component::onBack) },
             actions = {
-                // Non-functional overflow — TODO future actions
-                Icon(
-                    Lucide.EllipsisVertical,
-                    contentDescription = "Más opciones",
-                    tint = colors.navy,
-                    modifier = Modifier
-                        .padding(end = 12.dp)
-                        .size(22.dp),
-                )
+                var menuOpen by remember { mutableStateOf(false) }
+                Box {
+                    IconButton(onClick = { menuOpen = true }) {
+                        Icon(
+                            Lucide.EllipsisVertical,
+                            contentDescription = "Más opciones",
+                            tint = colors.navy,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = menuOpen,
+                        onDismissRequest = { menuOpen = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Descartar", color = colors.text) },
+                            onClick = {
+                                menuOpen = false
+                                component.onQuickDismiss()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Escalar", color = colors.red) },
+                            onClick = {
+                                menuOpen = false
+                                component.onEscalate()
+                            },
+                        )
+                    }
+                }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.surface),
         )

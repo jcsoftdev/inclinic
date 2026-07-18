@@ -58,6 +58,8 @@ import com.inclinic.app.features.doctor.therapy_offers.presentation.component.Cr
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.CreateTherapyOfferState
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListComponent
 import com.inclinic.app.features.doctor.therapy_offers.presentation.component.TherapyOffersListState
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionComponent
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionState
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionState
 import com.inclinic.app.features.patient.presentation.component.DeleteAccountComponent
@@ -373,6 +375,22 @@ class DefaultDoctorFlowComponentTest {
                 override fun onBack() { out(EditPrescriptionComponent.Output.Back) }
             }
         },
+        createPrescriptionFactory = { ctx, appointmentId, out ->
+            object : CreatePrescriptionComponent {
+                override val state: Value<CreatePrescriptionState> = MutableValue(CreatePrescriptionState())
+                override fun onUpdateItemName(index: Int, v: String) {}
+                override fun onUpdateItemDose(index: Int, v: String) {}
+                override fun onUpdateItemFrequency(index: Int, v: String) {}
+                override fun onUpdateItemDuration(index: Int, v: String) {}
+                override fun onUpdateItemNotes(index: Int, v: String) {}
+                override fun onAddItem() {}
+                override fun onRemoveItem(index: Int) {}
+                override fun onDiagnosisChange(v: String) {}
+                override fun onInstructionsChange(v: String) {}
+                override fun onSubmit() {}
+                override fun onBack() { out(CreatePrescriptionComponent.Output.Back) }
+            }
+        },
         deleteAccountFactory = { ctx, out ->
             object : DeleteAccountComponent {
                 override val state: Value<DeleteAccountState> = MutableValue(DeleteAccountState())
@@ -536,6 +554,43 @@ class DefaultDoctorFlowComponentTest {
         assertEquals(
             DoctorConfig.MedicalRecordEditor(patientId = "pat-1", appointmentId = "appt-77"),
             component.pacientesStack.value.active.configuration,
+        )
+    }
+
+    @Test
+    fun appointmentDetail_navigateToCreatePrescription_pushes_CreatePrescription_with_appointmentId() = runTest {
+        val component = makeComponent()
+        component.onTabSelected(DoctorTab.Agenda)
+        component.navigateTo(DoctorConfig.AppointmentDetail("appt-77"))
+
+        val child = component.agendaStack.value.active.instance
+        assertIs<DoctorFlowComponent.Child.AppointmentDetail>(child)
+        // Stub emits NavigateToCreatePrescription(appointmentId = "appt-77").
+        child.component.onNavigateToCreatePrescription()
+
+        // Stays on Agenda's own stack — no cross-tab switch needed.
+        assertEquals(DoctorTab.Agenda, component.currentTab.value)
+        assertEquals(
+            DoctorConfig.CreatePrescription("appt-77"),
+            component.agendaStack.value.active.configuration,
+        )
+    }
+
+    @Test
+    fun appointmentDetail_navigateToEditPrescription_pushes_EditPrescription_with_prescriptionId() = runTest {
+        val component = makeComponent()
+        component.onTabSelected(DoctorTab.Agenda)
+        component.navigateTo(DoctorConfig.AppointmentDetail("appt-77"))
+
+        val child = component.agendaStack.value.active.instance
+        assertIs<DoctorFlowComponent.Child.AppointmentDetail>(child)
+        // Stub emits NavigateToEditPrescription(prescriptionId = "presc-1").
+        child.component.onNavigateToEditPrescription()
+
+        assertEquals(DoctorTab.Agenda, component.currentTab.value)
+        assertEquals(
+            DoctorConfig.EditPrescription("presc-1"),
+            component.agendaStack.value.active.configuration,
         )
     }
 

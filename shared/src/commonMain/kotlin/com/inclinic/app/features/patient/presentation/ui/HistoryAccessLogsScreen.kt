@@ -111,7 +111,7 @@ fun HistoryAccessLogsScreen(component: HistoryAccessLogsComponent, modifier: Mod
                 ) {
                     item(key = "info-banner") { AccessInfoBanner() }
                     items(state.logs, key = { it.id }) { log ->
-                        AccessLogCard(log)
+                        AccessLogCard(log, onClick = { component.onLogClick(log) })
                     }
                     item(key = "revoke-cta") {
                         RevokeAccessBanner(onManageAccess = component::onManageAccess)
@@ -197,7 +197,9 @@ private fun RevokeAccessBanner(onManageAccess: () -> Unit) {
     }
 }
 
-private data class AccessTypeStyle(
+// internal (not private) — reused by HistoryAccessLogDetailScreen so the drill-down
+// screen matches the exact icon/label/color mapping shown in the list.
+internal data class AccessTypeStyle(
     val icon: ImageVector,
     val actionLabel: String,
     val description: String,
@@ -206,7 +208,7 @@ private data class AccessTypeStyle(
 )
 
 @Composable
-private fun accessTypeStyle(type: AccessType): AccessTypeStyle {
+internal fun accessTypeStyle(type: AccessType): AccessTypeStyle {
     val colors = AppTheme.colors
     return when (type) {
         AccessType.READ -> AccessTypeStyle(
@@ -241,15 +243,21 @@ private fun accessTypeStyle(type: AccessType): AccessTypeStyle {
 }
 
 @Composable
-private fun AccessLogCard(log: HistoryAccessLog) {
+private fun AccessLogCard(log: HistoryAccessLog, onClick: () -> Unit) {
     val colors = AppTheme.colors
     val style = accessTypeStyle(log.accessType)
+    val interactionSource = remember { MutableInteractionSource() }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(colors.elevated)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -290,6 +298,13 @@ private fun AccessLogCard(log: HistoryAccessLog) {
                 fontSize = 10.sp,
             )
         }
+
+        Icon(
+            imageVector = Lucide.ChevronRight,
+            contentDescription = null,
+            tint = colors.muted,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 

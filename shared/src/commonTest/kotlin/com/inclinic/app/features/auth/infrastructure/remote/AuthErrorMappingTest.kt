@@ -90,4 +90,11 @@ class AuthErrorMappingTest {
         val error = mapHttpToAuthError(403, null)
         assertIs<AuthError.Unknown>(error)
     }
+
+    // Row 8: 429 (rate limited) → TooManyAttempts
+    @Test
+    fun status_429_maps_to_too_many_attempts() {
+        val error = mapHttpToAuthError(429, null)
+        assertIs<AuthError.TooManyAttempts>(error)
+    }
 }

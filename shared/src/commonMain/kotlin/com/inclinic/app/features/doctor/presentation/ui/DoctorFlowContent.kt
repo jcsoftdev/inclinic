@@ -32,6 +32,7 @@ import com.inclinic.app.features.doctor.profile.presentation.ui.PublicProfileScr
 import com.inclinic.app.features.doctor.profile.presentation.ui.RequestSpecialtyScreen
 import com.inclinic.app.features.doctor.profile.presentation.ui.ReviewsScreen
 import com.inclinic.app.features.doctor.settings.presentation.ui.DoctorSettingsScreen
+import com.inclinic.app.features.doctor.prescriptions.presentation.ui.CreatePrescriptionScreen
 import com.inclinic.app.features.doctor.prescriptions.presentation.ui.EditPrescriptionScreen
 import com.inclinic.app.features.doctor.sharing.presentation.ui.RequestShareScreen
 import com.inclinic.app.features.doctor.sharing.presentation.ui.ShareRequestsScreen
@@ -106,6 +107,7 @@ fun DoctorFlowContent(component: DoctorFlowComponent, modifier: Modifier = Modif
                 is DoctorFlowComponent.Child.TherapyOffers -> TherapyOffersListScreen(c.component)
                 is DoctorFlowComponent.Child.CreateTherapyOffer -> CreateTherapyOfferScreen(c.component)
                 is DoctorFlowComponent.Child.EditPrescription -> EditPrescriptionScreen(c.component)
+                is DoctorFlowComponent.Child.CreatePrescription -> CreatePrescriptionScreen(c.component)
                 is DoctorFlowComponent.Child.DeleteAccount -> DeleteAccountScreen(c.component)
                 is DoctorFlowComponent.Child.NoShowQueue -> NoShowQueueScreen(c.component)
                 is DoctorFlowComponent.Child.PendingClosure -> PendingClosureQueueScreen(c.component)

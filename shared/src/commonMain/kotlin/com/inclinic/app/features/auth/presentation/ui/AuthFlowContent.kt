@@ -18,6 +18,7 @@ fun AuthFlowContent(component: AuthFlowComponent, modifier: Modifier = Modifier)
             is AuthFlowComponent.Child.Activate -> ActivateScreen(c.component)
             is AuthFlowComponent.Child.AccountCreated -> AccountCreatedScreen(c.component)
             is AuthFlowComponent.Child.TwoFactorVerify -> TwoFactorVerifyScreen(c.component)
+            is AuthFlowComponent.Child.RateLimit -> PatientRateLimitScreen(c.component)
         }
     }
 }

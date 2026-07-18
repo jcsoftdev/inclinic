@@ -41,5 +41,6 @@ class GetCurrentUserUseCase(
         role = runCatching { UserRole.valueOf(role) }.getOrDefault(UserRole.PATIENT),
         doctorId = doctorId,
         patientId = patientId,
+        phone = phone,
     )
 }
