@@ -8,8 +8,6 @@ import com.inclinic.app.features.doctor.appointments.application.CompleteAppoint
 import com.inclinic.app.features.doctor.appointments.application.ConfirmAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.GetDoctorAppointmentDetailUseCase
 import com.inclinic.app.features.doctor.appointments.application.NoShowUseCase
-import com.inclinic.app.features.doctor.appointments.presentation.component.DefaultMarkNoShowComponent
-import com.inclinic.app.features.doctor.appointments.presentation.component.MarkNoShowComponent
 import com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase
 import com.inclinic.app.features.doctor.chat.application.SendDoctorChatMessageUseCase
 import com.inclinic.app.features.doctor.config.application.GetDoctorPriceConfigUseCase
