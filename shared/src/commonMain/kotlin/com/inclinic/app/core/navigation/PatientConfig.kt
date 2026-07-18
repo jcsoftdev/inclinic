@@ -1,5 +1,6 @@
 package com.inclinic.app.core.navigation
 
+import com.inclinic.app.core.model.HistoryAccessLog
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -35,6 +36,7 @@ sealed interface PatientConfig {
     @Serializable data class MedicalRecordDetail(val recordId: String) : PatientConfig
     @Serializable data class PrescriptionDetail(val prescriptionId: String) : PatientConfig
     @Serializable data object HistoryAccessLogs : PatientConfig
+    @Serializable data class HistoryAccessLogDetail(val entry: HistoryAccessLog) : PatientConfig
     @Serializable data object ShareRequests : PatientConfig
     @Serializable data class ApproveShareRequest(val requestId: String) : PatientConfig
 

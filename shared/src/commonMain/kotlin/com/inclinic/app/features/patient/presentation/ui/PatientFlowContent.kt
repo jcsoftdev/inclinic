@@ -65,6 +65,7 @@ fun PatientFlowContent(component: PatientFlowComponent, modifier: Modifier = Mod
                 is PatientFlowComponent.Child.MedicalRecordDetail -> MedicalRecordDetailScreen(c.component)
                 is PatientFlowComponent.Child.PrescriptionDetail -> PrescriptionDetailScreen(c.component)
                 is PatientFlowComponent.Child.HistoryAccessLogs -> HistoryAccessLogsScreen(c.component)
+                is PatientFlowComponent.Child.HistoryAccessLogDetail -> HistoryAccessLogDetailScreen(c.component)
                 is PatientFlowComponent.Child.ShareRequests -> ShareRequestsScreen(c.component)
                 is PatientFlowComponent.Child.ApproveShareRequest -> ApproveShareRequestScreen(c.component)
 

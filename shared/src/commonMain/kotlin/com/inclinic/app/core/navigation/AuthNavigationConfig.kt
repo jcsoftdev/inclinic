@@ -14,4 +14,6 @@ sealed interface AuthNavigationConfig {
     @Serializable data class AccountCreated(val email: String) : AuthNavigationConfig
     /** Step 2 of login when 2FA is enabled. Carries the partial token from step 1. */
     @Serializable data class TwoFactorVerify(val partialToken: String) : AuthNavigationConfig
+    /** Standalone HTTP 429 "too many attempts" screen — reached from Login on [com.inclinic.app.features.auth.core.error.AuthError.TooManyAttempts]. */
+    @Serializable data object RateLimit : AuthNavigationConfig
 }

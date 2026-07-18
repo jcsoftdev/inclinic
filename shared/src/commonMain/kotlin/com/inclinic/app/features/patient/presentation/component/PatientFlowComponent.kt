@@ -47,6 +47,7 @@ interface PatientFlowComponent {
         class MedicalRecordDetail(val component: MedicalRecordDetailComponent) : Child
         class PrescriptionDetail(val component: PrescriptionDetailComponent) : Child
         class HistoryAccessLogs(val component: HistoryAccessLogsComponent) : Child
+        class HistoryAccessLogDetail(val component: HistoryAccessLogDetailComponent) : Child
         class ShareRequests(val component: ShareRequestsComponent) : Child
         class ApproveShareRequest(val component: ApproveShareRequestComponent) : Child
 

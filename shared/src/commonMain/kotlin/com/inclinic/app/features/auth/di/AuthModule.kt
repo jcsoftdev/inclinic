@@ -26,6 +26,7 @@ import com.inclinic.app.features.auth.application.RegisterFreelanceDoctorUseCase
 import com.inclinic.app.features.auth.application.RegisterPatientUseCase
 import com.inclinic.app.features.auth.application.ResendActivationUseCase
 import com.inclinic.app.features.auth.application.ResetPasswordUseCase
+import com.inclinic.app.features.auth.application.UpdateUserProfileUseCase
 import com.inclinic.app.features.auth.application.VerifyTwoFactorUseCase
 import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.config.BuildKonfigAuthConfig
@@ -157,17 +158,22 @@ val authModule = module {
     factory { ResetPasswordUseCase(remote = get(), dispatchers = get()) }
     factory { GetSpecialtiesUseCase(cache = get(), dispatchers = get()) }
     factory { GetCurrentUserUseCase(authenticatedClient = get(APP_HTTP_CLIENT), baseUrl = get<AuthConfig>().apiBaseUrl, dispatchers = get()) }
+    factory { UpdateUserProfileUseCase(authenticatedClient = get(APP_HTTP_CLIENT), baseUrl = get<AuthConfig>().apiBaseUrl, dispatchers = get()) }
 
     // ── Component factories ───────────────────────────────────────────────────
-    factory<LoginComponent> { (ctx: ComponentContext, onSuccess: (AuthUser) -> Unit, onTwoFactor: (String) -> Unit, onForgotPassword: () -> Unit, onRegister: () -> Unit) ->
+    // Note: 6 params exceeds Koin's ParametersHolder destructuring limit (component1..component5),
+    // so this factory reads params by explicit index instead of the `(a, b, c, ...) ->` destructuring
+    // sugar used by the other factories below.
+    factory<LoginComponent> { params ->
         DefaultLoginComponent(
-            componentContext = ctx,
+            componentContext = params.get<ComponentContext>(0),
             loginUseCase = get(),
             dispatchers = get(),
-            onLoginSucceeded = onSuccess,
-            onTwoFactorRequired = onTwoFactor,
-            onNavigateForgotPassword = onForgotPassword,
-            onNavigateRegister = onRegister,
+            onLoginSucceeded = params.get<(AuthUser) -> Unit>(1),
+            onTwoFactorRequired = params.get<(String) -> Unit>(2),
+            onNavigateForgotPassword = params.get<() -> Unit>(3),
+            onNavigateRegister = params.get<() -> Unit>(4),
+            onRateLimited = params.get<() -> Unit>(5),
         )
     }
 
@@ -250,8 +256,8 @@ val authModule = module {
             sessionEvents = get(),
             getStoredTokens = get(),
             tokenStorage = get(),
-            loginComponentFactory = { childCtx, onSuccess: (AuthUser) -> Unit, onTwoFactor: (String) -> Unit, onForgotPassword: () -> Unit, onRegister: () -> Unit ->
-                get { parametersOf(childCtx, onSuccess, onTwoFactor, onForgotPassword, onRegister) }
+            loginComponentFactory = { childCtx, onSuccess: (AuthUser) -> Unit, onTwoFactor: (String) -> Unit, onForgotPassword: () -> Unit, onRegister: () -> Unit, onRateLimited: () -> Unit ->
+                get { parametersOf(childCtx, onSuccess, onTwoFactor, onForgotPassword, onRegister, onRateLimited) }
             },
             twoFactorVerifyComponentFactory = { childCtx, partialToken, onVerified: (AuthUser) -> Unit, onBack: () -> Unit ->
                 get { parametersOf(childCtx, partialToken, onVerified, onBack) }

@@ -213,6 +213,26 @@ class DefaultLoginComponentTest {
         assertFalse(component.state.value.isSubmitting)
     }
 
+    @Test
+    fun onSubmit_tooManyAttempts_invokes_onRateLimited_instead_of_setting_authError() = runTest {
+        fakeRepo.result = Result.failure(AuthError.TooManyAttempts)
+        var rateLimited = false
+        val component = DefaultLoginComponent(
+            componentContext = componentContext,
+            loginUseCase = loginUseCase(),
+            dispatchers = dispatchers,
+            onRateLimited = { rateLimited = true },
+        )
+        component.onEmailChange("user@test.com")
+        component.onPasswordChange("password123")
+
+        component.onSubmit()
+
+        assertTrue(rateLimited)
+        assertNull(component.state.value.authError)
+        assertFalse(component.state.value.isSubmitting)
+    }
+
     // ── Error dismissed ───────────────────────────────────────────────────────
 
     @Test

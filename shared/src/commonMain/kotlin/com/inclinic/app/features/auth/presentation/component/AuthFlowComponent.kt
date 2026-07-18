@@ -24,6 +24,8 @@ interface AuthFlowComponent {
         class AccountCreated(val component: AccountCreatedComponent) : Child
         /** Step 2 of login — TOTP code verification. */
         class TwoFactorVerify(val component: TwoFactorVerifyComponent) : Child
+        /** Standalone HTTP 429 "too many attempts" screen. */
+        class RateLimit(val component: PatientRateLimitComponent) : Child
     }
 
     fun navigateTo(config: AuthNavigationConfig)

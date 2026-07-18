@@ -44,6 +44,7 @@ class DefaultLoginComponent(
     private val onTwoFactorRequired: (partialToken: String) -> Unit = {},
     private val onNavigateForgotPassword: () -> Unit = {},
     private val onNavigateRegister: () -> Unit = {},
+    private val onRateLimited: () -> Unit = {},
 ) : LoginComponent, ComponentContext by componentContext {
 
     private val scope = CoroutineScope(dispatchers.main + SupervisorJob())
@@ -111,10 +112,18 @@ class DefaultLoginComponent(
                     }
                 }
                 .onFailure { error ->
+                    val authError = error.toAuthError()
+                    if (authError is AuthError.TooManyAttempts) {
+                        // 429 gets a standalone screen instead of an inline banner.
+                        _state.update { it.copy(isSubmitting = false, authError = null) }
+                        telemetry?.track("login_rate_limited")
+                        onRateLimited()
+                        return@onFailure
+                    }
                     _state.update {
                         it.copy(
                             isSubmitting = false,
-                            authError = error.toAuthError(),
+                            authError = authError,
                         )
                     }
                     telemetry?.track("login_failure")

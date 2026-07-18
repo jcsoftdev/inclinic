@@ -342,6 +342,13 @@ private class StubHistoryAccessLogsComponent : HistoryAccessLogsComponent {
     override fun onRefresh() = Unit
     override fun onBack() = Unit
     override fun onManageAccess() = Unit
+    override fun onLogClick(entry: com.inclinic.app.core.model.HistoryAccessLog) = Unit
+}
+
+private class StubHistoryAccessLogDetailComponent(
+    override val entry: com.inclinic.app.core.model.HistoryAccessLog,
+) : HistoryAccessLogDetailComponent {
+    override fun onBack() = Unit
 }
 
 private class StubShareRequestsComponent : ShareRequestsComponent {
@@ -486,6 +493,7 @@ class DefaultPatientFlowComponentTest {
         medicalRecordDetailFactory = { _, _, _ -> StubMedicalRecordDetailComponent() },
         prescriptionDetailFactory = { _, _, _ -> StubPrescriptionDetailComponent() },
         historyAccessLogsFactory = { _, _ -> StubHistoryAccessLogsComponent() },
+        historyAccessLogDetailFactory = { _, entry, _ -> StubHistoryAccessLogDetailComponent(entry) },
         shareRequestsFactory = { _, _ -> StubShareRequestsComponent() },
         approveShareRequestFactory = { _, _, _ -> StubApproveShareRequestComponent() },
         symptomInputFactory = { _, _ -> StubSymptomInputComponent() },
