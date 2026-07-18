@@ -14,6 +14,7 @@ import com.inclinic.app.features.auth.infrastructure.remote.dto.AuthErrorDto
  * | 401    | (no code / unknown)  | InvalidCredentials    |
  * | 401    | "INACTIVE"           | InactiveAccount       |
  * | 403    | "ACCOUNT_SUSPENDED"  | SuspendedAccount      |
+ * | 429    | –                    | TooManyAttempts       |
  * | 5xx    | –                    | ServerError(status)   |
  * | other  | –                    | Unknown               |
  *
@@ -31,6 +32,8 @@ fun mapHttpToAuthError(status: Int, body: AuthErrorDto?): AuthError = when {
     status == 403 && body?.code == "ACCOUNT_SUSPENDED" -> AuthError.SuspendedAccount
 
     status == 409 -> AuthError.EmailAlreadyExists
+
+    status == 429 -> AuthError.TooManyAttempts
 
     status in 500..599 -> AuthError.ServerError(status)
 
