@@ -34,7 +34,6 @@ class KtorDoctorPrescriptionsDataSourceTest {
         handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ): HttpClient = HttpClient(MockEngine { handler(it) }) {
         install(ContentNegotiation) { json(json) }
-        expectSuccess = true
     }
 
     private val prescriptionJson = """
