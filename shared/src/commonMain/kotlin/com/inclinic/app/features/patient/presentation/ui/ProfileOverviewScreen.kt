@@ -25,6 +25,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +45,7 @@ import com.composables.icons.lucide.Settings
 import com.composables.icons.lucide.UserRound
 import com.inclinic.app.core.util.formatBirthDate
 import com.inclinic.app.features.patient.presentation.component.ProfileOverviewComponent
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.theme.AppTheme
 
@@ -53,6 +57,19 @@ fun ProfileOverviewScreen(
 ) {
     val state by component.state.subscribeAsState()
     val colors = AppTheme.colors
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+
+    if (showLogoutConfirm) {
+        ConfirmDialog(
+            title = "¿Cerrar sesión?",
+            message = "Tendrás que volver a iniciar sesión para acceder a tu cuenta.",
+            onConfirm = {
+                showLogoutConfirm = false
+                component.onLogout()
+            },
+            onDismiss = { showLogoutConfirm = false },
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -116,7 +133,7 @@ fun ProfileOverviewScreen(
                             iconTint = colors.red,
                             label = "Cerrar sesión",
                             labelColor = colors.red,
-                            onClick = component::onLogout,
+                            onClick = { showLogoutConfirm = true },
                         )
                     }
                 }
