@@ -42,7 +42,7 @@ class DefaultCreatePrescriptionComponent(
 
     override fun onRemoveItem(index: Int) {
         val items = _state.value.medicationItems
-        if (items.size <= 1) return
+        if (items.size <= 1 || index < 0 || index >= items.size) return
         _state.value = _state.value.copy(medicationItems = items.toMutableList().also { it.removeAt(index) })
     }
 
