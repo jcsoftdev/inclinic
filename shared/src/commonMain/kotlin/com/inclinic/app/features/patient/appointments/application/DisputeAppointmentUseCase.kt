@@ -12,7 +12,8 @@ class DisputeAppointmentUseCase(
         appointmentId: String,
         reason: String,
         details: String,
+        attachments: List<String> = emptyList(),
     ): Result<Unit> = withContext(dispatchers.io) {
-        dataSource.disputeAppointment(appointmentId, reason, details)
+        dataSource.disputeAppointment(appointmentId, reason, details, attachments)
     }
 }

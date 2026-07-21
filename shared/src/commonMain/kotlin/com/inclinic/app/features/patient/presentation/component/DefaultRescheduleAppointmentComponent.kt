@@ -9,6 +9,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.model.Appointment
 import com.inclinic.app.core.model.AvailabilitySlot
 import com.inclinic.app.features.patient.appointments.application.GetAppointmentDetailUseCase
 import com.inclinic.app.features.patient.appointments.application.RescheduleAppointmentUseCase
@@ -80,13 +81,32 @@ class DefaultRescheduleAppointmentComponent(
         loadMonthAvailability(next)
     }
 
+    /**
+     * Reglas de reagenda evaluadas en cliente (el backend también las aplica):
+     * solo 1 vez, solo antes de la visita, y con ≥3 días de anticipación.
+     * Devuelve el motivo del bloqueo, o null si se puede reagendar.
+     */
+    private fun blockedReasonFor(appt: Appointment): String? {
+        if (appt.rescheduleCount >= 1) return "Esta cita ya fue reagendada una vez."
+        val now = Clock.System.now()
+        if (appt.startsAt <= now) return "No puedes reagendar una cita que ya pasó."
+        val daysUntil = (appt.startsAt - now).inWholeDays
+        if (daysUntil < 3) return "Solo puedes reagendar con al menos 3 días de anticipación."
+        return null
+    }
+
     override fun onConfirmReschedule() {
+        _state.value.blockedReason?.let { reason ->
+            _state.update { it.copy(error = reason) }
+            return
+        }
         val slot = _state.value.selectedSlot ?: return
         val date = _state.value.selectedDate ?: return
         _state.update { it.copy(isRescheduling = true, error = null) }
         scope.launch {
             rescheduleAppointment(appointmentId, date.toString(), slot.id)
-                .onSuccess { onOutput(RescheduleAppointmentComponent.Output.Rescheduled) }
+                // El backend crea una solicitud PENDING; no reagenda directo.
+                .onSuccess { onOutput(RescheduleAppointmentComponent.Output.RescheduleRequested) }
                 .onFailure { err ->
                     _state.update { it.copy(isRescheduling = false, error = err.toUserMessage()) }
                 }
@@ -100,7 +120,7 @@ class DefaultRescheduleAppointmentComponent(
         scope.launch {
             getAppointmentDetail(appointmentId)
                 .onSuccess { appt ->
-                    _state.update { it.copy(isLoading = false, appointment = appt) }
+                    _state.update { it.copy(isLoading = false, appointment = appt, blockedReason = blockedReasonFor(appt)) }
                     loadMonthAvailability(_state.value.displayMonth)
                 }
                 .onFailure { err ->

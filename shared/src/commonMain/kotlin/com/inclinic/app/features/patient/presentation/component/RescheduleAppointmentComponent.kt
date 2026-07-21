@@ -17,7 +17,9 @@ interface RescheduleAppointmentComponent {
 
     sealed interface Output {
         data object Back : Output
-        data object Rescheduled : Output
+
+        /** La reagenda es una SOLICITUD que la contraparte debe aprobar; no se aplica directo. */
+        data object RescheduleRequested : Output
     }
 }
 
@@ -33,4 +35,9 @@ data class RescheduleAppointmentState(
     val isLoadingSlots: Boolean = false,
     val isRescheduling: Boolean = false,
     val error: String? = null,
+    /**
+     * Motivo por el que NO se puede reagendar (regla de negocio ya evaluada):
+     * ya se usó la única reagenda, o la cita ya pasó. null = se puede reagendar.
+     */
+    val blockedReason: String? = null,
 )

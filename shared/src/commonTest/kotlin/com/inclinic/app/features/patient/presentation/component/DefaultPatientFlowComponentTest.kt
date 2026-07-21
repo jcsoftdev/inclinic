@@ -134,6 +134,8 @@ private class StubPatientAppointmentsListComponent : PatientAppointmentsListComp
     override fun onCancel(appointmentId: String) = Unit
     override fun onReschedule(appointmentId: String) = Unit
     override fun onRespondReschedule(appointmentId: String) = Unit
+    override fun onConfirmAttendance(appointmentId: String) = Unit
+    override fun onReportProblem(appointmentId: String) = Unit
     override fun onSearchDoctors() = Unit
     override fun onErrorDismissed() = Unit
 }
@@ -283,6 +285,8 @@ private class StubDisputeAppointmentComponent : DisputeAppointmentComponent {
     override val state: Value<DisputeAppointmentState> = MutableValue(DisputeAppointmentState())
     override fun onReasonSelected(reason: DisputeReason) = Unit
     override fun onDetailsChanged(details: String) = Unit
+    override fun onEvidencePicked(file: com.inclinic.app.core.platform.PickedFile) = Unit
+    override fun onRemoveEvidence(index: Int) = Unit
     override fun onSubmit() = Unit
     override fun onBack() = Unit
 }

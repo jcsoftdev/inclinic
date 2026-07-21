@@ -59,7 +59,7 @@ private class FakeRescheduleDataSource(
     override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
-    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)
+    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String, attachments: List<String>) = Result.success(Unit)
     override suspend fun confirmRating(appointmentId: String, punctuality: Int, professionalism: Int, empathy: Int, comment: String?) = Result.success(Unit)
     override suspend fun requestVisitTypeChange(appointmentId: String, newVisitType: String, address: String?, reason: String?) = Result.success(Unit)
 }
@@ -138,7 +138,7 @@ class DefaultRescheduleAppointmentComponentTest {
     }
 
     @Test
-    fun onConfirmReschedule_success_emits_Rescheduled() = runTest {
+    fun onConfirmReschedule_success_emits_RescheduleRequested() = runTest {
         val outputs = mutableListOf<RescheduleAppointmentComponent.Output>()
         val component = createComponent(outputs = outputs)
         component.onDateSelected(LocalDate(2026, 7, 15))
@@ -147,7 +147,7 @@ class DefaultRescheduleAppointmentComponentTest {
         component.onConfirmReschedule()
 
         assertEquals(1, outputs.size)
-        assertTrue(outputs.first() is RescheduleAppointmentComponent.Output.Rescheduled)
+        assertTrue(outputs.first() is RescheduleAppointmentComponent.Output.RescheduleRequested)
     }
 
     @Test

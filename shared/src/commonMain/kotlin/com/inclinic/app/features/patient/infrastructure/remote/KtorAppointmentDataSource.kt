@@ -308,11 +308,16 @@ class KtorAppointmentDataSource(
         }
     }
 
-    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String): Result<Unit> = runCatching {
+    override suspend fun disputeAppointment(
+        appointmentId: String,
+        reason: String,
+        details: String,
+        attachments: List<String>,
+    ): Result<Unit> = runCatching {
         val response = client.post {
             url("$baseUrl/api/appointments/$appointmentId/dispute")
             contentType(ContentType.Application.Json)
-            setBody(mapOf("reason" to reason, "details" to details))
+            setBody(DisputeRequestDto(reason = reason, details = details, attachments = attachments))
         }
         if (!response.status.isSuccess()) {
             val err = runCatching { response.body<ErrorEnvelopeDto>() }.getOrNull()
@@ -410,4 +415,11 @@ private data class AppointmentWithRescheduleDto(
     val doctor: AppointmentDoctorDto? = null,
     val specialty: AppointmentSpecialtyDto? = null,
     val pendingReschedule: RescheduleRequestDto? = null,
+)
+
+@Serializable
+private data class DisputeRequestDto(
+    val reason: String,
+    val details: String,
+    val attachments: List<String> = emptyList(),
 )

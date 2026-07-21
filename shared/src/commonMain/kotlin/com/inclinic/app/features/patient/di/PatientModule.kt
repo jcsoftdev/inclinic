@@ -369,7 +369,7 @@ val patientModule = module {
         DefaultChangeVisitTypeComponent(ctx, appointmentId, get(), get(), get(), onOutput)
     }
     factory<DisputeAppointmentComponent> { (ctx: ComponentContext, appointmentId: String, onOutput: (DisputeAppointmentComponent.Output) -> Unit) ->
-        DefaultDisputeAppointmentComponent(ctx, appointmentId, get(), get(), get(), onOutput)
+        DefaultDisputeAppointmentComponent(ctx, appointmentId, get(), get(), get(), get(), onOutput)
     }
     factory<ConfirmRatingComponent> { (ctx: ComponentContext, appointmentId: String, onOutput: (ConfirmRatingComponent.Output) -> Unit) ->
         DefaultConfirmRatingComponent(ctx, appointmentId, get(), get(), get(), onOutput)

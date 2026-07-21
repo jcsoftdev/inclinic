@@ -23,7 +23,7 @@ interface AppointmentDataSource {
     suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult>
     suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?>
     suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?): Result<Unit>
-    suspend fun disputeAppointment(appointmentId: String, reason: String, details: String): Result<Unit>
+    suspend fun disputeAppointment(appointmentId: String, reason: String, details: String, attachments: List<String>): Result<Unit>
     suspend fun confirmRating(appointmentId: String, punctuality: Int, professionalism: Int, empathy: Int, comment: String?): Result<Unit>
     suspend fun requestVisitTypeChange(appointmentId: String, newVisitType: String, address: String?, reason: String?): Result<Unit>
 }

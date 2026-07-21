@@ -20,7 +20,7 @@ private class FakeDisputeDataSource : AppointmentDataSource {
     var lastDetails: String? = null
     var callCount = 0
 
-    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String): Result<Unit> {
+    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String, attachments: List<String>): Result<Unit> {
         callCount++
         lastAppointmentId = appointmentId
         lastReason = reason

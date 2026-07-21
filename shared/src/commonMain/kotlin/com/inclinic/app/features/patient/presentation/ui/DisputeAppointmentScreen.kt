@@ -44,6 +44,7 @@ import com.composables.icons.lucide.ShieldCheck
 import com.composables.icons.lucide.ThumbsDown
 import com.composables.icons.lucide.UserX
 import com.inclinic.app.core.model.DisputeReason
+import com.inclinic.app.core.platform.rememberFilePicker
 import com.inclinic.app.features.patient.presentation.component.DisputeAppointmentComponent
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.theme.AppTheme
@@ -53,6 +54,7 @@ import com.inclinic.app.ui.theme.AppTheme
 fun DisputeAppointmentScreen(component: DisputeAppointmentComponent, modifier: Modifier = Modifier) {
     val state by component.state.subscribeAsState()
     val colors = AppTheme.colors
+    val evidencePicker = rememberFilePicker { file -> if (file != null) component.onEvidencePicked(file) }
 
     Column(modifier.fillMaxSize().background(colors.sand)) {
         TopAppBar(
@@ -169,19 +171,42 @@ fun DisputeAppointmentScreen(component: DisputeAppointmentComponent, modifier: M
                     )
                 }
 
-                // Attach evidence row — design: paperclip icon + label, elevated bg, border
+                // Attach evidence — real picker + upload
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(colors.elevated)
-                        .border(1.dp, colors.border, RoundedCornerShape(10.dp)),
+                        .border(1.dp, colors.border, RoundedCornerShape(10.dp))
+                        .clickable(enabled = !state.isUploadingEvidence) { evidencePicker.launch() },
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Lucide.Paperclip, contentDescription = null, tint = colors.muted, modifier = Modifier.size(16.dp))
-                    Text("Adjuntar evidencia (opcional)", color = colors.muted, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (state.isUploadingEvidence) "Subiendo…" else "Adjuntar evidencia (opcional)",
+                        color = colors.muted,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+
+                state.evidenceUrls.forEachIndexed { i, _ ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("Foto ${i + 1}", color = colors.text, fontSize = 12.sp)
+                        Text(
+                            "Quitar",
+                            color = colors.red,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable { component.onRemoveEvidence(i) },
+                        )
+                    }
                 }
 
                 // Error

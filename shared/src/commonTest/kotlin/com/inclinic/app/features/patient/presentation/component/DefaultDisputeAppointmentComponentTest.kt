@@ -49,7 +49,7 @@ private class FakeDisputeAppointmentDataSource(
     override suspend fun getAppointmentById(appointmentId: String): Result<Appointment> =
         if (loadError != null) Result.failure(loadError) else Result.success(appointment!!)
 
-    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String): Result<Unit> {
+    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String, attachments: List<String>): Result<Unit> {
         disputeCallCount++
         lastDisputeReason = reason
         lastDisputeDetails = details
@@ -87,6 +87,7 @@ class DefaultDisputeAppointmentComponentTest {
             appointmentId = "apt-1",
             getAppointmentDetail = GetAppointmentDetailUseCase(dataSource, dispatchers),
             disputeAppointment = DisputeAppointmentUseCase(dataSource, dispatchers),
+            uploadFile = com.inclinic.app.core.upload.UploadFileUseCase(com.inclinic.app.core.upload.FakeUploadDataSource(), dispatchers),
             dispatchers = dispatchers,
             onOutput = outputs::add,
         )
