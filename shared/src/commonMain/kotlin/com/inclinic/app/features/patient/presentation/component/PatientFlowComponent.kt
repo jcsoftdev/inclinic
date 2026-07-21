@@ -20,6 +20,7 @@ interface PatientFlowComponent {
         class DoctorProfile(val component: DoctorProfileComponent) : Child
         class ConsultType(val component: ConsultTypeComponent) : Child
         class Availability(val component: AvailabilityCalendarComponent) : Child
+        class AddressPicker(val component: com.inclinic.app.features.patient.address.presentation.AddressPickerComponent) : Child
         class Booking(val component: BookingComponent) : Child
         class Payment(val component: PaymentComponent) : Child
         class Appointments(val component: PatientAppointmentsListComponent) : Child

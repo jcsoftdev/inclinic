@@ -16,6 +16,7 @@ import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.model.HistoryAccessLog
 import com.inclinic.app.core.navigation.PatientConfig
+import com.inclinic.app.features.patient.address.presentation.AddressPickerComponent
 import com.inclinic.app.features.patient.assistant.presentation.component.AssistantChatComponent
 import com.inclinic.app.features.patient.moderation.presentation.component.BlockUserComponent
 import com.inclinic.app.features.patient.moderation.presentation.component.ReportUserComponent
@@ -33,7 +34,8 @@ class DefaultPatientFlowComponent(
     private val doctorProfileFactory: (ComponentContext, String, (DoctorProfileComponent.Output) -> Unit) -> DoctorProfileComponent,
     private val consultTypeFactory: (ComponentContext, String, (ConsultTypeComponent.Output) -> Unit) -> ConsultTypeComponent,
     private val availabilityFactory: (ComponentContext, String, String, (AvailabilityCalendarComponent.Output) -> Unit) -> AvailabilityCalendarComponent,
-    private val bookingFactory: (ComponentContext, String, String, String, String, String, (BookingComponent.Output) -> Unit) -> BookingComponent,
+    private val addressPickerFactory: (ComponentContext, (AddressPickerComponent.Output) -> Unit) -> AddressPickerComponent,
+    private val bookingFactory: (ComponentContext, doctorId: String, slotId: String, date: String, consultType: String, startTime: String, homeVisitAddress: String?, homeVisitLat: Double?, homeVisitLng: Double?, (BookingComponent.Output) -> Unit) -> BookingComponent,
     private val paymentFactory: (ComponentContext, String?, String?, (PaymentComponent.Output) -> Unit) -> PaymentComponent,
     private val appointmentsFactory: (ComponentContext, String, (PatientAppointmentsListComponent.Output) -> Unit) -> PatientAppointmentsListComponent,
     private val appointmentDetailFactory: (ComponentContext, String, (AppointmentDetailComponent.Output) -> Unit) -> AppointmentDetailComponent,
@@ -161,13 +163,45 @@ class DefaultPatientFlowComponent(
                 availabilityFactory(ctx, config.doctorId, config.consultType) { output ->
                     when (output) {
                         is AvailabilityCalendarComponent.Output.NavigateToBooking ->
-                            navigation.push(PatientConfig.Booking(output.doctorId, output.slotId, output.date, config.consultType, output.startTime))
+                            // Visita a domicilio: primero pide la dirección geolocalizada; otras, directo a Booking.
+                            if (config.consultType == "home") {
+                                navigation.push(
+                                    PatientConfig.AddressPicker(output.doctorId, output.slotId, output.date, config.consultType, output.startTime),
+                                )
+                            } else {
+                                navigation.push(
+                                    PatientConfig.Booking(output.doctorId, output.slotId, output.date, config.consultType, output.startTime),
+                                )
+                            }
                         AvailabilityCalendarComponent.Output.Back -> navigation.pop()
                     }
                 }
             )
+            is PatientConfig.AddressPicker -> PatientFlowComponent.Child.AddressPicker(
+                addressPickerFactory(ctx) { output ->
+                    when (output) {
+                        is AddressPickerComponent.Output.Confirmed ->
+                            navigation.push(
+                                PatientConfig.Booking(
+                                    doctorId = config.doctorId,
+                                    slotId = config.slotId,
+                                    date = config.date,
+                                    consultType = config.consultType,
+                                    startTime = config.startTime,
+                                    homeVisitAddress = output.address,
+                                    homeVisitLat = output.lat,
+                                    homeVisitLng = output.lng,
+                                ),
+                            )
+                        AddressPickerComponent.Output.Back -> navigation.pop()
+                    }
+                }
+            )
             is PatientConfig.Booking -> PatientFlowComponent.Child.Booking(
-                bookingFactory(ctx, config.doctorId, config.slotId, config.date, config.consultType, config.startTime) { output ->
+                bookingFactory(
+                    ctx, config.doctorId, config.slotId, config.date, config.consultType, config.startTime,
+                    config.homeVisitAddress, config.homeVisitLat, config.homeVisitLng,
+                ) { output ->
                     when (output) {
                         is BookingComponent.Output.NavigateToPayment ->
                             navigation.push(PatientConfig.Payment(output.appointmentId))

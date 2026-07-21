@@ -28,6 +28,10 @@ class DefaultBookingComponent(
     private val onOutput: (BookingComponent.Output) -> Unit,
     consultType: String = "office",
     startTime: String = "",
+    // Dirección geolocalizada elegida en el paso AddressPicker (sólo visitas a domicilio).
+    private val homeVisitAddress: String? = null,
+    private val homeVisitLat: Double? = null,
+    private val homeVisitLng: Double? = null,
 ) : BookingComponent, ComponentContext by componentContext {
 
     private val initialVisitType: VisitType = when (consultType) {
@@ -81,7 +85,10 @@ class DefaultBookingComponent(
         }
         _state.update { it.copy(isLoading = true, error = null) }
         scope.launch {
-            createAppointment(doctorId, s.date, s.slotId, s.visitType.name, s.notes.takeIf { it.isNotBlank() })
+            createAppointment(
+                doctorId, s.date, s.slotId, s.visitType.name, s.notes.takeIf { it.isNotBlank() },
+                homeVisitAddress, homeVisitLat, homeVisitLng,
+            )
                 .onSuccess { appointment ->
                     _state.update { it.copy(isLoading = false, isConfirmed = true) }
                     telemetry?.track("appointment_booked", mapOf("doctorId" to doctorId, "date" to date))
@@ -98,7 +105,10 @@ class DefaultBookingComponent(
         val visitType = s.visitType ?: initialVisitType
         _state.update { it.copy(isLoadingSkip = true, error = null) }
         scope.launch {
-            createAppointment(doctorId, s.date, s.slotId, visitType.name, s.notes.takeIf { it.isNotBlank() })
+            createAppointment(
+                doctorId, s.date, s.slotId, visitType.name, s.notes.takeIf { it.isNotBlank() },
+                homeVisitAddress, homeVisitLat, homeVisitLng,
+            )
                 .onSuccess { onOutput(BookingComponent.Output.NavigateToAppointments) }
                 .onFailure { err -> _state.update { it.copy(isLoadingSkip = false, error = err.toUserMessage("Error al agendar")) } }
         }

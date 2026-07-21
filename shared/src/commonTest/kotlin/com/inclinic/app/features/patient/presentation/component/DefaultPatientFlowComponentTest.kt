@@ -103,6 +103,20 @@ private class StubBookingComponent : BookingComponent {
     override fun onBack() = Unit
 }
 
+private class StubAddressPickerComponent :
+    com.inclinic.app.features.patient.address.presentation.AddressPickerComponent {
+    override val state = MutableValue(
+        com.inclinic.app.features.patient.address.presentation.AddressPickerState(),
+    )
+    override fun onQueryChange(query: String) = Unit
+    override fun onSuggestionSelected(
+        suggestion: com.inclinic.app.features.patient.address.infrastructure.GeocodeSuggestion,
+    ) = Unit
+    override fun onMarkerMoved(lat: Double, lng: Double) = Unit
+    override fun onConfirm() = Unit
+    override fun onBack() = Unit
+}
+
 private class StubPaymentComponent : PaymentComponent {
     override val state: Value<PaymentState> = MutableValue(PaymentState())
     override fun onCardNumberChange(value: String) = Unit
@@ -486,7 +500,8 @@ class DefaultPatientFlowComponentTest {
         doctorProfileFactory = { _, _, _ -> StubDoctorProfileComponent() },
         consultTypeFactory = { _, _, _ -> StubConsultTypeComponent() },
         availabilityFactory = { _, _, _, _ -> StubAvailabilityComponent() },
-        bookingFactory = { _, _, _, _, _, _, _ -> StubBookingComponent() },
+        addressPickerFactory = { _, _ -> StubAddressPickerComponent() },
+        bookingFactory = { _, _, _, _, _, _, _, _, _, _ -> StubBookingComponent() },
         paymentFactory = { _, _, _, _ -> StubPaymentComponent() },
         appointmentsFactory = { _, _, _ -> StubPatientAppointmentsListComponent() },
         appointmentDetailFactory = { _, _, _ -> StubAppointmentDetailComponent() },

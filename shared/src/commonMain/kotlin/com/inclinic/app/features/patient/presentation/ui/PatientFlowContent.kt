@@ -38,6 +38,8 @@ fun PatientFlowContent(component: PatientFlowComponent, modifier: Modifier = Mod
                 is PatientFlowComponent.Child.DoctorProfile -> DoctorProfileScreen(c.component)
                 is PatientFlowComponent.Child.ConsultType -> ConsultTypeScreen(c.component)
                 is PatientFlowComponent.Child.Availability -> AvailabilityCalendarScreen(c.component)
+                is PatientFlowComponent.Child.AddressPicker ->
+                    com.inclinic.app.features.patient.address.presentation.AddressPickerScreen(c.component)
                 is PatientFlowComponent.Child.Booking -> BookingScreen(c.component)
                 is PatientFlowComponent.Child.Payment -> PaymentScreen(c.component)
                 is PatientFlowComponent.Child.Appointments -> PatientAppointmentsListScreen(c.component, onNavTabSelected = onNav)

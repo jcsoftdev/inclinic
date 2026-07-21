@@ -15,6 +15,12 @@ import com.inclinic.app.features.patient.appointments.application.GetAppointment
 import com.inclinic.app.features.patient.appointments.application.GetPatientAppointmentsUseCase
 import com.inclinic.app.features.patient.appointments.application.GetRescheduleProposalUseCase
 import com.inclinic.app.features.patient.appointments.application.RequestVisitTypeChangeUseCase
+import com.inclinic.app.features.patient.address.application.ReverseGeocodeUseCase
+import com.inclinic.app.features.patient.address.application.SearchAddressUseCase
+import com.inclinic.app.features.patient.address.infrastructure.GeocodeDataSource
+import com.inclinic.app.features.patient.address.infrastructure.KtorGeocodeDataSource
+import com.inclinic.app.features.patient.address.presentation.AddressPickerComponent
+import com.inclinic.app.features.patient.address.presentation.DefaultAddressPickerComponent
 import com.inclinic.app.features.patient.appointments.application.RescheduleAppointmentUseCase
 import com.inclinic.app.features.patient.appointments.application.RespondRescheduleUseCase
 import com.inclinic.app.features.patient.availability.application.GetAvailabilityUseCase
@@ -185,6 +191,9 @@ val patientModule = module {
     single<AppointmentDataSource> {
         KtorAppointmentDataSource(get(APP_HTTP_CLIENT), get<AuthConfig>().apiBaseUrl)
     }
+    single<GeocodeDataSource> {
+        KtorGeocodeDataSource(get(APP_HTTP_CLIENT), get<AuthConfig>().apiBaseUrl)
+    }
     single<ChatDataSource> {
         KtorChatDataSource(get(APP_HTTP_CLIENT), get<AuthConfig>().apiBaseUrl)
     }
@@ -219,6 +228,8 @@ val patientModule = module {
     factory { GetDoctorDetailUseCase(get(), get()) }
     factory { GetDoctorReviewsUseCase(get(), get()) }
     factory { GetAvailabilityUseCase(get(), get()) }
+    factory { SearchAddressUseCase(get(), get()) }
+    factory { ReverseGeocodeUseCase(get(), get()) }
     factory { GetMonthAvailabilityUseCase(get(), get()) }
     factory { CreateAppointmentUseCase(get(), get()) }
     // Yape tokenizer vive en commonMain (HTTP puro) — funciona en Android e iOS.
@@ -300,10 +311,16 @@ val patientModule = module {
             createAppointment = get(),
             dispatchers      = get(),
             telemetry        = null,
-            onOutput         = params.get(6),
+            onOutput         = params.get(9),
             consultType      = params.get(4),
             startTime        = params.get(5),
+            homeVisitAddress = params.values[6] as String?,
+            homeVisitLat     = params.values[7] as Double?,
+            homeVisitLng     = params.values[8] as Double?,
         )
+    }
+    factory<AddressPickerComponent> { (ctx: ComponentContext, onOutput: (AddressPickerComponent.Output) -> Unit) ->
+        DefaultAddressPickerComponent(ctx, get(), get(), get(), onOutput)
     }
     factory<PaymentComponent> { (ctx: ComponentContext, appointmentId: String?, therapyPackageId: String?, onOutput: (PaymentComponent.Output) -> Unit) ->
         DefaultPaymentComponent(ctx, appointmentId, therapyPackageId, get(), get(), get(), get(), get(), get(), null, onOutput)
@@ -432,7 +449,10 @@ val patientModule = module {
             doctorProfileFactory = { c, doctorId, out -> get { parametersOf(c, doctorId, out) } },
             consultTypeFactory = { c, doctorId, out -> get { parametersOf(c, doctorId, out) } },
             availabilityFactory = { c, doctorId, consultType, out -> get { parametersOf(c, doctorId, consultType, out) } },
-            bookingFactory = { c, doctorId, slotId, date, consultType, startTime, out -> get { parametersOf(c, doctorId, slotId, date, consultType, startTime, out) } },
+            addressPickerFactory = { c, out -> get { parametersOf(c, out) } },
+            bookingFactory = { c, doctorId, slotId, date, consultType, startTime, address, lat, lng, out ->
+                get { parametersOf(c, doctorId, slotId, date, consultType, startTime, address, lat, lng, out) }
+            },
             paymentFactory = { c, appointmentId, therapyPackageId, out -> get { parametersOf(c, appointmentId, therapyPackageId, out) } },
             appointmentsFactory = { c, pid, out -> get { parametersOf(c, pid, out) } },
             appointmentDetailFactory = { c, appointmentId, out -> get { parametersOf(c, appointmentId, out) } },
