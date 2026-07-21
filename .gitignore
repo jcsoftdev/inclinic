@@ -6,6 +6,7 @@ gradle/daemon/
 gradle/kotlin-profile/
 gradle/native/
 gradle/wrapper/dists/
+gradle/.tmp/
 **/build/
 xcuserdata
 !src/**/build/
@@ -32,3 +33,10 @@ docs/
 # Release signing key — NEVER commit
 *.keystore
 *.jks
+
+# Editor / design tool backups
+*.bak
+*.bak-*
+
+# vscode AI rules
+.github/instructions/codacy.instructions.md
