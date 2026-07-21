@@ -29,6 +29,9 @@ class FakePendingClosureAppointmentDataSource : DoctorAppointmentDataSource {
     override suspend fun getDailySchedule(doctorId: String, date: String): Result<List<Appointment>> =
         Result.success(emptyList())
 
+    override suspend fun getAvailability(doctorId: String, date: String): Result<List<com.inclinic.app.core.model.AvailabilitySlot>> =
+        Result.success(emptyList())
+
     override suspend fun getWeeklySchedule(doctorId: String, weekStart: String): Result<List<DaySummary>> =
         Result.success(emptyList())
 

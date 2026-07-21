@@ -151,6 +151,14 @@ class KtorDoctorAppointmentDataSource(
         }.body<ApiEnvelope<List<Appointment>>>().data ?: emptyList()
     }
 
+    override suspend fun getAvailability(doctorId: String, date: String): Result<List<com.inclinic.app.core.model.AvailabilitySlot>> = runCatching {
+        client.get {
+            url("$baseUrl/api/appointments/availability")
+            parameter("doctorId", doctorId)
+            parameter("date", date)
+        }.body<ApiEnvelope<DoctorAvailabilityDto>>().data?.slots?.map { it.toDomain() } ?: emptyList()
+    }
+
     override suspend fun getWeeklySchedule(doctorId: String, weekStart: String): Result<List<DaySummary>> = runCatching {
         val dtos = client.get {
             url("$baseUrl/api/appointments")
@@ -215,4 +223,22 @@ class KtorDoctorAppointmentDataSource(
         }.body<ApiEnvelope<List<PendingClosureItemDto>>>().data ?: emptyList()
         dtos.map { it.toDomain() }
     }
+}
+
+@Serializable
+private data class DoctorAvailabilityDto(
+    val slots: List<DoctorSlotDto> = emptyList(),
+)
+
+@Serializable
+private data class DoctorSlotDto(
+    val time: String,
+    val available: Boolean,
+) {
+    fun toDomain() = com.inclinic.app.core.model.AvailabilitySlot(
+        id = time,
+        startTime = time,
+        endTime = time,
+        isAvailable = available,
+    )
 }

@@ -7,6 +7,9 @@ import com.inclinic.app.features.doctor.pending_closure.core.model.PendingClosur
 interface DoctorAppointmentDataSource {
     suspend fun getDashboard(doctorId: String): Result<DoctorDashboard>
     suspend fun getDailySchedule(doctorId: String, date: String): Result<List<Appointment>>
+
+    /** Slots libres del propio médico en una fecha, para proponer una reagenda. */
+    suspend fun getAvailability(doctorId: String, date: String): Result<List<com.inclinic.app.core.model.AvailabilitySlot>>
     suspend fun getWeeklySchedule(doctorId: String, weekStart: String): Result<List<DaySummary>>
     suspend fun getAppointmentById(appointmentId: String): Result<Appointment>
     suspend fun confirmAppointment(appointmentId: String): Result<Appointment>

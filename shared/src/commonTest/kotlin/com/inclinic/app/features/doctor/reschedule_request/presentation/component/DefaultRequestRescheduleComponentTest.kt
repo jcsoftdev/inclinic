@@ -53,6 +53,8 @@ private class FakeDetailDataSource(
         Result.success(DoctorDashboard(0, 0, 0.0, 0.0))
     override suspend fun getDailySchedule(doctorId: String, date: String): Result<List<Appointment>> =
         Result.success(emptyList())
+    override suspend fun getAvailability(doctorId: String, date: String): Result<List<com.inclinic.app.core.model.AvailabilitySlot>> =
+        Result.success(emptyList())
     override suspend fun getWeeklySchedule(doctorId: String, weekStart: String): Result<List<DaySummary>> =
         Result.success(emptyList())
     override suspend fun confirmAppointment(appointmentId: String): Result<Appointment> =
@@ -102,6 +104,7 @@ class DefaultRequestRescheduleComponentTest {
             componentContext = ctx,
             appointmentId = "apt-1",
             getAppointmentDetail = GetDoctorAppointmentDetailUseCase(detailDataSource, dispatchers),
+            getAvailability = com.inclinic.app.features.doctor.reschedule_request.application.GetDoctorAvailabilityUseCase(detailDataSource, dispatchers),
             requestReschedule = RequestRescheduleUseCase(repository, dispatchers),
             dispatchers = dispatchers,
             onOutput = outputs::add,

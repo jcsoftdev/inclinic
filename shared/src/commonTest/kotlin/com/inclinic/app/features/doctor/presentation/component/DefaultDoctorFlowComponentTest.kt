@@ -278,6 +278,7 @@ class DefaultDoctorFlowComponentTest {
         requestRescheduleFactory = { ctx, appointmentId, out ->
             object : RequestRescheduleComponent {
                 override val state: Value<RequestRescheduleState> = MutableValue(RequestRescheduleState())
+                override fun onDateChange(date: String) {}
                 override fun onSlotChange(value: String) {}
                 override fun onMessageChange(value: String) {}
                 override fun onSubmit() {}

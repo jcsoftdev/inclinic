@@ -3,6 +3,7 @@ package com.inclinic.app.features.doctor.reschedule_request.di
 import com.arkivanov.decompose.ComponentContext
 import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.di.APP_HTTP_CLIENT
+import com.inclinic.app.features.doctor.reschedule_request.application.GetDoctorAvailabilityUseCase
 import com.inclinic.app.features.doctor.reschedule_request.application.RequestRescheduleUseCase
 import com.inclinic.app.features.doctor.reschedule_request.core.port.RescheduleRequestRepository
 import com.inclinic.app.features.doctor.reschedule_request.infrastructure.DefaultRescheduleRequestRepository
@@ -26,12 +27,14 @@ fun doctorRescheduleRequestModule() = module {
     }
 
     factory { RequestRescheduleUseCase(repository = get(), dispatchers = get()) }
+    factory { GetDoctorAvailabilityUseCase(dataSource = get(), dispatchers = get()) }
 
     factory<RequestRescheduleComponent> { (ctx: ComponentContext, appointmentId: String, onOutput: (RequestRescheduleComponent.Output) -> Unit) ->
         DefaultRequestRescheduleComponent(
             componentContext = ctx,
             appointmentId = appointmentId,
             getAppointmentDetail = get(),
+            getAvailability = get(),
             requestReschedule = get(),
             dispatchers = get(),
             onOutput = onOutput,
