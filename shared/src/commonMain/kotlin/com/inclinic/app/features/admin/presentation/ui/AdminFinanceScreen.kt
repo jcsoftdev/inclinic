@@ -44,8 +44,11 @@ import com.composables.icons.lucide.Lucide
 import com.inclinic.app.core.platform.rememberFileSaver
 import com.inclinic.app.features.admin.infrastructure.remote.AdminTopDoctor
 import com.inclinic.app.features.admin.presentation.component.AdminFinanceComponent
+import com.inclinic.app.features.admin.presentation.component.AdminFinanceViewState
+import com.inclinic.app.features.admin.presentation.component.toViewState
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.EmptyState
+import com.inclinic.app.ui.atoms.ErrorState
 import com.inclinic.app.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,10 +84,24 @@ fun AdminFinanceScreen(component: AdminFinanceComponent, modifier: Modifier = Mo
             .background(colors.sand)
             .padding(innerPadding),
     ) {
-        if (state.isLoading && state.balanceTotal == "S/ 0") {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
-        } else {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        when (state.toViewState()) {
+            AdminFinanceViewState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+
+            is AdminFinanceViewState.Failed -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                FinanceHeader(
+                    onBack = component::onBack,
+                    onExport = component::onExport,
+                    isExporting = state.isExporting,
+                )
+                ErrorState(
+                    title = "No se pudieron cargar las finanzas",
+                    subtitle = state.error ?: "Revisa tu conexión e inténtalo de nuevo.",
+                    onRetry = component::onRefresh,
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                )
+            }
+
+            AdminFinanceViewState.Loaded -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
 
                 // ── Header ────────────────────────────────────────────────────
                 FinanceHeader(

@@ -25,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +53,7 @@ import com.inclinic.app.core.platform.ExternalUrls
 import com.inclinic.app.core.platform.rememberUrlOpener
 import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSettingsComponent
 import com.inclinic.app.ui.atoms.AppBackButton
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.theme.AppTheme
 
 /**
@@ -78,6 +82,19 @@ fun DoctorSettingsScreen(
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
         val urlOpener = rememberUrlOpener()
+        var showLogoutConfirm by remember { mutableStateOf(false) }
+
+        if (showLogoutConfirm) {
+            ConfirmDialog(
+                title = "¿Cerrar sesión?",
+                message = "Tendrás que volver a iniciar sesión para acceder a tu cuenta.",
+                onConfirm = {
+                    showLogoutConfirm = false
+                    component.onLogOut()
+                },
+                onDismiss = { showLogoutConfirm = false },
+            )
+        }
 
         // When the component puts an OAuth URL in state, open it and mark consumed.
         LaunchedEffect(state.mercadoPagoConnectUrl) {
@@ -288,7 +305,7 @@ fun DoctorSettingsScreen(
                         .clip(RoundedCornerShape(dimens.radiusMd))
                         .background(Color(0xFF1A0A0A))
                         .border(1.dp, Color(0xFF3A1A1F), RoundedCornerShape(dimens.radiusMd))
-                        .clickable(enabled = !state.isLoggingOut, onClick = component::onLogOut)
+                        .clickable(enabled = !state.isLoggingOut, onClick = { showLogoutConfirm = true })
                         .padding(vertical = 14.dp),
                 ) {
                     Icon(Lucide.LogOut, contentDescription = null, tint = Color(0xFFFB5E6B), modifier = Modifier.size(18.dp))

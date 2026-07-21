@@ -11,5 +11,7 @@ interface ForgotPasswordComponent {
 
     sealed interface Output {
         data object Back : Output
+        /** HTTP 429 — same standalone rate-limit experience as Login. */
+        data object RateLimited : Output
     }
 }

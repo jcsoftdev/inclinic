@@ -1,6 +1,8 @@
 package com.inclinic.app.features.auth.application
 
+import app.cash.turbine.test
 import com.inclinic.app.core.events.SessionEvents
+import com.inclinic.app.core.events.SessionExpiryReason
 import com.inclinic.app.features.auth.fakes.FakeAuthRepository
 import com.inclinic.app.features.auth.fakes.FakeTokenStorage
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
@@ -50,5 +52,20 @@ class LogoutUseCaseTest {
 
         assertEquals(0, fakeRepo.loginCallCount)
         assertEquals(0, fakeRepo.logoutCallCount)
+    }
+
+    // ── Session-expiry reason (design-gap-closure) ──────────────────────────────
+    //
+    // Explicit logout must be distinguishable from a real 401/token-expiry so the
+    // Login screen can stay silent for a deliberate logout but show "tu sesión
+    // expiró" only when the session was killed by the server.
+
+    @Test
+    fun logout_emits_expired_event_with_USER_INITIATED_reason() = runTest {
+        sessionEvents.expired.test {
+            useCase()
+            assertEquals(SessionExpiryReason.USER_INITIATED, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

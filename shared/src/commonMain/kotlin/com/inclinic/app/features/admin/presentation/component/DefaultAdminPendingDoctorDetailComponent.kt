@@ -1,5 +1,6 @@
 package com.inclinic.app.features.admin.presentation.component
 
+import com.inclinic.app.core.error.isNotFoundError
 import com.inclinic.app.core.error.toUserMessage
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -8,7 +9,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.features.admin.doctors.application.ApproveDoctorUseCase
-import com.inclinic.app.features.admin.doctors.application.GetPendingDoctorsUseCase
+import com.inclinic.app.features.admin.doctors.application.GetPendingDoctorByIdUseCase
 import com.inclinic.app.features.admin.doctors.application.RejectDoctorUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -18,7 +19,7 @@ import kotlinx.coroutines.launch
 class DefaultAdminPendingDoctorDetailComponent(
     componentContext: ComponentContext,
     private val doctorId: String,
-    private val getPendingDoctors: GetPendingDoctorsUseCase,
+    private val getPendingDoctorById: GetPendingDoctorByIdUseCase,
     private val approveDoctor: ApproveDoctorUseCase,
     private val rejectDoctor: RejectDoctorUseCase,
     private val dispatchers: AppDispatchers,
@@ -77,21 +78,20 @@ class DefaultAdminPendingDoctorDetailComponent(
     }
 
     private fun load() {
-        _state.update { it.copy(isLoading = true, error = null) }
+        _state.update { it.copy(isLoading = true, error = null, notFound = false) }
         scope.launch {
-            // Re-uses the pending-list endpoint and finds the specific doctor by id.
-            // Backend TODO: expose GET /api/doctors/:id/pending for single-item admin view.
-            getPendingDoctors()
-                .onSuccess { items ->
-                    val doctor = items.firstOrNull { it.id == doctorId }
-                    if (doctor != null) {
-                        _state.update { it.copy(isLoading = false, doctor = doctor) }
-                    } else {
-                        _state.update { it.copy(isLoading = false, error = "Solicitud no encontrada") }
-                    }
+            getPendingDoctorById(doctorId)
+                .onSuccess { doctor ->
+                    _state.update { it.copy(isLoading = false, doctor = doctor) }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("Error cargando solicitud")) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = err.toUserMessage("Error cargando solicitud"),
+                            notFound = err.isNotFoundError(),
+                        )
+                    }
                 }
         }
     }

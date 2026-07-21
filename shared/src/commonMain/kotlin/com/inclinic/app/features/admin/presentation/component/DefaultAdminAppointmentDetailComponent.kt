@@ -1,5 +1,6 @@
 package com.inclinic.app.features.admin.presentation.component
 
+import com.inclinic.app.core.error.isNotFoundError
 import com.inclinic.app.core.error.toUserMessage
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -34,19 +35,28 @@ class DefaultAdminAppointmentDetailComponent(
     }
 
     override fun onNavigateToResolveDispute() {
-        // TODO: dispute resolution screen not yet implemented
+        // Guard: the screen already hides this action when there's no dispute, but the
+        // component re-checks so no output can fire from a stale/mismatched UI state.
+        val detail = _state.value.detail ?: return
+        if (!detail.hasDispute) return
         onOutput(AdminAppointmentDetailComponent.Output.NavigateToResolveDispute(appointmentId))
     }
 
     private fun load() {
-        _state.update { it.copy(isLoading = true, error = null) }
+        _state.update { it.copy(isLoading = true, error = null, notFound = false) }
         scope.launch {
             getDetail(appointmentId)
                 .onSuccess { detail ->
                     _state.update { it.copy(isLoading = false, detail = detail) }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isLoading = false, error = err.toUserMessage("Error cargando cita")) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = err.toUserMessage("Error cargando cita"),
+                            notFound = err.isNotFoundError(),
+                        )
+                    }
                 }
         }
     }

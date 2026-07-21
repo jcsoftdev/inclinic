@@ -38,12 +38,16 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Mail
 import com.composables.icons.lucide.Stethoscope
 import com.composables.icons.lucide.X
+import com.inclinic.app.core.util.DetailLoadState
 import com.inclinic.app.features.admin.infrastructure.remote.AdminPendingDoctor
+import com.inclinic.app.features.admin.infrastructure.remote.AdminPendingDoctorSpecialtyConfig
 import com.inclinic.app.features.admin.presentation.component.AdminPendingDoctorDetailComponent
+import com.inclinic.app.features.admin.presentation.component.toDetailLoadState
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.AppTextField
+import com.inclinic.app.ui.atoms.DetailErrorState
 import com.inclinic.app.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,27 +76,24 @@ fun AdminPendingDoctorDetailScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.surface),
         )
 
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when (val loadState = state.toDetailLoadState()) {
+            is DetailLoadState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colors.navy)
             }
 
-            state.error != null && state.doctor == null -> Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
-                    modifier = Modifier.padding(dimens.spacingLg),
-                ) {
-                    Icon(Lucide.CircleAlert, contentDescription = null, tint = colors.red, modifier = Modifier.size(40.dp))
-                    Text(state.error!!, color = colors.red, style = AppTheme.typography.body)
-                }
-            }
+            is DetailLoadState.NotFound -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+                notFound = true,
+            )
 
-            state.doctor != null -> PendingDoctorDetailContent(
-                doctor = state.doctor!!,
+            is DetailLoadState.Failed -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+            )
+
+            is DetailLoadState.Content -> PendingDoctorDetailContent(
+                doctor = loadState.value,
                 rejectReason = state.rejectReason,
                 rejectError = state.rejectError,
                 actionError = state.error,
@@ -178,6 +179,48 @@ private fun PendingDoctorDetailContent(
             PendingInfoRow(icon = Lucide.Mail, label = "Email", value = doctor.user.email)
             PendingInfoRow(icon = Lucide.Stethoscope, label = "Especialidad", value = doctor.primarySpecialty)
             PendingInfoRow(icon = Lucide.FileText, label = "Docs subidos", value = "${doctor.documentCount}")
+            if (doctor.correctionCount > 0) {
+                PendingInfoRow(icon = Lucide.CircleAlert, label = "Correcciones", value = "${doctor.correctionCount}")
+            }
+        }
+
+        // Document file list (only populated by the by-id detail call)
+        if (doctor.documents.isNotEmpty()) {
+            PendingSectionLabel("ARCHIVOS")
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(dimens.radiusLarge))
+                    .background(colors.surface)
+                    .border(1.dp, colors.border, RoundedCornerShape(dimens.radiusLarge))
+                    .padding(dimens.spacing12),
+                verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+            ) {
+                doctor.documents.forEachIndexed { index, fileName ->
+                    if (index > 0) RowDivider()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+                        modifier = Modifier.padding(vertical = 6.dp),
+                    ) {
+                        Icon(Lucide.FileText, contentDescription = null, tint = colors.muted, modifier = Modifier.size(14.dp))
+                        Text(fileName, fontSize = 12.sp, color = colors.text, modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+
+        // Per-specialty visit-type + pricing config (only populated by the by-id detail call)
+        if (doctor.specialtyConfigs.isNotEmpty()) {
+            PendingSectionLabel("CONFIGURACIÓN POR ESPECIALIDAD")
+            Column(
+                Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+            ) {
+                doctor.specialtyConfigs.forEach { config ->
+                    SpecialtyConfigCard(config)
+                }
+            }
         }
 
         // Action error banner
@@ -250,6 +293,56 @@ private fun PendingDoctorDetailContent(
         }
 
         Spacer(Modifier.height(dimens.spacingLg))
+    }
+}
+
+@Composable
+private fun RowDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(AppTheme.colors.border),
+    )
+}
+
+@Composable
+private fun SpecialtyConfigCard(config: AdminPendingDoctorSpecialtyConfig) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(dimens.radiusLarge))
+            .background(colors.surface)
+            .border(1.dp, colors.border, RoundedCornerShape(dimens.radiusLarge))
+            .padding(dimens.spacing12),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(dimens.spacingXs),
+        ) {
+            Text(config.specialtyName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colors.text)
+            if (config.isPrimary) {
+                Text("· Principal", fontSize = 11.sp, color = colors.navy, fontWeight = FontWeight.Medium)
+            }
+        }
+        if (config.offersOfficeVisit) {
+            Text(
+                "Consultorio" + (config.officePrice?.let { " · S/ ${it}" } ?: ""),
+                fontSize = 12.sp,
+                color = colors.muted,
+            )
+        }
+        if (config.offersHomeVisit) {
+            Text(
+                "Domicilio" + (config.homeVisitPrice?.let { " · S/ ${it}" } ?: ""),
+                fontSize = 12.sp,
+                color = colors.muted,
+            )
+        }
     }
 }
 

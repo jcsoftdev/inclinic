@@ -14,6 +14,7 @@ import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.model.HistoryAccessLog
 import com.inclinic.app.core.navigation.PatientConfig
 import com.inclinic.app.features.patient.assistant.presentation.component.AssistantChatComponent
 import com.inclinic.app.features.patient.moderation.presentation.component.BlockUserComponent
@@ -54,6 +55,7 @@ class DefaultPatientFlowComponent(
     private val medicalRecordDetailFactory: (ComponentContext, String, (MedicalRecordDetailComponent.Output) -> Unit) -> MedicalRecordDetailComponent,
     private val prescriptionDetailFactory: (ComponentContext, String, (PrescriptionDetailComponent.Output) -> Unit) -> PrescriptionDetailComponent,
     private val historyAccessLogsFactory: (ComponentContext, (HistoryAccessLogsComponent.Output) -> Unit) -> HistoryAccessLogsComponent,
+    private val historyAccessLogDetailFactory: (ComponentContext, HistoryAccessLog, (HistoryAccessLogDetailComponent.Output) -> Unit) -> HistoryAccessLogDetailComponent,
     private val shareRequestsFactory: (ComponentContext, (ShareRequestsComponent.Output) -> Unit) -> ShareRequestsComponent,
     private val approveShareRequestFactory: (ComponentContext, String, (ApproveShareRequestComponent.Output) -> Unit) -> ApproveShareRequestComponent,
     private val symptomInputFactory: (ComponentContext, (SymptomInputComponent.Output) -> Unit) -> SymptomInputComponent,
@@ -419,6 +421,15 @@ class DefaultPatientFlowComponent(
                         HistoryAccessLogsComponent.Output.Back -> navigation.pop()
                         HistoryAccessLogsComponent.Output.NavigateToManageAccess ->
                             navigation.push(PatientConfig.ActiveAccesses)
+                        is HistoryAccessLogsComponent.Output.NavigateToDetail ->
+                            navigation.push(PatientConfig.HistoryAccessLogDetail(output.entry))
+                    }
+                }
+            )
+            is PatientConfig.HistoryAccessLogDetail -> PatientFlowComponent.Child.HistoryAccessLogDetail(
+                historyAccessLogDetailFactory(ctx, config.entry) { output ->
+                    when (output) {
+                        HistoryAccessLogDetailComponent.Output.Back -> navigation.pop()
                     }
                 }
             )

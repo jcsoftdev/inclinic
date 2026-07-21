@@ -9,6 +9,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.events.SessionEvents
+import com.inclinic.app.core.events.SessionExpiryReason
 import com.inclinic.app.core.model.OnboardingStatus
 import com.inclinic.app.features.admin.presentation.component.AdminFlowComponent
 import com.inclinic.app.features.auth.application.GetStoredTokensUseCase
@@ -46,7 +47,7 @@ class DefaultRootComponent(
     private val sessionEvents: SessionEvents,
     private val getStoredTokens: GetStoredTokensUseCase,
     private val tokenStorage: TokenStorage,
-    private val loginComponentFactory: (ComponentContext, (AuthUser) -> Unit, (String) -> Unit, () -> Unit, () -> Unit) -> LoginComponent,
+    private val loginComponentFactory: (ComponentContext, (AuthUser) -> Unit, (String) -> Unit, () -> Unit, () -> Unit, () -> Unit) -> LoginComponent,
     private val twoFactorVerifyComponentFactory: (ComponentContext, String, (AuthUser) -> Unit, () -> Unit) -> TwoFactorVerifyComponent,
     private val registerPatientComponentFactory: (ComponentContext, (RegisterPatientComponent.Output) -> Unit) -> RegisterPatientComponent,
     private val registerDoctorComponentFactory: (ComponentContext, (RegisterDoctorComponent.Output) -> Unit) -> RegisterDoctorComponent,
@@ -68,7 +69,12 @@ class DefaultRootComponent(
     init {
         lifecycle.doOnDestroy { scope.cancel() }
         scope.launch {
-            sessionEvents.expired.collect {
+            sessionEvents.expired.collect { reason ->
+                // Only a real 401/token-expiry surfaces "tu sesión expiró" at Login —
+                // an explicit user-initiated logout stays silent (design-gap-closure).
+                if (reason == SessionExpiryReason.EXPIRED) {
+                    PendingSessionMessage.expired = true
+                }
                 navigation.replaceAll(RootConfig.Auth)
             }
         }

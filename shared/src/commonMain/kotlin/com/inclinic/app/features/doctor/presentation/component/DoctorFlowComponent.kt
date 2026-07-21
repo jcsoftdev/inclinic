@@ -23,6 +23,7 @@ import com.inclinic.app.features.doctor.profile.presentation.component.RequestSp
 import com.inclinic.app.features.doctor.reschedule.presentation.component.RescheduleQueueComponent
 import com.inclinic.app.features.doctor.reschedule_request.presentation.component.RequestRescheduleComponent
 import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSettingsComponent
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.RequestShareComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.ShareRequestsListComponent
@@ -90,6 +91,7 @@ interface DoctorFlowComponent {
         class TherapyOffers(val component: TherapyOffersListComponent) : Child
         class CreateTherapyOffer(val component: CreateTherapyOfferComponent) : Child
         class EditPrescription(val component: EditPrescriptionComponent) : Child
+        class CreatePrescription(val component: CreatePrescriptionComponent) : Child
         class DeleteAccount(val component: DeleteAccountComponent) : Child
         class NoShowQueue(val component: NoShowQueueComponent) : Child
         class PendingClosure(val component: PendingClosureQueueComponent) : Child

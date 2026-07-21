@@ -35,9 +35,12 @@ import com.composables.icons.lucide.Wallet
 import com.inclinic.app.features.doctor.profile.core.model.IncomeBreakdown
 import com.inclinic.app.features.doctor.profile.core.model.IncomeSummary
 import com.inclinic.app.features.doctor.profile.presentation.component.IncomeComponent
+import com.inclinic.app.features.doctor.profile.presentation.component.IncomeViewState
+import com.inclinic.app.features.doctor.profile.presentation.component.toViewState
 import com.inclinic.app.ui.atoms.AppBackButton
-import com.inclinic.app.ui.atoms.AppButton
-import com.inclinic.app.ui.atoms.LoadingOverlay
+import com.inclinic.app.ui.atoms.EmptyState
+import com.inclinic.app.ui.atoms.ErrorState
+import com.inclinic.app.ui.atoms.SkeletonListRows
 import com.inclinic.app.ui.theme.AppTheme
 
 /**
@@ -86,37 +89,50 @@ fun IncomeScreen(
                     )
                 }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(dimens.spacing12 + 2.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimens.spacingMd, vertical = dimens.spacingMd),
-                ) {
-                    val summary = state.summary
-                    if (summary != null) {
+                when (val viewState = state.toViewState()) {
+                    is IncomeViewState.Loading -> Column(
+                        verticalArrangement = Arrangement.spacedBy(dimens.spacing12 + 2.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimens.spacingMd, vertical = dimens.spacingMd),
+                    ) {
+                        SkeletonListRows(count = 4, modifier = Modifier.fillMaxWidth())
+                    }
+
+                    is IncomeViewState.Error -> ErrorState(
+                        title = "No se pudieron cargar tus ingresos",
+                        subtitle = viewState.message,
+                        onRetry = component::onRetry,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimens.spacingMd, vertical = dimens.spacingMd),
+                    )
+
+                    is IncomeViewState.Empty -> EmptyState(
+                        title = "Aún no tienes ingresos",
+                        subtitle = "Cuando completes tu primera consulta, verás aquí el detalle de tus ingresos.",
+                        icon = Lucide.Wallet,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimens.spacingMd, vertical = dimens.spacingMd),
+                    )
+
+                    is IncomeViewState.Content -> Column(
+                        verticalArrangement = Arrangement.spacedBy(dimens.spacing12 + 2.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimens.spacingMd, vertical = dimens.spacingMd),
+                    ) {
+                        val summary = viewState.summary
                         IncomeHeroCard(summary)
                         KpiRow(summary)
                         summary.breakdown?.let { BreakdownRow(it) }
                         ChartCard()
                         WithdrawalCard(summary)
                         CommissionBanner()
-                    } else if (state.error != null) {
-                        Text(
-                            text = state.error ?: "Error desconocido",
-                            style = typography.body,
-                            color = colors.red,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = dimens.spacingMd),
-                        )
-                        AppButton(
-                            text = "Reintentar",
-                            onClick = component::onRetry,
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                        )
                     }
                 }
             }
-
-            LoadingOverlay(visible = state.isLoading)
         }
     }
 }

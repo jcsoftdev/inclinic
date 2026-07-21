@@ -66,7 +66,7 @@ class DefaultAdminResolveNoShowComponent(
     }
 
     private fun load() {
-        _state.update { it.copy(isLoading = true, loadError = null) }
+        _state.update { it.copy(isLoading = true, loadError = null, notFound = false) }
         scope.launch {
             getNoShows()
                 .onSuccess { items ->
@@ -74,7 +74,7 @@ class DefaultAdminResolveNoShowComponent(
                     if (noShow != null) {
                         _state.update { it.copy(isLoading = false, noShow = noShow) }
                     } else {
-                        _state.update { it.copy(isLoading = false, loadError = "No-show no encontrado") }
+                        _state.update { it.copy(isLoading = false, loadError = "No-show no encontrado", notFound = true) }
                     }
                 }
                 .onFailure { err ->

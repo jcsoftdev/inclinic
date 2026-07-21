@@ -40,3 +40,6 @@ docs/
 
 # vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Local git worktrees (subagent-driven-development scratch workspaces)
+.worktrees/

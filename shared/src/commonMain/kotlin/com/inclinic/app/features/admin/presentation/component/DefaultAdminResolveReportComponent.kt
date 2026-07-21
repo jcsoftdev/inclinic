@@ -49,11 +49,29 @@ class DefaultAdminResolveReportComponent(
 
     override fun onConfirm() {
         val decision = _state.value.selectedDecision ?: return
+        submit(decision.apiStatus)
+    }
+
+    override fun onQuickDismiss() {
+        // Same path as tapping the "Descartar" decision card + confirming.
+        _state.update { it.copy(selectedDecision = ReportDecision.Dismissed) }
+        submit(ReportDecision.Dismissed.apiStatus)
+    }
+
+    override fun onEscalate() {
+        submit(ESCALATED_STATUS)
+    }
+
+    override fun onBack() {
+        onOutput(AdminResolveReportComponent.Output.Back)
+    }
+
+    private fun submit(status: String) {
         _state.update { it.copy(isSubmitting = true, submitError = null) }
         scope.launch {
             resolveReport(
                 reportId = _state.value.reportId,
-                status = decision.apiStatus,
+                status = status,
                 adminNote = _state.value.adminNote.trim().ifBlank { null },
             )
                 .onSuccess {
@@ -66,7 +84,8 @@ class DefaultAdminResolveReportComponent(
         }
     }
 
-    override fun onBack() {
-        onOutput(AdminResolveReportComponent.Output.Back)
+    private companion object {
+        /** Best-guess status literal for "escalated" — pending backend confirmation. */
+        const val ESCALATED_STATUS = "ESCALATED"
     }
 }

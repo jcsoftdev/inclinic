@@ -41,6 +41,9 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ShieldAlert
 import com.composables.icons.lucide.Timer
 import com.inclinic.app.features.admin.presentation.component.AdminDashboardComponent
+import com.inclinic.app.features.admin.presentation.component.AdminDashboardViewState
+import com.inclinic.app.features.admin.presentation.component.toViewState
+import com.inclinic.app.ui.atoms.ErrorState
 import com.inclinic.app.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,10 +60,20 @@ fun AdminDashboardScreen(component: AdminDashboardComponent, modifier: Modifier 
             .fillMaxSize()
             .background(colors.sand),
     ) {
-        if (state.isLoading && state.appointmentsToday == 0 && state.pendingDoctors == 0) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
-        } else {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        when (state.toViewState()) {
+            AdminDashboardViewState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+
+            is AdminDashboardViewState.Failed -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                AdminHeader(onBell = component::onNavigateToNotifications)
+                ErrorState(
+                    title = "No se pudo cargar el panel",
+                    subtitle = state.error ?: "Revisa tu conexión e inténtalo de nuevo.",
+                    onRetry = component::onRefresh,
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                )
+            }
+
+            AdminDashboardViewState.Loaded -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 AdminHeader(onBell = component::onNavigateToNotifications)
 
                 Column(

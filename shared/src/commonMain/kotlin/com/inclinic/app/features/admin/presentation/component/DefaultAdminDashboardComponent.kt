@@ -56,6 +56,7 @@ class DefaultAdminDashboardComponent(
                     _state.update {
                         it.copy(
                             isLoading = false,
+                            hasLoadedOnce = true,
                             appointmentsToday = data.appointmentsToday,
                             pendingDoctors = data.pendingDoctors,
                             monthRevenue = "S/ ${formatCompactMoney(data.monthRevenue)}",

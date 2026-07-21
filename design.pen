@@ -1,5 +1,5 @@
 {
-  "version": "2.13",
+  "version": "2.14",
   "children": [
     {
       "type": "frame",
@@ -7989,7 +7989,7 @@
                               "width": "fill_container",
                               "descendants": {
                                 "PKWAA": {
-                                  "x": 233.0117275781402,
+                                  "x": 233.01172757814018,
                                   "y": 0,
                                   "rotation": -0.22142685343961319
                                 },
@@ -8016,7 +8016,7 @@
                                   "rotation": 0.028688347307755865
                                 },
                                 "ILPEt": {
-                                  "x": 14.737348273664175,
+                                  "x": 14.737348273664177,
                                   "y": 12.013463792975598,
                                   "rotation": 0.0906876088571077
                                 },
@@ -16215,7 +16215,6 @@
                       "type": "frame",
                       "id": "pJuzA",
                       "name": "Screen - Quien Leyo",
-                      "theme": {},
                       "width": 390,
                       "height": 852,
                       "fill": "$--sand",
@@ -41670,7 +41669,7 @@
           "y": 0,
           "name": "Banner - ADMIN",
           "width": 2900,
-          "height": 140.3676148796499,
+          "height": 154.04595185995626,
           "fill": "$--purple-bg",
           "cornerRadius": 24,
           "stroke": "$--purple",
@@ -41751,10 +41750,10 @@
           "type": "frame",
           "id": "GpBoQ",
           "x": 0,
-          "y": 180.47264770240702,
+          "y": 198.05908096280086,
           "name": "Section - Admin App",
           "width": 2900,
-          "height": 8983.527352297593,
+          "height": 9858.9409190372,
           "fill": "#000000ff",
           "layout": "vertical",
           "gap": 56,
@@ -67410,5 +67409,6 @@
         }
       ]
     }
-  }
+  },
+  "fileToken": "ccc97b8c-4eb7-4221-9c28-5014ae80587a"
 }

@@ -27,7 +27,7 @@ interface MembershipComponent {
 }
 
 /** Monthly price of Patient Premium, in PEN. */
-const val PREMIUM_PRICE: Double = 49.0
+const val PREMIUM_PRICE: Double = 19.9
 
 data class MembershipState(
     val tier: SubscriptionTier = SubscriptionTier.FREE,

@@ -1,6 +1,8 @@
 package com.inclinic.app.features.admin.presentation.component
 
 import com.arkivanov.decompose.value.Value
+import com.inclinic.app.core.util.DetailLoadState
+import com.inclinic.app.core.util.detailLoadState
 import com.inclinic.app.features.admin.infrastructure.remote.AdminDisputeItem
 
 interface AdminResolveDisputeComponent {
@@ -24,7 +26,12 @@ data class AdminResolveDisputeState(
     val note: String = "",
     val isSubmitting: Boolean = false,
     val submitError: String? = null,
+    /** True when [loadError] means "this dispute id doesn't exist" rather than a transient failure. */
+    val notFound: Boolean = false,
 ) {
     val canConfirm: Boolean
         get() = selectedResolution != null && note.trim().length >= 10 && !isSubmitting
 }
+
+fun AdminResolveDisputeState.toDetailLoadState(): DetailLoadState<AdminDisputeItem> =
+    detailLoadState(isLoading = isLoading, value = dispute, error = loadError, notFound = notFound)

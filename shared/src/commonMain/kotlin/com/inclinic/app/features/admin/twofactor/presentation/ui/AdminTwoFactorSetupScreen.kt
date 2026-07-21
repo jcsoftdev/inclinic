@@ -16,13 +16,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +41,7 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.composables.icons.lucide.Copy
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ScanLine
+import com.inclinic.app.core.platform.rememberClipboard
 import com.inclinic.app.features.admin.twofactor.presentation.component.AdminTwoFactorSetupComponent
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
@@ -46,6 +53,7 @@ import com.inclinic.app.ui.atoms.InfoBannerTone
 import com.inclinic.app.core.platform.SecureScreen
 import com.inclinic.app.ui.theme.AppTheme
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import kotlinx.coroutines.launch
 
 /**
  * Admin 2FA setup screen.
@@ -57,8 +65,9 @@ import io.github.alexzhirkevich.qrose.rememberQrCodePainter
  * scannable QR image. If the URL is blank the area falls back to the manual-key placeholder.
  *
  * The manual [TwoFactorSetup.secret] is shown grouped in sets of 4 characters for readability.
- * Clipboard copy is shown as a hint; native clipboard is platform-specific and not wired here.
- * TODO: wire clipboard copy via expect/actual or a platform callback.
+ * Tapping the "Copia la clave" row copies the raw (unformatted) secret via [rememberClipboard]
+ * — the same expect/actual helper already used by other screens — and shows a brief snackbar
+ * confirmation. There are no backup codes on this screen, only the TOTP secret.
  */
 @Composable
 fun AdminTwoFactorSetupScreen(
@@ -72,9 +81,13 @@ fun AdminTwoFactorSetupScreen(
         val colors = AppTheme.colors
         val typography = AppTheme.typography
         val dimens = AppTheme.dimens
+        val clipboard = rememberClipboard()
+        val snackbarHostState = remember { SnackbarHostState() }
+        val scope = rememberCoroutineScope()
 
+        Box(modifier = modifier.fillMaxSize()) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(colors.sand),
         ) {
@@ -201,6 +214,14 @@ fun AdminTwoFactorSetupScreen(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = {
+                                            clipboard.copy(setup.secret, label = "Clave 2FA")
+                                            scope.launch { snackbarHostState.showSnackbar("Clave copiada") }
+                                        },
+                                    ),
                                 ) {
                                     Icon(
                                         imageVector = Lucide.Copy,
@@ -260,6 +281,12 @@ fun AdminTwoFactorSetupScreen(
                     }
                 }
             }
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
         }
     }
 }

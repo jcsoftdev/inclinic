@@ -35,6 +35,20 @@ data class PrescriptionItemDto(
 )
 
 /**
+ * POST /api/prescriptions body.
+ * Matches CreatePrescriptionInput in prescription.service.ts.
+ */
+@Serializable
+data class CreatePrescriptionRequestDto(
+    val appointmentId: String,
+    val diagnosis: String? = null,
+    val instructions: String? = null,
+    val notes: String? = null,
+    val validUntil: String? = null,
+    val items: List<UpdatePrescriptionItemDto>,
+)
+
+/**
  * PUT /api/prescriptions/{id} body.
  * Matches Partial<CreatePrescriptionInput> in prescription.service.ts.
  */

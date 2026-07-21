@@ -15,6 +15,8 @@ interface DoctorAppointmentDetailComponent {
     fun onNavigateToChat()
     fun onRequestReschedule()
     fun onCreateMedicalRecord()
+    fun onNavigateToCreatePrescription()
+    fun onNavigateToEditPrescription()
     fun onBack()
 
     sealed interface Output {
@@ -22,6 +24,8 @@ interface DoctorAppointmentDetailComponent {
         data class NavigateToChat(val appointmentId: String) : Output
         data class NavigateToRequestReschedule(val appointmentId: String) : Output
         data class NavigateToCreateMedicalRecord(val appointmentId: String, val patientId: String) : Output
+        data class NavigateToCreatePrescription(val appointmentId: String) : Output
+        data class NavigateToEditPrescription(val prescriptionId: String) : Output
         data object Back : Output
     }
 }

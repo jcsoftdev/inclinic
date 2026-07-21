@@ -25,6 +25,14 @@ interface AdminFinanceComponent {
 data class AdminFinanceState(
     val isLoading: Boolean = false,
     val error: String? = null,
+    /**
+     * True once the first successful load has completed. Replaces the old
+     * `balanceTotal != "S/ 0"` sentinel, which misread a genuinely-zero successful
+     * load as "no data yet" and rendered the full [AdminFinanceViewState.Failed]
+     * screen on a subsequent refresh error instead of the dismissible-banner-over-data
+     * [AdminFinanceViewState.Loaded] state.
+     */
+    val hasLoadedOnce: Boolean = false,
 
     // Hero card
     val balanceTotal: String = "S/ 0",
@@ -51,3 +59,23 @@ data class AdminFinanceState(
     /** Feedback message shown in the snackbar after export completes or fails. */
     val exportMessage: String? = null,
 )
+
+/**
+ * Pure, Compose-free rendering decision for [com.inclinic.app.features.admin.presentation.ui.AdminFinanceScreen].
+ *
+ * Mirrors [AdminDashboardViewState]: a load failure before any real balance is known
+ * gets its own full [Failed] state with a retry affordance, instead of silently
+ * rendering the hero card + KPI tiles + empty movements list at their zeroed defaults
+ * with just an inline red line of text at the top.
+ */
+sealed interface AdminFinanceViewState {
+    data object Loading : AdminFinanceViewState
+    data class Failed(val message: String) : AdminFinanceViewState
+    data object Loaded : AdminFinanceViewState
+}
+
+fun AdminFinanceState.toViewState(): AdminFinanceViewState = when {
+    isLoading && !hasLoadedOnce -> AdminFinanceViewState.Loading
+    error != null && !hasLoadedOnce -> AdminFinanceViewState.Failed(error)
+    else -> AdminFinanceViewState.Loaded
+}

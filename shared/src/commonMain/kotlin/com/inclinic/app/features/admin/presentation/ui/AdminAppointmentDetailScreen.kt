@@ -40,16 +40,19 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ShieldAlert
 import com.composables.icons.lucide.Stethoscope
 import com.composables.icons.lucide.User
+import com.inclinic.app.core.util.DetailLoadState
 import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.admin.infrastructure.remote.AdminAppointmentDetail
 import com.inclinic.app.features.admin.infrastructure.remote.AdminAppointmentPerson
 import com.inclinic.app.features.admin.presentation.component.AdminAppointmentDetailComponent
+import com.inclinic.app.features.admin.presentation.component.toDetailLoadState
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppBadge
 import com.inclinic.app.ui.atoms.AppBadgeTone
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.ChipStatus
+import com.inclinic.app.ui.atoms.DetailErrorState
 import com.inclinic.app.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,24 +81,24 @@ fun AdminAppointmentDetailScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.surface),
         )
 
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when (val loadState = state.toDetailLoadState()) {
+            is DetailLoadState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colors.navy)
             }
 
-            state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
-                    modifier = Modifier.padding(dimens.spacingLg),
-                ) {
-                    Icon(Lucide.CircleAlert, contentDescription = null, tint = colors.red, modifier = Modifier.size(40.dp))
-                    Text(state.error!!, color = colors.red, style = AppTheme.typography.body)
-                }
-            }
+            is DetailLoadState.NotFound -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+                notFound = true,
+            )
 
-            state.detail != null -> DetailContent(
-                detail = state.detail!!,
+            is DetailLoadState.Failed -> DetailErrorState(
+                message = loadState.message,
+                onBackToList = component::onBack,
+            )
+
+            is DetailLoadState.Content -> DetailContent(
+                detail = loadState.value,
                 onResolveDispute = component::onNavigateToResolveDispute,
             )
         }

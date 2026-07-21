@@ -80,6 +80,12 @@ class DefaultRegisterPatientComponent(
                 }
                 .onFailure { error ->
                     when (error) {
+                        is AuthError.TooManyAttempts -> {
+                            // 429 gets a standalone screen instead of an inline banner —
+                            // same experience as Login (design-gap-closure consistency fix).
+                            _state.update { it.copy(isLoading = false) }
+                            onOutput(RegisterPatientComponent.Output.RateLimited)
+                        }
                         is AuthError.ValidationError -> {
                             _state.update { st ->
                                 st.copy(

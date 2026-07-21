@@ -73,7 +73,7 @@ class DefaultRootComponentDoctorRoutingTest {
             sessionEvents = sessionEvents,
             getStoredTokens = getStoredTokens,
             tokenStorage = fakeTokenStorage,
-            loginComponentFactory = { _, _, _, _, _ -> StubLoginComponent() },
+            loginComponentFactory = { _, _, _, _, _, _ -> StubLoginComponent() },
             twoFactorVerifyComponentFactory = { _, _, _, _ -> StubTwoFactorVerifyComponent() },
             registerPatientComponentFactory = { _, _ -> StubRegisterPatientComponent() },
             registerDoctorComponentFactory = { _, _ -> StubRegisterDoctorComponent() },
@@ -215,6 +215,7 @@ private class StubLoginComponent : LoginComponent {
     override fun onErrorDismissed() {}
     override fun onForgotPassword() {}
     override fun onRegister() {}
+    override fun onResendActivation() {}
 }
 
 private class StubRegisterPatientComponent : RegisterPatientComponent {

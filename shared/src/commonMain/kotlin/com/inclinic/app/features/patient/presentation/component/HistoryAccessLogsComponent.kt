@@ -8,9 +8,12 @@ interface HistoryAccessLogsComponent {
     fun onRefresh()
     fun onBack()
     fun onManageAccess()
+    /** User tapped an [HistoryAccessLog] row — drill down to its detail screen. */
+    fun onLogClick(entry: HistoryAccessLog)
     sealed interface Output {
         data object Back : Output
         data object NavigateToManageAccess : Output
+        data class NavigateToDetail(val entry: HistoryAccessLog) : Output
     }
 }
 

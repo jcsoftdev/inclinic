@@ -49,7 +49,6 @@ fun AdminFlowContent(component: AdminFlowComponent, modifier: Modifier = Modifie
                 is AdminFlowComponent.Child.Dashboard -> AdminDashboardScreen(c.component)
                 is AdminFlowComponent.Child.Finance -> AdminFinanceScreen(c.component)
                 is AdminFlowComponent.Child.Notifications -> AdminNotificationsScreen(c.component)
-                is AdminFlowComponent.Child.DoctorApprovals -> AdminPlaceholderScreen(c.component)
                 is AdminFlowComponent.Child.Appointments -> AdminAppointmentsScreen(c.component)
                 is AdminFlowComponent.Child.AppointmentDetail -> AdminAppointmentDetailScreen(c.component)
                 is AdminFlowComponent.Child.DoctoresRoot -> AdminDoctorsScreen(c.component)

@@ -2,6 +2,7 @@ package com.inclinic.app.features.patient.di
 
 import com.arkivanov.decompose.ComponentContext
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.model.HistoryAccessLog
 import com.inclinic.app.core.port.CardTokenizer
 import com.inclinic.app.core.port.YapeTokenizer
 import com.inclinic.app.features.payment.KtorYapeTokenizer
@@ -87,6 +88,7 @@ import com.inclinic.app.features.patient.presentation.component.DefaultConsultTy
 import com.inclinic.app.features.patient.presentation.component.DefaultDisputeAppointmentComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultDoctorProfileComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultDoctorSearchComponent
+import com.inclinic.app.features.patient.presentation.component.DefaultHistoryAccessLogDetailComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultHistoryAccessLogsComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultMedicalHistoryComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultMedicalRecordDetailComponent
@@ -118,6 +120,7 @@ import com.inclinic.app.features.patient.presentation.component.DefaultTherapyPa
 import com.inclinic.app.features.patient.presentation.component.DisputeAppointmentComponent
 import com.inclinic.app.features.patient.presentation.component.DoctorProfileComponent
 import com.inclinic.app.features.patient.presentation.component.DoctorSearchComponent
+import com.inclinic.app.features.patient.presentation.component.HistoryAccessLogDetailComponent
 import com.inclinic.app.features.patient.presentation.component.HistoryAccessLogsComponent
 import com.inclinic.app.features.patient.presentation.component.MedicalHistoryComponent
 import com.inclinic.app.features.patient.presentation.component.MembershipComponent
@@ -389,6 +392,9 @@ val patientModule = module {
     factory<HistoryAccessLogsComponent> { (ctx: ComponentContext, onOutput: (HistoryAccessLogsComponent.Output) -> Unit) ->
         DefaultHistoryAccessLogsComponent(ctx, get(), get(), onOutput)
     }
+    factory<HistoryAccessLogDetailComponent> { (ctx: ComponentContext, entry: HistoryAccessLog, onOutput: (HistoryAccessLogDetailComponent.Output) -> Unit) ->
+        DefaultHistoryAccessLogDetailComponent(ctx, entry, onOutput)
+    }
     factory<ShareRequestsComponent> { (ctx: ComponentContext, onOutput: (ShareRequestsComponent.Output) -> Unit) ->
         DefaultShareRequestsComponent(ctx, get(), get(), get(), onOutput)
     }
@@ -448,6 +454,7 @@ val patientModule = module {
             medicalRecordDetailFactory = { c, recordId, out -> get { parametersOf(c, recordId, out) } },
             prescriptionDetailFactory = { c, prescriptionId, out -> get { parametersOf(c, prescriptionId, out) } },
             historyAccessLogsFactory = { c, out -> get { parametersOf(c, out) } },
+            historyAccessLogDetailFactory = { c, entry, out -> get { parametersOf(c, entry, out) } },
             shareRequestsFactory = { c, out -> get { parametersOf(c, out) } },
             approveShareRequestFactory = { c, requestId, out -> get { parametersOf(c, requestId, out) } },
             symptomInputFactory = { c, out -> get { parametersOf(c, out) } },

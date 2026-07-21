@@ -26,6 +26,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +40,8 @@ import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Pencil
 import com.composables.icons.lucide.Shield
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import com.inclinic.app.features.admin.presentation.component.AdminProfileComponent
 import com.inclinic.app.features.auth.core.model.AuthUser
 import com.inclinic.app.features.auth.core.model.UserRole
@@ -45,6 +50,8 @@ import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppButtonVariant
+import com.inclinic.app.ui.atoms.AppTextField
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.atoms.SectionHeader
 import com.inclinic.app.ui.theme.AppTheme
@@ -71,6 +78,19 @@ fun AdminProfileScreen(
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+
+    if (showLogoutConfirm) {
+        ConfirmDialog(
+            title = "¿Cerrar sesión?",
+            message = "Tendrás que volver a iniciar sesión para acceder a tu cuenta.",
+            onConfirm = {
+                showLogoutConfirm = false
+                component.onLogout()
+            },
+            onDismiss = { showLogoutConfirm = false },
+        )
+    }
 
     Column(
         modifier = modifier
@@ -88,15 +108,15 @@ fun AdminProfileScreen(
             },
             navigationIcon = { AppBackButton(onClick = component::onBack) },
             actions = {
-                // TODO: Edit profile — pencil icon is visual-only; a profile PATCH endpoint
-                // is not yet defined in the backend. Wire when /api/users/me PATCH lands.
-                IconButton(onClick = {}) {
-                    Icon(
-                        Lucide.Pencil,
-                        contentDescription = "Editar perfil (próximamente)",
-                        tint = colors.muted,
-                        modifier = Modifier.size(20.dp),
-                    )
+                if (state.user != null && !state.isEditing) {
+                    IconButton(onClick = component::onEditStart) {
+                        Icon(
+                            Lucide.Pencil,
+                            contentDescription = "Editar perfil",
+                            tint = colors.muted,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.surface),
@@ -139,8 +159,19 @@ fun AdminProfileScreen(
                 ProfileContent(
                     user = state.user!!,
                     isLoggingOut = state.isLoggingOut,
+                    isEditing = state.isEditing,
+                    editFirstName = state.editFirstName,
+                    editLastName = state.editLastName,
+                    editPhone = state.editPhone,
+                    isSaving = state.isSaving,
+                    editError = state.editError,
                     onOpenSecurity = component::onOpenSecurity,
-                    onLogout = component::onLogout,
+                    onLogout = { showLogoutConfirm = true },
+                    onEditFirstNameChange = component::onEditFirstNameChange,
+                    onEditLastNameChange = component::onEditLastNameChange,
+                    onEditPhoneChange = component::onEditPhoneChange,
+                    onEditSave = component::onEditSave,
+                    onEditCancel = component::onEditCancel,
                 )
             }
         }
@@ -153,8 +184,19 @@ fun AdminProfileScreen(
 private fun ProfileContent(
     user: AuthUser,
     isLoggingOut: Boolean,
+    isEditing: Boolean,
+    editFirstName: String,
+    editLastName: String,
+    editPhone: String,
+    isSaving: Boolean,
+    editError: String?,
     onOpenSecurity: () -> Unit,
     onLogout: () -> Unit,
+    onEditFirstNameChange: (String) -> Unit,
+    onEditLastNameChange: (String) -> Unit,
+    onEditPhoneChange: (String) -> Unit,
+    onEditSave: () -> Unit,
+    onEditCancel: () -> Unit,
 ) {
     val dimens = AppTheme.dimens
     val fullName = "${user.firstName} ${user.lastName}"
@@ -170,13 +212,30 @@ private fun ProfileContent(
         // ── Hero card ─────────────────────────────────────────────────────────
         HeroCard(name = fullName, roleLabel = roleLabel, email = user.email)
 
-        // ── Info rows ─────────────────────────────────────────────────────────
+        // ── Info / edit section ──────────────────────────────────────────────
         SectionHeader(title = "INFORMACIÓN", modifier = Modifier.padding(horizontal = 4.dp))
 
-        InfoCard {
-            InfoRow(label = "Email", value = user.email)
-            RowDivider()
-            InfoRow(label = "Rol", value = roleLabel)
+        if (isEditing) {
+            EditProfileCard(
+                firstName = editFirstName,
+                lastName = editLastName,
+                phone = editPhone,
+                isSaving = isSaving,
+                error = editError,
+                onFirstNameChange = onEditFirstNameChange,
+                onLastNameChange = onEditLastNameChange,
+                onPhoneChange = onEditPhoneChange,
+                onSave = onEditSave,
+                onCancel = onEditCancel,
+            )
+        } else {
+            InfoCard {
+                InfoRow(label = "Email", value = user.email)
+                RowDivider()
+                InfoRow(label = "Rol", value = roleLabel)
+                RowDivider()
+                InfoRow(label = "Teléfono", value = user.phone?.takeIf { it.isNotBlank() } ?: "No registrado")
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -228,6 +287,77 @@ private fun HeroCard(name: String, roleLabel: String, email: String) {
                 text = "$roleLabel · $email",
                 fontSize = 12.sp,
                 color = colors.muted,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EditProfileCard(
+    firstName: String,
+    lastName: String,
+    phone: String,
+    isSaving: Boolean,
+    error: String?,
+    onFirstNameChange: (String) -> Unit,
+    onLastNameChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    val colors = AppTheme.colors
+    val dimens = AppTheme.dimens
+    val shape = RoundedCornerShape(dimens.radiusMd)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surface)
+            .border(1.dp, colors.border, shape)
+            .padding(dimens.spacingMd),
+        verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+    ) {
+        AppTextField(
+            value = firstName,
+            onValueChange = onFirstNameChange,
+            label = "Nombre",
+            enabled = !isSaving,
+        )
+        AppTextField(
+            value = lastName,
+            onValueChange = onLastNameChange,
+            label = "Apellido",
+            enabled = !isSaving,
+        )
+        AppTextField(
+            value = phone,
+            onValueChange = onPhoneChange,
+            label = "Teléfono",
+            placeholder = "Opcional",
+            enabled = !isSaving,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+        )
+
+        ErrorBanner(message = error, modifier = Modifier.fillMaxWidth())
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(dimens.spacingSm),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            AppButton(
+                text = "Cancelar",
+                onClick = onCancel,
+                variant = AppButtonVariant.Outline,
+                enabled = !isSaving,
+                modifier = Modifier.weight(1f),
+            )
+            AppButton(
+                text = "Guardar",
+                onClick = onSave,
+                variant = AppButtonVariant.Navy,
+                loading = isSaving,
+                modifier = Modifier.weight(1f),
             )
         }
     }

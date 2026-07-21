@@ -47,6 +47,7 @@ import com.inclinic.app.features.doctor.reschedule_request.presentation.componen
 import com.inclinic.app.features.doctor.settings.presentation.component.DoctorSettingsComponent
 import com.inclinic.app.features.doctor.no_shows.presentation.component.NoShowQueueComponent
 import com.inclinic.app.features.doctor.pending_closure.presentation.component.PendingClosureQueueComponent
+import com.inclinic.app.features.doctor.prescriptions.presentation.component.CreatePrescriptionComponent
 import com.inclinic.app.features.doctor.prescriptions.presentation.component.EditPrescriptionComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.DefaultRequestShareComponent
 import com.inclinic.app.features.doctor.sharing.presentation.component.DefaultShareRequestsListComponent
@@ -98,6 +99,7 @@ class DefaultDoctorFlowComponent(
     private val therapyOffersListFactory: (ComponentContext, (TherapyOffersListComponent.Output) -> Unit) -> TherapyOffersListComponent,
     private val createTherapyOfferFactory: (ComponentContext, (CreateTherapyOfferComponent.Output) -> Unit) -> CreateTherapyOfferComponent,
     private val editPrescriptionFactory: (ComponentContext, String, (EditPrescriptionComponent.Output) -> Unit) -> EditPrescriptionComponent,
+    private val createPrescriptionFactory: (ComponentContext, String, (CreatePrescriptionComponent.Output) -> Unit) -> CreatePrescriptionComponent,
     private val deleteAccountFactory: (ComponentContext, (DeleteAccountComponent.Output) -> Unit) -> DeleteAccountComponent,
     private val noShowQueueFactory: (ComponentContext, (NoShowQueueComponent.Output) -> Unit) -> NoShowQueueComponent,
     private val pendingClosureQueueFactory: (ComponentContext, (PendingClosureQueueComponent.Output) -> Unit) -> PendingClosureQueueComponent,
@@ -271,6 +273,10 @@ class DefaultDoctorFlowComponent(
                             agendaNav.push(DoctorConfig.Chat(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule ->
                             agendaNav.push(DoctorConfig.RequestReschedule(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription ->
+                            agendaNav.push(DoctorConfig.CreatePrescription(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription ->
+                            agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             // Real appointmentId from the loaded appointment — links the new record.
                             _currentTab.value = DoctorTab.Pacientes
@@ -296,6 +302,10 @@ class DefaultDoctorFlowComponent(
                             agendaNav.push(DoctorConfig.Chat(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule ->
                             agendaNav.push(DoctorConfig.RequestReschedule(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription ->
+                            agendaNav.push(DoctorConfig.CreatePrescription(output.appointmentId))
+                        is DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription ->
+                            agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             _currentTab.value = DoctorTab.Pacientes
                             pacientesNav.push(
@@ -602,6 +612,14 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         EditPrescriptionComponent.Output.Saved -> activeNav().pop()
                         EditPrescriptionComponent.Output.Back -> activeNav().pop()
+                    }
+                }
+            )
+            is DoctorConfig.CreatePrescription -> DoctorFlowComponent.Child.CreatePrescription(
+                createPrescriptionFactory(ctx, config.appointmentId) { output ->
+                    when (output) {
+                        CreatePrescriptionComponent.Output.Created -> activeNav().pop()
+                        CreatePrescriptionComponent.Output.Back -> activeNav().pop()
                     }
                 }
             )

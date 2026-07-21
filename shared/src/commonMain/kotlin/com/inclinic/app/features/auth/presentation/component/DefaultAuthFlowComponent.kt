@@ -23,7 +23,7 @@ import kotlinx.coroutines.cancel
 class DefaultAuthFlowComponent(
     componentContext: ComponentContext,
     private val dispatchers: AppDispatchers,
-    private val loginComponentFactory: (ComponentContext, (AuthUser) -> Unit, (String) -> Unit, () -> Unit, () -> Unit) -> LoginComponent,
+    private val loginComponentFactory: (ComponentContext, (AuthUser) -> Unit, (String) -> Unit, () -> Unit, () -> Unit, () -> Unit) -> LoginComponent,
     private val twoFactorVerifyComponentFactory: (ComponentContext, String, (AuthUser) -> Unit, () -> Unit) -> TwoFactorVerifyComponent,
     private val registerPatientComponentFactory: (ComponentContext, (RegisterPatientComponent.Output) -> Unit) -> RegisterPatientComponent,
     private val registerDoctorComponentFactory: (ComponentContext, (RegisterDoctorComponent.Output) -> Unit) -> RegisterDoctorComponent,
@@ -74,6 +74,7 @@ class DefaultAuthFlowComponent(
                 { partialToken -> navigation.push(AuthNavigationConfig.TwoFactorVerify(partialToken)) },
                 { navigation.push(AuthNavigationConfig.ForgotPassword) },
                 { navigation.push(AuthNavigationConfig.RegisterChooser) },
+                { navigation.push(AuthNavigationConfig.RateLimit) },
             )
         )
         is AuthNavigationConfig.TwoFactorVerify -> AuthFlowComponent.Child.TwoFactorVerify(
@@ -83,6 +84,11 @@ class DefaultAuthFlowComponent(
                 { user -> routeAuthenticated(user) },
                 { navigation.pop() },
             )
+        )
+        is AuthNavigationConfig.RateLimit -> AuthFlowComponent.Child.RateLimit(
+            object : PatientRateLimitComponent {
+                override fun onBackToLogin() = navigation.replaceAll(AuthNavigationConfig.Login)
+            }
         )
         is AuthNavigationConfig.RegisterChooser -> AuthFlowComponent.Child.RegisterChooser(
             object : RegisterChooserComponent {
@@ -98,6 +104,7 @@ class DefaultAuthFlowComponent(
                     is RegisterPatientComponent.Output.Success ->
                         navigation.push(AuthNavigationConfig.AccountCreated(email = output.email))
                     is RegisterPatientComponent.Output.Back -> navigation.pop()
+                    is RegisterPatientComponent.Output.RateLimited -> navigation.push(AuthNavigationConfig.RateLimit)
                 }
             }
         )
@@ -116,6 +123,7 @@ class DefaultAuthFlowComponent(
             forgotPasswordComponentFactory(ctx) { output ->
                 when (output) {
                     is ForgotPasswordComponent.Output.Back -> navigation.pop()
+                    is ForgotPasswordComponent.Output.RateLimited -> navigation.push(AuthNavigationConfig.RateLimit)
                 }
             }
         )

@@ -111,9 +111,33 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                 ) {
-                    val bannerMessage = state.authError?.toUserMessage()
+                    // A real 401/token-expiry (never an explicit logout) surfaces once here.
+                    val bannerMessage = state.authError?.toUserMessage() ?: state.sessionExpiredMessage
                     if (bannerMessage != null) {
                         ErrorBanner(message = bannerMessage, modifier = Modifier.fillMaxWidth())
+                    }
+
+                    // Inactive/unverified account — offer to resend the activation email
+                    // instead of leaving the user stuck (design-gap-closure).
+                    if (state.canResendActivation) {
+                        AppLink(
+                            text = if (state.resendActivationSent) {
+                                "Correo de activación reenviado"
+                            } else {
+                                "Reenviar correo de activación"
+                            },
+                            onClick = component::onResendActivation,
+                            emphasized = true,
+                        )
+                    }
+
+                    // Suspended account — point the user to support instead of a dead end.
+                    if (state.isSuspended) {
+                        Text(
+                            text = "Si crees que esto es un error, contacta a soporte.",
+                            style = typography.subtitle,
+                            color = colors.muted,
+                        )
                     }
 
                     AppTextField(

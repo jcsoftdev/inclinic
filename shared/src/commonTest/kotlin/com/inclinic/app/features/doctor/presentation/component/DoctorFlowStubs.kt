@@ -63,6 +63,8 @@ internal class StubDoctorAppointmentDetailComponent(
     override fun onNavigateToChat() { onOutput(DoctorAppointmentDetailComponent.Output.NavigateToChat(appointmentId)) }
     override fun onRequestReschedule() { onOutput(DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule(appointmentId)) }
     override fun onCreateMedicalRecord() { onOutput(DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord(appointmentId, "pat-1")) }
+    override fun onNavigateToCreatePrescription() { onOutput(DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription(appointmentId)) }
+    override fun onNavigateToEditPrescription() { onOutput(DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription("presc-1")) }
     override fun onBack() { onOutput(DoctorAppointmentDetailComponent.Output.Back) }
 }
 

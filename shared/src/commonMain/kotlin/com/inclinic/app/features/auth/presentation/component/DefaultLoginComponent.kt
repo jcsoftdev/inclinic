@@ -6,9 +6,12 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.navigation.PendingSessionMessage
 import com.inclinic.app.core.port.TelemetryService
 import com.inclinic.app.features.auth.application.LoginUseCase
+import com.inclinic.app.features.auth.application.ResendActivationUseCase
 import com.inclinic.app.features.auth.core.error.AuthError
+import com.inclinic.app.features.auth.core.error.SessionExpiredMessage
 import com.inclinic.app.features.auth.core.model.AuthUser
 import com.inclinic.app.features.auth.core.model.LoginCredentials
 import com.inclinic.app.features.auth.core.model.LoginResult
@@ -39,14 +42,23 @@ class DefaultLoginComponent(
     componentContext: ComponentContext,
     private val loginUseCase: LoginUseCase,
     private val dispatchers: AppDispatchers,
+    private val resendActivationUseCase: ResendActivationUseCase? = null,
     private val telemetry: TelemetryService? = null,
     private val onLoginSucceeded: (AuthUser) -> Unit = {},
     private val onTwoFactorRequired: (partialToken: String) -> Unit = {},
     private val onNavigateForgotPassword: () -> Unit = {},
     private val onNavigateRegister: () -> Unit = {},
+    private val onRateLimited: () -> Unit = {},
 ) : LoginComponent, ComponentContext by componentContext {
 
     private val scope = CoroutineScope(dispatchers.main + SupervisorJob())
+
+    /**
+     * In-flight guard for [onResendActivation]. [LoginState.resendActivationSent] only
+     * flips to `true` on success, so without this a rapid double-tap while the first
+     * request is still pending would fire [ResendActivationUseCase] twice.
+     */
+    private var isResending = false
 
     init {
         // Cancel the scope when the component is destroyed (tied to Essenty lifecycle).
@@ -54,7 +66,19 @@ class DefaultLoginComponent(
         telemetry?.track("screen_view", mapOf("screen" to "Login"))
     }
 
-    private val _state = MutableValue(LoginState())
+    private val _state = MutableValue(
+        LoginState(
+            // Consume-and-clear: surfaces "tu sesión expiró" exactly once, only when
+            // the previous session ended via a real 401/token-expiry (never for an
+            // explicit logout). See PendingSessionMessage.
+            sessionExpiredMessage = if (PendingSessionMessage.expired) {
+                PendingSessionMessage.expired = false
+                SessionExpiredMessage
+            } else {
+                null
+            },
+        )
+    )
     override val state: Value<LoginState> = _state
 
     override fun onEmailChange(email: String) {
@@ -111,10 +135,18 @@ class DefaultLoginComponent(
                     }
                 }
                 .onFailure { error ->
+                    val authError = error.toAuthError()
+                    if (authError is AuthError.TooManyAttempts) {
+                        // 429 gets a standalone screen instead of an inline banner.
+                        _state.update { it.copy(isSubmitting = false, authError = null) }
+                        telemetry?.track("login_rate_limited")
+                        onRateLimited()
+                        return@onFailure
+                    }
                     _state.update {
                         it.copy(
                             isSubmitting = false,
-                            authError = error.toAuthError(),
+                            authError = authError,
                         )
                     }
                     telemetry?.track("login_failure")
@@ -127,6 +159,29 @@ class DefaultLoginComponent(
     override fun onForgotPassword() = onNavigateForgotPassword()
 
     override fun onRegister() = onNavigateRegister()
+
+    override fun onResendActivation() {
+        val current = _state.value
+        if (!current.canResendActivation || current.resendActivationSent || isResending) return
+        val useCase = resendActivationUseCase ?: return
+
+        isResending = true
+        scope.launch {
+            try {
+                useCase(current.email)
+                    .onSuccess {
+                        _state.update { it.copy(resendActivationSent = true) }
+                        telemetry?.track("login_resend_activation_success")
+                    }
+                    .onFailure {
+                        // Leave resendActivationSent false so the user can retry.
+                        telemetry?.track("login_resend_activation_failure")
+                    }
+            } finally {
+                isResending = false
+            }
+        }
+    }
 
     private fun validateEmail(email: String): String? =
         if (!EMAIL_REGEX.matches(email)) "Invalid email address" else null
