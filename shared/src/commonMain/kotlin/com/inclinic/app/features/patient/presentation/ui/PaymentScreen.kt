@@ -47,6 +47,7 @@ import com.inclinic.app.core.model.Appointment
 import com.inclinic.app.core.model.Doctor
 import com.inclinic.app.core.model.TherapyPackage
 import com.inclinic.app.core.model.VisitType
+import com.inclinic.app.core.platform.SecureScreen
 import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.patient.presentation.component.CardType
 import com.inclinic.app.features.patient.presentation.component.PaymentMethodChoice
@@ -65,6 +66,8 @@ import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun PaymentScreen(component: PaymentComponent, modifier: Modifier = Modifier) {
+    // Block screenshots / screen recording across all payment states (card entry included).
+    SecureScreen()
     val state by component.state.subscribeAsState()
 
     // Route to the correct payment-state screen based on paymentStatus

@@ -17,11 +17,15 @@ import kotlinx.serialization.json.Json
 
 object HttpClientFactory {
 
-    fun create(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
+    fun create(
+        engine: HttpClientEngine,
+        enableLogging: Boolean = true,
+    ): HttpClient = HttpClient(engine) {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true; isLenient = false; encodeDefaults = true })
         }
-        install(Logging) { level = LogLevel.INFO }
+        // Disabled in PROD so request URLs / auth headers never reach Logcat or the Xcode console.
+        if (enableLogging) install(Logging) { level = LogLevel.INFO }
         defaultRequest { contentType(ContentType.Application.Json) }
     }
 
@@ -30,11 +34,12 @@ object HttpClientFactory {
         baseUrl: String,
         tokenStorage: TokenStorage,
         refreshCoordinator: RefreshCoordinator,
+        enableLogging: Boolean = true,
     ): HttpClient = HttpClient(engine) {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true; isLenient = false; encodeDefaults = true })
         }
-        install(Logging) { level = LogLevel.INFO }
+        if (enableLogging) install(Logging) { level = LogLevel.INFO }
         defaultRequest {
             url(baseUrl)
             contentType(ContentType.Application.Json)

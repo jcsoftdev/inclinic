@@ -4,6 +4,8 @@ import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.concurrency.RealAppDispatchers
 import com.inclinic.app.core.port.TelemetryService
 import com.inclinic.app.core.telemetry.LogTelemetryService
+import com.inclinic.app.features.auth.config.AuthConfig
+import com.inclinic.app.features.auth.config.Environment
 import org.koin.dsl.module
 
 /**
@@ -18,5 +20,7 @@ import org.koin.dsl.module
  */
 val coreModule = module {
     single<AppDispatchers> { RealAppDispatchers() }
-    single<TelemetryService> { LogTelemetryService() }
+    single<TelemetryService> {
+        LogTelemetryService(enabled = get<AuthConfig>().environment != Environment.PROD)
+    }
 }

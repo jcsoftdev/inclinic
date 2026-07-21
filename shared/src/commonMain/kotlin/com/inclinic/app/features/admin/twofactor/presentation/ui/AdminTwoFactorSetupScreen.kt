@@ -43,6 +43,7 @@ import com.inclinic.app.ui.atoms.AppTextField
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.atoms.InfoBanner
 import com.inclinic.app.ui.atoms.InfoBannerTone
+import com.inclinic.app.core.platform.SecureScreen
 import com.inclinic.app.ui.theme.AppTheme
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 
@@ -65,6 +66,8 @@ fun AdminTwoFactorSetupScreen(
     modifier: Modifier = Modifier,
 ) {
     AppTheme {
+        // Block screenshots / screen recording while the TOTP secret is on screen.
+        SecureScreen()
         val state by component.state.subscribeAsState()
         val colors = AppTheme.colors
         val typography = AppTheme.typography

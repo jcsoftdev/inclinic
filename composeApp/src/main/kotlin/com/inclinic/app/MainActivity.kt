@@ -41,16 +41,22 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleUri(uri: Uri) {
+        // NOTE: `inclinic://` is a custom scheme, so `autoVerify` in the manifest does NOT
+        // establish app-link ownership — any app can register the same filter. Treat every
+        // value parsed here as untrusted: reject unknown scheme/host and blank parameters,
+        // and rely on the backend to validate the reset token (single-use, short-lived) and
+        // to authorize appointment access server-side.
         if (uri.scheme != "inclinic") return
         val deepLink: DeepLink = when (uri.host) {
             "reset-password" -> {
-                val token = uri.getQueryParameter("token") ?: return
+                val token = uri.getQueryParameter("token")?.takeIf { it.isNotBlank() } ?: return
                 DeepLink.ResetPassword(token)
             }
             "appointments" -> {
                 // Expected path: /appointments/{id}  or  host=appointments path=/{id}
-                val appointmentId = uri.pathSegments.firstOrNull()
-                    ?: uri.getQueryParameter("id")
+                val appointmentId = (uri.pathSegments.firstOrNull()
+                    ?: uri.getQueryParameter("id"))
+                    ?.takeIf { it.isNotBlank() }
                     ?: return
                 DeepLink.AppointmentDetail(appointmentId)
             }

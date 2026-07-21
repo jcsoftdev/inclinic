@@ -29,6 +29,7 @@ import com.inclinic.app.features.auth.application.ResetPasswordUseCase
 import com.inclinic.app.features.auth.application.VerifyTwoFactorUseCase
 import com.inclinic.app.features.auth.config.AuthConfig
 import com.inclinic.app.features.auth.config.BuildKonfigAuthConfig
+import com.inclinic.app.features.auth.config.Environment
 import com.inclinic.app.features.auth.core.port.AuthRepository
 import com.inclinic.app.features.auth.core.port.TokenStorage
 import com.inclinic.app.features.auth.infrastructure.DefaultAuthRepository
@@ -78,7 +79,10 @@ val authModule = module {
 
     // ── HTTP clients ──────────────────────────────────────────────────────────
     single(AUTH_HTTP_CLIENT) {
-        HttpClientFactory.create(get<HttpClientEngineProvider>().provide())
+        HttpClientFactory.create(
+            engine = get<HttpClientEngineProvider>().provide(),
+            enableLogging = get<AuthConfig>().environment != Environment.PROD,
+        )
     }
 
     // ── Remote data source ────────────────────────────────────────────────────
@@ -119,6 +123,7 @@ val authModule = module {
             baseUrl = get<AuthConfig>().apiBaseUrl,
             tokenStorage = get(),
             refreshCoordinator = get(),
+            enableLogging = get<AuthConfig>().environment != Environment.PROD,
         )
     }
 
