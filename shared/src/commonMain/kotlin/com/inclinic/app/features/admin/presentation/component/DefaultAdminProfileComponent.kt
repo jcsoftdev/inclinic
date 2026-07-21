@@ -26,13 +26,15 @@ class DefaultAdminProfileComponent(
 
     private val scope = CoroutineScope(dispatchers.main + SupervisorJob())
 
+    // Declared before `init` on purpose: Kotlin initialises properties in declaration order,
+    // so `loadUser()` below would touch a still-null `_state` if this came after the block.
+    private val _state = MutableValue(AdminProfileState())
+    override val state: Value<AdminProfileState> = _state
+
     init {
         lifecycle.doOnDestroy { scope.cancel() }
         loadUser()
     }
-
-    private val _state = MutableValue(AdminProfileState())
-    override val state: Value<AdminProfileState> = _state
 
     override fun onOpenSecurity() = onOpenSecurity.invoke()
 

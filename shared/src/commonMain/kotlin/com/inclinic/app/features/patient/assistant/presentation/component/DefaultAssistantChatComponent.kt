@@ -55,6 +55,11 @@ class DefaultAssistantChatComponent(
     private var lastSentMessage: String? = null
     private var lastSentConversationId: String? = null
 
+    // Monotonic counter for message ids. Seeded past any ids already present in a restored
+    // snapshot so ids stay unique across back-navigation. Random ids risked LazyColumn key
+    // collisions (crash), so a strictly-increasing counter is used instead.
+    private var messageIdCounter: Long = _state.value.messages.size.toLong()
+
     init {
         lifecycle.doOnDestroy {
             retained.snapshot = _state.value
@@ -239,7 +244,7 @@ class DefaultAssistantChatComponent(
         }
     }
 
-    private fun nextId(): String = "msg-${kotlin.random.Random.nextInt()}"
+    private fun nextId(): String = "msg-${messageIdCounter++}"
 
     // ── Retained state ────────────────────────────────────────────────────────
 

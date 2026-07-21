@@ -23,13 +23,15 @@ class DefaultAdminConfigComponent(
 
     private val scope = CoroutineScope(dispatchers.main + SupervisorJob())
 
+    // Declared before `init` on purpose: Kotlin initialises properties in declaration order,
+    // so `loadStatus()` below would touch a still-null `_state` if this came after the block.
+    private val _state = MutableValue(AdminConfigState())
+    override val state: Value<AdminConfigState> = _state
+
     init {
         lifecycle.doOnDestroy { scope.cancel() }
         loadStatus()
     }
-
-    private val _state = MutableValue(AdminConfigState())
-    override val state: Value<AdminConfigState> = _state
 
     override fun onOpenSecurity() = onOpenSecurity.invoke()
 
