@@ -93,6 +93,9 @@ kotlin {
             implementation(libs.androidx.datastore.preferences)
             // Activity Compose — file/image picker (ActivityResultContracts)
             implementation(libs.androidx.activity.compose)
+            // GPS de check-in en visitas a domicilio (F4.2)
+            implementation(libs.play.services.location)
+            implementation(libs.kotlinx.coroutines.play.services)
         }
         iosMain.dependencies {
             // Ktor Darwin engine

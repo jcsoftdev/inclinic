@@ -13,7 +13,13 @@ interface DoctorAppointmentDataSource {
     suspend fun getWeeklySchedule(doctorId: String, weekStart: String): Result<List<DaySummary>>
     suspend fun getAppointmentById(appointmentId: String): Result<Appointment>
     suspend fun confirmAppointment(appointmentId: String): Result<Appointment>
-    suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>): Result<Appointment>
+    suspend fun completeAppointment(
+        appointmentId: String,
+        photoUrls: List<String>,
+        checkInLat: Double? = null,
+        checkInLng: Double? = null,
+        checkInAccuracyM: Double? = null,
+    ): Result<Appointment>
     suspend fun markNoShow(appointmentId: String): Result<Appointment>
 
     /**

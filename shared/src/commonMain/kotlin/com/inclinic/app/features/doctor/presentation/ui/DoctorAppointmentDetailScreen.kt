@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,12 +59,16 @@ import com.composables.icons.lucide.UserX
 import com.composables.icons.lucide.Video
 import com.inclinic.app.core.model.AppointmentStatus
 import com.inclinic.app.core.model.VisitType
+import com.inclinic.app.core.platform.GpsFix
+import com.inclinic.app.core.platform.LocationResult
 import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.core.platform.rememberFilePicker
+import com.inclinic.app.core.platform.rememberLocationProvider
 import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.doctor.presentation.component.DoctorAppointmentDetailComponent
 import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.theme.AppTheme
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.TimeZone
@@ -222,11 +227,12 @@ fun DoctorAppointmentDetailScreen(
                 EvidenceUploadSheet(
                     photoUrls = state.evidencePhotoUrls,
                     isUploading = state.isUploadingPhoto,
+                    isHomeVisit = appt.visitType == VisitType.HOME,
                     onPickPhoto = component::onEvidencePhotoPicked,
                     onRemovePhoto = component::onRemoveEvidencePhoto,
-                    onComplete = {
+                    onComplete = { checkIn ->
                         showEvidenceSheet = false
-                        component.onComplete()
+                        component.onComplete(checkIn)
                     },
                     onDismiss = { showEvidenceSheet = false },
                 )
@@ -272,12 +278,18 @@ fun NoShowConfirmationDialog(
 fun EvidenceUploadSheet(
     photoUrls: List<String>,
     isUploading: Boolean,
+    isHomeVisit: Boolean,
     onPickPhoto: (PickedFile) -> Unit,
     onRemovePhoto: (Int) -> Unit,
-    onComplete: () -> Unit,
+    onComplete: (GpsFix?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val picker = rememberFilePicker { file -> if (file != null) onPickPhoto(file) }
+    val locationProvider = rememberLocationProvider()
+    val scope = rememberCoroutineScope()
+
+    var isCapturingLocation by remember { mutableStateOf(false) }
+    var locationError by remember { mutableStateOf<String?>(null) }
 
     Column(
         Modifier.fillMaxWidth().padding(16.dp),
@@ -289,7 +301,7 @@ fun EvidenceUploadSheet(
         if (photoUrls.size < 3) {
             OutlinedButton(
                 onClick = { picker.launch() },
-                enabled = !isUploading,
+                enabled = !isUploading && !isCapturingLocation,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(if (isUploading) "Subiendo…" else "Agregar foto")
@@ -305,12 +317,53 @@ fun EvidenceUploadSheet(
             }
         }
 
+        if (isHomeVisit) {
+            Text(
+                "Al completar registraremos tu ubicación GPS como evidencia de la visita.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        locationError?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+        }
+
         Button(
-            onClick = onComplete,
-            enabled = photoUrls.isNotEmpty() && !isUploading,
+            onClick = {
+                if (!isHomeVisit) {
+                    onComplete(null)
+                    return@Button
+                }
+                // Visita a domicilio: capturar GPS antes de completar (obligatorio).
+                locationError = null
+                isCapturingLocation = true
+                scope.launch {
+                    when (val result = locationProvider.getCurrentLocation()) {
+                        is LocationResult.Success -> {
+                            isCapturingLocation = false
+                            onComplete(result.fix)
+                        }
+                        is LocationResult.PermissionDenied -> {
+                            isCapturingLocation = false
+                            locationError = "Necesitas conceder el permiso de ubicación para completar una visita a domicilio."
+                        }
+                        is LocationResult.Unavailable -> {
+                            isCapturingLocation = false
+                            locationError = "No se pudo obtener tu ubicación: ${result.reason}"
+                        }
+                    }
+                }
+            },
+            enabled = photoUrls.isNotEmpty() && !isUploading && !isCapturingLocation,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(if (photoUrls.isEmpty()) "Agrega al menos 1 foto de evidencia" else "Completar consulta")
+            Text(
+                when {
+                    photoUrls.isEmpty() -> "Agrega al menos 1 foto de evidencia"
+                    isCapturingLocation -> "Obteniendo ubicación…"
+                    else -> "Completar consulta"
+                },
+            )
         }
         TextButton(onClick = onDismiss, Modifier.fillMaxWidth()) { Text("Cancelar") }
     }

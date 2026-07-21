@@ -2,6 +2,7 @@ package com.inclinic.app.features.doctor.presentation.component
 
 import com.arkivanov.decompose.value.Value
 import com.inclinic.app.core.model.Appointment
+import com.inclinic.app.core.platform.GpsFix
 import com.inclinic.app.core.platform.PickedFile
 
 interface DoctorAppointmentDetailComponent {
@@ -13,8 +14,12 @@ interface DoctorAppointmentDetailComponent {
     fun onEvidencePhotoPicked(file: PickedFile)
     fun onRemoveEvidencePhoto(index: Int)
 
-    /** Completa la cita con las fotos de evidencia ya subidas (URLs en el estado). */
-    fun onComplete()
+    /**
+     * Completa la cita con las fotos de evidencia ya subidas (URLs en el estado).
+     * En visitas a domicilio, [checkIn] (GPS del médico) es obligatorio como evidencia;
+     * la pantalla lo captura antes de invocar.
+     */
+    fun onComplete(checkIn: GpsFix? = null)
     fun onNoShow()
     fun onNoShowConfirmed()
     fun onNoShowDismissed()

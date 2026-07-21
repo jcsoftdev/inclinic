@@ -41,7 +41,7 @@ class FakePendingClosureAppointmentDataSource : DoctorAppointmentDataSource {
     override suspend fun confirmAppointment(appointmentId: String): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
 
-    override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>): Result<Appointment> =
+    override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>, checkInLat: Double?, checkInLng: Double?, checkInAccuracyM: Double?): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
 
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> =

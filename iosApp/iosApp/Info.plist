@@ -4,6 +4,9 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- Check-in GPS del médico como evidencia en visitas a domicilio (F4.2). -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>InClinic usa tu ubicación para registrar el check-in cuando llegas al domicilio del paciente, como evidencia de la visita.</string>
 	<!-- Dev only: allow cleartext HTTP to private/local network (Mac LAN IP, localhost). Prod uses https. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

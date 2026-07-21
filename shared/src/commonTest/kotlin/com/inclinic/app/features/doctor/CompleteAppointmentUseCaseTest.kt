@@ -24,10 +24,14 @@ private class FakeCompleteDataSource : DoctorAppointmentDataSource {
     )
     var completeCallCount = 0
     var lastPhotoUrls: List<String>? = null
+    var lastCheckInLat: Double? = null
+    var lastCheckInLng: Double? = null
 
-    override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>): Result<Appointment> {
+    override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>, checkInLat: Double?, checkInLng: Double?, checkInAccuracyM: Double?): Result<Appointment> {
         completeCallCount++
         lastPhotoUrls = photoUrls
+        lastCheckInLat = checkInLat
+        lastCheckInLng = checkInLng
         return completeResult
     }
 
@@ -59,14 +63,17 @@ private class FakeCompleteDataSource : DoctorAppointmentDataSource {
         Result.failure(UnsupportedOperationException())
 }
 
-private fun makeAppointment(status: AppointmentStatus): Appointment {
+private fun makeAppointment(
+    status: AppointmentStatus,
+    visitType: VisitType = VisitType.VIRTUAL,
+): Appointment {
     val now = Clock.System.now()
     return Appointment(
         id = "apt-1",
         doctorId = "doc-1",
         patientId = "pat-1",
         specialtyId = "sp-1",
-        visitType = VisitType.VIRTUAL,
+        visitType = visitType,
         status = status,
         consultationFee = 100.0,
         commissionAmount = 15.0,
@@ -130,5 +137,29 @@ class CompleteAppointmentUseCaseTest {
 
         assertTrue(result.isFailure)
         assertEquals(0, fakeDataSource.completeCallCount)
+    }
+
+    @Test
+    fun home_visit_without_checkin_returns_failure_without_api_call() = runTest {
+        val appointment = makeAppointment(AppointmentStatus.CONFIRMED, VisitType.HOME)
+
+        val result = useCase(appointment, listOf("u0"), checkIn = null)
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is IllegalStateException)
+        assertEquals(0, fakeDataSource.completeCallCount)
+    }
+
+    @Test
+    fun home_visit_with_checkin_forwards_coordinates() = runTest {
+        val appointment = makeAppointment(AppointmentStatus.CONFIRMED, VisitType.HOME)
+        val fix = com.inclinic.app.core.platform.GpsFix(lat = -12.05, lng = -77.04, accuracyMeters = 8.0)
+
+        val result = useCase(appointment, listOf("u0"), checkIn = fix)
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, fakeDataSource.completeCallCount)
+        assertEquals(-12.05, fakeDataSource.lastCheckInLat)
+        assertEquals(-77.04, fakeDataSource.lastCheckInLng)
     }
 }

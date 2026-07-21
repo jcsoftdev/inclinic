@@ -57,7 +57,7 @@ internal class StubDoctorAppointmentDetailComponent(
     override fun onConfirm() {}
     override fun onEvidencePhotoPicked(file: com.inclinic.app.core.platform.PickedFile) {}
     override fun onRemoveEvidencePhoto(index: Int) {}
-    override fun onComplete() {}
+    override fun onComplete(checkIn: com.inclinic.app.core.platform.GpsFix?) {}
     override fun onNoShow() {}
     override fun onNoShowConfirmed() {}
     override fun onNoShowDismissed() {}

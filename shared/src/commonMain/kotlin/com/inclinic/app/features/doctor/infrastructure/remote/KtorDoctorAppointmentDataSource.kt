@@ -120,6 +120,15 @@ private fun PendingClosureItemDto.toDomain() = PendingClosureItem(
     },
 )
 
+/** Body de PATCH /complete: fotos de evidencia + check-in GPS del médico (F4.2). */
+@Serializable
+private data class CompleteAppointmentBody(
+    val visitProofPhotos: List<String>,
+    val checkInLat: Double? = null,
+    val checkInLng: Double? = null,
+    val checkInAccuracyM: Double? = null,
+)
+
 class KtorDoctorAppointmentDataSource(
     private val client: HttpClient,
     private val baseUrl: String,
@@ -182,11 +191,24 @@ class KtorDoctorAppointmentDataSource(
         }.body<ApiEnvelope<Appointment>>().data ?: error("Confirm failed")
     }
 
-    override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>): Result<Appointment> = runCatching {
+    override suspend fun completeAppointment(
+        appointmentId: String,
+        photoUrls: List<String>,
+        checkInLat: Double?,
+        checkInLng: Double?,
+        checkInAccuracyM: Double?,
+    ): Result<Appointment> = runCatching {
         client.patch {
             url("$baseUrl/api/appointments/$appointmentId/complete")
             contentType(ContentType.Application.Json)
-            setBody(mapOf("photoUrls" to photoUrls))
+            setBody(
+                CompleteAppointmentBody(
+                    visitProofPhotos = photoUrls,
+                    checkInLat = checkInLat,
+                    checkInLng = checkInLng,
+                    checkInAccuracyM = checkInAccuracyM,
+                ),
+            )
         }.body<ApiEnvelope<Appointment>>().data ?: error("Complete failed")
     }
 

@@ -7,6 +7,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.platform.GpsFix
 import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.doctor.appointments.application.CompleteAppointmentUseCase
@@ -70,13 +71,13 @@ class DefaultDoctorAppointmentDetailComponent(
         }
     }
 
-    override fun onComplete() {
+    override fun onComplete(checkIn: GpsFix?) {
         val appt = _state.value.appointment ?: return
         if (_state.value.actionInProgress) return
         val urls = _state.value.evidencePhotoUrls
         _state.update { it.copy(actionInProgress = true, error = null) }
         scope.launch {
-            completeAppointment(appt, urls)
+            completeAppointment(appt, urls, checkIn)
                 .onSuccess { updated -> _state.update { it.copy(actionInProgress = false, appointment = updated, evidencePhotoUrls = emptyList()) } }
                 .onFailure { err -> _state.update { it.copy(actionInProgress = false, error = err.toUserMessage("Complete failed")) } }
         }

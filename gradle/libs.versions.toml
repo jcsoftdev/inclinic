@@ -30,6 +30,9 @@ lucideIcons = "1.1.0"
 coil = "3.1.0"
 qrose = "1.0.1"
 
+# -- home-visit GPS (F4.2) --
+playServicesLocation = "21.3.0"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -81,6 +84,10 @@ multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-t
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
+
+# -- home-visit GPS (F4.2) --
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 
 # -- Decompose --
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
