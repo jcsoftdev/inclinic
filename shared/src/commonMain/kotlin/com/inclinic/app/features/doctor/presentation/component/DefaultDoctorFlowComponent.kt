@@ -209,8 +209,11 @@ class DefaultDoctorFlowComponent(
                             agendaNav.push(DoctorConfig.AppointmentDetail(output.appointmentId))
                         }
                         DoctorDashboardComponent.Output.NavigateToCreateMedicalRecord -> {
+                            // `Patients` is already the initial configuration of pacientesNav,
+                            // so pushing it again would duplicate the config and Decompose
+                            // rejects a stack with repeated entries. Switching tab is enough:
+                            // the doctor picks the patient there before creating the record.
                             _currentTab.value = DoctorTab.Pacientes
-                            pacientesNav.push(DoctorConfig.Patients)
                         }
                         DoctorDashboardComponent.Output.NavigateToPatients -> {
                             _currentTab.value = DoctorTab.Pacientes
@@ -240,7 +243,8 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         is WeeklyScheduleComponent.Output.NavigateToDailySchedule ->
                             agendaNav.push(DoctorConfig.DailySchedule(output.date.toString()))
-                        WeeklyScheduleComponent.Output.Back -> agendaNav.pop()
+                        // Root of agendaNav — pop() is a no-op here, so fall back to Inicio.
+                        WeeklyScheduleComponent.Output.Back -> _currentTab.value = DoctorTab.Inicio
                     }
                 }
             )
@@ -350,7 +354,9 @@ class DefaultDoctorFlowComponent(
                             pacientesNav.push(DoctorConfig.PatientDetail(output.patientId))
                         PatientsListComponent.Output.NavigateToSearch ->
                             pacientesNav.push(DoctorConfig.SearchPatient)
-                        PatientsListComponent.Output.Back -> pacientesNav.pop()
+                        // `Patients` is the root of pacientesNav, so pop() would be a no-op
+                        // and the back arrow would appear dead. Fall back to the Inicio tab.
+                        PatientsListComponent.Output.Back -> _currentTab.value = DoctorTab.Inicio
                     }
                 }
             )
@@ -390,7 +396,8 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         is DoctorChatListComponent.Output.NavigateToConversation ->
                             mensajesNav.push(DoctorConfig.Conversation(output.threadId))
-                        DoctorChatListComponent.Output.Back -> mensajesNav.pop()
+                        // Root of mensajesNav — pop() is a no-op here, so fall back to Inicio.
+                        DoctorChatListComponent.Output.Back -> _currentTab.value = DoctorTab.Inicio
                     }
                 }
             )
