@@ -63,6 +63,7 @@ import com.inclinic.app.features.patient.presentation.component.DoctorSearchComp
 import com.inclinic.app.features.patient.presentation.component.DoctorSearchState
 import com.inclinic.app.features.patient.presentation.component.DoctorSortOrder
 import com.inclinic.app.ui.atoms.ChipSpecialty
+import com.inclinic.app.ui.atoms.EmptyState
 import com.inclinic.app.ui.atoms.PatientTab
 import com.inclinic.app.ui.atoms.SearchBar
 import com.inclinic.app.ui.theme.AppTheme
@@ -82,9 +83,7 @@ fun DoctorSearchScreen(
 
         var showFilters by remember { mutableStateOf(false) }
         val sheetState   = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        val hasActiveFilters = state.minPrice != null || state.maxPrice != null ||
-            state.minRating != null || state.offersTelemedicine != null ||
-            state.offersHomeVisit != null || state.sortOrder != DoctorSortOrder.Recent
+        val hasActiveFilters = state.hasActiveFilters
 
         val shouldLoadMore by remember {
             derivedStateOf {
@@ -230,15 +229,26 @@ fun DoctorSearchScreen(
 
                     if (!state.isLoading && state.results.isEmpty()) {
                         item {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier         = Modifier.fillMaxWidth().padding(32.dp),
-                            ) {
-                                Text(
-                                    text  = "No se encontraron doctores",
-                                    style = typography.body,
-                                    color = colors.muted,
+                            if (hasActiveFilters) {
+                                EmptyState(
+                                    title    = "No hay resultados con estos filtros",
+                                    subtitle = "Prueba a ampliar el rango de precio, la calificación mínima o quita algún filtro.",
+                                    icon     = Lucide.SlidersHorizontal,
+                                    actionLabel = "Limpiar filtros",
+                                    onAction    = component::onResetFilters,
+                                    modifier    = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                                 )
+                            } else {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier         = Modifier.fillMaxWidth().padding(32.dp),
+                                ) {
+                                    Text(
+                                        text  = "No se encontraron doctores",
+                                        style = typography.body,
+                                        color = colors.muted,
+                                    )
+                                }
                             }
                         }
                     }

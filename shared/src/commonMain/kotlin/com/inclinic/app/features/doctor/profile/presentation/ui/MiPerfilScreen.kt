@@ -20,6 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +44,7 @@ import com.inclinic.app.features.doctor.profile.core.model.DoctorProfile
 import com.inclinic.app.features.doctor.profile.presentation.component.MiPerfilComponent
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.ChipSpecialty
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.LoadingOverlay
 import com.inclinic.app.ui.theme.AppTheme
 
@@ -66,6 +70,19 @@ fun MiPerfilScreen(
         val colors = AppTheme.colors
         val dimens = AppTheme.dimens
         val typography = AppTheme.typography
+        var showLogoutConfirm by remember { mutableStateOf(false) }
+
+        if (showLogoutConfirm) {
+            ConfirmDialog(
+                title = "¿Cerrar sesión?",
+                message = "Tendrás que volver a iniciar sesión para acceder a tu cuenta.",
+                onConfirm = {
+                    showLogoutConfirm = false
+                    component.onLogout()
+                },
+                onDismiss = { showLogoutConfirm = false },
+            )
+        }
 
         Scaffold(
             containerColor = Color(0xFF0A0B14),
@@ -154,7 +171,7 @@ fun MiPerfilScreen(
                                 title = "Cerrar sesión",
                                 subtitle = "",
                                 iconBg = Color(0xFF3A1A1F),
-                                onClick = component::onLogout,
+                                onClick = { showLogoutConfirm = true },
                                 showChevron = false,
                             )
                         }

@@ -1,8 +1,11 @@
 package com.inclinic.app.features.admin.infrastructure.remote
 
+import com.inclinic.app.core.error.ApiResult
 import com.inclinic.app.core.network.ApiEnvelope
+import com.inclinic.app.core.network.runApi
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -782,9 +785,10 @@ class KtorAdminDataSource(
         }
 
     override suspend fun getAppointmentDetail(id: String): Result<AdminAppointmentDetail> =
-        runCatching {
+        runApi {
             val dto = client.get {
                 url("$baseUrl/api/appointments/$id")
+                expectSuccess = true
             }.body<ApiEnvelope<AdminAppointmentDetailDto>>().data
                 ?: error("Appointment detail data missing")
 
@@ -804,7 +808,7 @@ class KtorAdminDataSource(
                 patient = dto.patient.toDomain(),
                 specialty = dto.specialty.toDomain(),
             )
-        }
+        }.toResult()
 
     // ── Doctors ──────────────────────────────────────────────────────────────
 
@@ -850,18 +854,20 @@ class KtorAdminDataSource(
         }
 
     override suspend fun getPendingDoctorById(id: String): Result<AdminPendingDoctor> =
-        runCatching {
+        runApi {
             val dto = client.get {
                 url("$baseUrl/api/doctors/$id/pending")
+                expectSuccess = true
             }.body<ApiEnvelope<AdminPendingDoctorDetailDto>>().data
                 ?: error("Pending doctor detail data missing")
             dto.toDomain()
-        }
+        }.toResult()
 
     override suspend fun getDoctorDetail(id: String): Result<AdminDoctorDetail> =
-        runCatching {
+        runApi {
             val dto = client.get {
                 url("$baseUrl/api/doctors/$id")
+                expectSuccess = true
             }.body<ApiEnvelope<AdminDoctorDetailDto>>().data
                 ?: error("Doctor detail data missing")
 
@@ -878,7 +884,7 @@ class KtorAdminDataSource(
                 user = dto.user.toDomain(),
                 specialties = dto.specialties.map { it.toDomain() },
             )
-        }
+        }.toResult()
 
     override suspend fun approveDoctor(id: String): Result<Unit> =
         runCatching {
@@ -1168,4 +1174,19 @@ class KtorAdminDataSource(
         }
         response.readRawBytes()
     }
+}
+
+/**
+ * Bridges [ApiResult] (typed HTTP errors from [runApi]) to the [Result]-based
+ * [AdminDataSource] contract. [com.inclinic.app.core.error.ApiError] extends [Throwable],
+ * so callers up the chain (repository `.map`, `Throwable.toUserMessage()`,
+ * `Throwable.isNotFoundError()`) keep working unchanged while gaining typed status
+ * handling — e.g. a 404 becomes [com.inclinic.app.core.error.ApiError.NotFound] instead of
+ * the untyped [IllegalStateException] previously thrown by `?: error(...)` on a 404
+ * whose envelope happened to still parse. Mirrors
+ * [com.inclinic.app.features.doctor.prescriptions.infrastructure.remote]'s convention.
+ */
+private fun <T> ApiResult<T>.toResult(): Result<T> = when (this) {
+    is ApiResult.Ok -> Result.success(value)
+    is ApiResult.Err -> Result.failure(error)
 }

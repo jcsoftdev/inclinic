@@ -8,7 +8,9 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.inclinic.app.core.events.SessionEvents
+import com.inclinic.app.core.events.SessionExpiryReason
 import com.inclinic.app.core.navigation.DefaultRootComponent
+import com.inclinic.app.core.navigation.PendingSessionMessage
 import com.inclinic.app.core.navigation.RootConfig
 import com.inclinic.app.features.auth.application.GetStoredTokensUseCase
 import com.inclinic.app.features.auth.fakes.FakeTokenStorage
@@ -30,8 +32,11 @@ import com.inclinic.app.features.auth.presentation.component.ResetPasswordState
 import com.inclinic.app.features.auth.presentation.component.TwoFactorVerifyComponent
 import com.inclinic.app.features.auth.presentation.component.TwoFactorVerifyState
 import kotlinx.coroutines.test.runTest
+import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 /**
  * Navigation unit tests for [DefaultRootComponent].
@@ -49,6 +54,14 @@ class RootComponentNavigationTest {
     private val sessionEvents = SessionEvents()
 
     private val getStoredTokens = GetStoredTokensUseCase(fakeTokenStorage, dispatchers)
+
+    // PendingSessionMessage is a process-global mutable — reset it after every test so a
+    // test that sets `expired = true` (e.g. session_expired_with_EXPIRED_reason_...) can't
+    // leak that flag into unrelated tests that run afterward, in this class or others.
+    @AfterTest
+    fun resetPendingSessionMessage() {
+        PendingSessionMessage.expired = false
+    }
 
     private fun buildRoot(
         localDispatchers: TestAppDispatchers = dispatchers,
@@ -94,6 +107,36 @@ class RootComponentNavigationTest {
 
         assertIs<RootConfig.Auth>(root.stack.value.active.configuration)
     }
+
+    // ── Session-expiry reason routing (design-gap-closure) ──────────────────────
+    //
+    // A real 401/token-expiry (EXPIRED) must surface "tu sesión expiró" at Login;
+    // an explicit user-initiated logout must stay silent. DefaultRootComponent
+    // distinguishes the two via PendingSessionMessage, consumed by DefaultLoginComponent.
+
+    @Test
+    fun session_expired_with_EXPIRED_reason_sets_pending_session_message() = runTest {
+        PendingSessionMessage.expired = false
+        val root = buildRoot()
+
+        sessionEvents.emitExpired(SessionExpiryReason.EXPIRED)
+        testScheduler.advanceUntilIdle()
+
+        assertIs<RootConfig.Auth>(root.stack.value.active.configuration)
+        assertTrue(PendingSessionMessage.expired)
+    }
+
+    @Test
+    fun session_expired_with_USER_INITIATED_reason_does_not_set_pending_session_message() = runTest {
+        PendingSessionMessage.expired = false
+        val root = buildRoot()
+
+        sessionEvents.emitExpired(SessionExpiryReason.USER_INITIATED)
+        testScheduler.advanceUntilIdle()
+
+        assertIs<RootConfig.Auth>(root.stack.value.active.configuration)
+        assertFalse(PendingSessionMessage.expired)
+    }
 }
 
 // --- Minimal stubs implementing only the required interface methods ---
@@ -106,6 +149,7 @@ private class StubLoginComponent : LoginComponent {
     override fun onErrorDismissed() {}
     override fun onForgotPassword() {}
     override fun onRegister() {}
+    override fun onResendActivation() {}
 }
 
 private class StubRegisterPatientComponent : RegisterPatientComponent {

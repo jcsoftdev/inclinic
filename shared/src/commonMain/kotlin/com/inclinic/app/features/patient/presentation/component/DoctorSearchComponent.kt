@@ -67,4 +67,15 @@ data class DoctorSearchState(
     @kotlinx.serialization.Transient val error: String? = null,
     /** Specialty catalog for the filter chips (id + name). Re-fetched on restore, not persisted. */
     @kotlinx.serialization.Transient val specialties: List<Specialty> = emptyList(),
-)
+) {
+    /**
+     * True when any advanced filter (or a non-default sort) is active.
+     * Drives both the filter-icon badge dot and the distinct "no results with these
+     * filters" empty-state copy on [com.inclinic.app.features.patient.presentation.ui.DoctorSearchScreen]
+     * — pulled out of the screen so it's one pure, testable source of truth instead of
+     * being recomputed inline.
+     */
+    val hasActiveFilters: Boolean
+        get() = minPrice != null || maxPrice != null || minRating != null ||
+            offersTelemedicine != null || offersHomeVisit != null || sortOrder != DoctorSortOrder.Recent
+}

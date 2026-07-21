@@ -1,6 +1,13 @@
 package com.inclinic.app.features.auth.core.error
 
 /**
+ * Shown at Login after a real 401/token-expiry ([com.inclinic.app.core.events.SessionExpiryReason.EXPIRED]).
+ * Never shown for an explicit, user-initiated logout — see [com.inclinic.app.core.navigation.PendingSessionMessage].
+ * Single source of truth, also used by [AuthError.Unauthorized]'s inline banner copy.
+ */
+const val SessionExpiredMessage = "Tu sesión expiró, ingresa nuevamente."
+
+/**
  * Maps [AuthError] sealed variants to user-visible Spanish strings.
  *
  * Returns null for variants that are either absent (null receiver) or handled
@@ -14,7 +21,7 @@ fun AuthError?.toUserMessage(): String? = when (this) {
     null                                  -> null
     is AuthError.ValidationError          -> null  // surfaced inline per field
     is AuthError.FreelanceValidationError -> message // carries a user-ready message
-    is AuthError.Unauthorized             -> "Tu sesión expiró, ingresa nuevamente."
+    is AuthError.Unauthorized             -> SessionExpiredMessage
     is AuthError.InvalidCredentials       -> "Email o contraseña incorrectos."
     is AuthError.InactiveAccount          -> "Tu cuenta no está activada. Revisa tu correo."
     is AuthError.SuspendedAccount         -> "Tu cuenta está suspendida. Contacta soporte."

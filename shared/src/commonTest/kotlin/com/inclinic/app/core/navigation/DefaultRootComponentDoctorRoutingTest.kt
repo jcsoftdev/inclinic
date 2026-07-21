@@ -215,6 +215,7 @@ private class StubLoginComponent : LoginComponent {
     override fun onErrorDismissed() {}
     override fun onForgotPassword() {}
     override fun onRegister() {}
+    override fun onResendActivation() {}
 }
 
 private class StubRegisterPatientComponent : RegisterPatientComponent {

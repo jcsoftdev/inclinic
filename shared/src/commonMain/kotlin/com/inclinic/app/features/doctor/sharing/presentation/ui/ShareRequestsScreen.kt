@@ -21,6 +21,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +45,7 @@ import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.ChipStatus
 import com.inclinic.app.ui.atoms.ChipStatusKind
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.theme.AppTheme
 
 @Composable
@@ -53,6 +57,19 @@ fun ShareRequestsScreen(
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
+    var cancelTargetId by remember { mutableStateOf<String?>(null) }
+
+    cancelTargetId?.let { targetId ->
+        ConfirmDialog(
+            title = "¿Cancelar esta solicitud de compartir historia?",
+            message = "Esta acción no se puede deshacer.",
+            onConfirm = {
+                cancelTargetId = null
+                component.onCancel(targetId)
+            },
+            onDismiss = { cancelTargetId = null },
+        )
+    }
 
     Column(
         modifier = modifier
@@ -131,7 +148,7 @@ fun ShareRequestsScreen(
                     items(requests, key = { it.id }) { req ->
                         ShareRequestCard(
                             request = req,
-                            onCancel = { component.onCancel(req.id) },
+                            onCancel = { cancelTargetId = req.id },
                         )
                     }
                 }

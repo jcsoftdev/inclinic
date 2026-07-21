@@ -17,6 +17,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +38,7 @@ import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.AppTextField
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.theme.AppTheme
 
@@ -128,6 +132,19 @@ private fun NegotiationContent(
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
+    var showRejectConfirm by remember { mutableStateOf(false) }
+
+    if (showRejectConfirm) {
+        ConfirmDialog(
+            title = "¿Rechazar esta contraoferta?",
+            message = "Esta acción no se puede deshacer.",
+            onConfirm = {
+                showRejectConfirm = false
+                onReject()
+            },
+            onDismiss = { showRejectConfirm = false },
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -254,7 +271,7 @@ private fun NegotiationContent(
             )
             AppButton(
                 text = "Rechazar",
-                onClick = onReject,
+                onClick = { showRejectConfirm = true },
                 variant = AppButtonVariant.Danger,
                 enabled = !isResponding,
                 size = AppButtonSize.Md,

@@ -20,6 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +42,7 @@ import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppButtonVariant
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.theme.AppTheme
 
 @Composable
@@ -126,6 +130,19 @@ private fun LoadedContent(
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
+    var showCancelConfirm by remember { mutableStateOf(false) }
+
+    if (showCancelConfirm) {
+        ConfirmDialog(
+            title = "¿Cancelar este paquete?",
+            message = "Esta acción no se puede deshacer.",
+            onConfirm = {
+                showCancelConfirm = false
+                onCancel()
+            },
+            onDismiss = { showCancelConfirm = false },
+        )
+    }
 
     Column(Modifier.fillMaxSize()) {
         Column(
@@ -274,7 +291,7 @@ private fun LoadedContent(
             ) {
                 AppButton(
                     text = "Cancelar paquete",
-                    onClick = onCancel,
+                    onClick = { showCancelConfirm = true },
                     variant = AppButtonVariant.Danger,
                     size = AppButtonSize.Lg,
                     loading = isCancelling,

@@ -50,6 +50,7 @@ import com.inclinic.app.ui.atoms.AppBackButton
 import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppTextField
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.atoms.LoadingOverlay
 import com.inclinic.app.ui.templates.AuthScaffold
@@ -146,12 +147,27 @@ private fun PersonalDataStep(
     state: RegisterDoctorState,
     component: RegisterDoctorComponent,
 ) {
+    var showDiscardConfirm by remember { mutableStateOf(false) }
+
+    if (showDiscardConfirm) {
+        ConfirmDialog(
+            title = "¿Descartar registro?",
+            message = "Perderás los datos ingresados en este formulario. Esta acción no se puede deshacer.",
+            confirmText = "Descartar",
+            onConfirm = {
+                showDiscardConfirm = false
+                component.onBack()
+            },
+            onDismiss = { showDiscardConfirm = false },
+        )
+    }
+
     AuthScaffold {
         StepHeader(
             currentStep = 1,
             stepTitle = "Datos personales",
             stepSubtitle = "Empieza con tu información básica",
-            onBack = component::onBack,
+            onBack = { showDiscardConfirm = true },
         )
 
         Column(

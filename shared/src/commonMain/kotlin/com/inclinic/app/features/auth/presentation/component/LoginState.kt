@@ -23,4 +23,18 @@ data class LoginState(
     val passwordError: String? = null,
     val authError: AuthError? = null,
     val loginSuccess: Boolean = false,
-)
+    /** True once [AuthError.InactiveAccount]'s resend-activation CTA has succeeded. */
+    val resendActivationSent: Boolean = false,
+    /**
+     * Set once, at construction, when the previous session ended via a real
+     * 401/token-expiry (never for an explicit logout). See
+     * [com.inclinic.app.core.navigation.PendingSessionMessage].
+     */
+    val sessionExpiredMessage: String? = null,
+) {
+    /** True when [authError] is an unverified/inactive account — offer "reenviar activación". */
+    val canResendActivation: Boolean get() = authError is AuthError.InactiveAccount
+
+    /** True when [authError] is an administratively suspended account. */
+    val isSuspended: Boolean get() = authError is AuthError.SuspendedAccount
+}

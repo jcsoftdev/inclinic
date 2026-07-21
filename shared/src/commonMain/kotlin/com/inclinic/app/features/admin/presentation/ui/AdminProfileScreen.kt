@@ -26,6 +26,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +51,7 @@ import com.inclinic.app.ui.atoms.AppButton
 import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.AppTextField
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.atoms.SectionHeader
 import com.inclinic.app.ui.theme.AppTheme
@@ -74,6 +78,19 @@ fun AdminProfileScreen(
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+
+    if (showLogoutConfirm) {
+        ConfirmDialog(
+            title = "¿Cerrar sesión?",
+            message = "Tendrás que volver a iniciar sesión para acceder a tu cuenta.",
+            onConfirm = {
+                showLogoutConfirm = false
+                component.onLogout()
+            },
+            onDismiss = { showLogoutConfirm = false },
+        )
+    }
 
     Column(
         modifier = modifier
@@ -140,7 +157,7 @@ fun AdminProfileScreen(
                     isSaving = state.isSaving,
                     editError = state.editError,
                     onOpenSecurity = component::onOpenSecurity,
-                    onLogout = component::onLogout,
+                    onLogout = { showLogoutConfirm = true },
                     onEditFirstNameChange = component::onEditFirstNameChange,
                     onEditLastNameChange = component::onEditLastNameChange,
                     onEditPhoneChange = component::onEditPhoneChange,

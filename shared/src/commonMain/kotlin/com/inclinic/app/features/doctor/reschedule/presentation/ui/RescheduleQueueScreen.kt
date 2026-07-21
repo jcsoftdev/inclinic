@@ -19,6 +19,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +41,7 @@ import com.inclinic.app.ui.atoms.AppButtonSize
 import com.inclinic.app.ui.atoms.AppButtonVariant
 import com.inclinic.app.ui.atoms.ChipStatus
 import com.inclinic.app.ui.atoms.ChipStatusKind
+import com.inclinic.app.ui.atoms.ConfirmDialog
 import com.inclinic.app.ui.atoms.ErrorBanner
 import com.inclinic.app.ui.theme.AppTheme
 
@@ -50,6 +54,19 @@ fun RescheduleQueueScreen(
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
+    var rejectTargetId by remember { mutableStateOf<String?>(null) }
+
+    rejectTargetId?.let { targetId ->
+        ConfirmDialog(
+            title = "¿Rechazar esta solicitud de reagenda?",
+            message = "Esta acción no se puede deshacer.",
+            onConfirm = {
+                rejectTargetId = null
+                component.onReject(targetId)
+            },
+            onDismiss = { rejectTargetId = null },
+        )
+    }
 
     Column(
         modifier = modifier
@@ -99,7 +116,7 @@ fun RescheduleQueueScreen(
                         request = req,
                         responding = state.respondingId == req.id,
                         onApprove = { component.onApprove(req.id) },
-                        onReject = { component.onReject(req.id) },
+                        onReject = { rejectTargetId = req.id },
                     )
                 }
             }

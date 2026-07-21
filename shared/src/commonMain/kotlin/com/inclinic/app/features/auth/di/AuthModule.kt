@@ -169,6 +169,7 @@ val authModule = module {
             componentContext = params.get<ComponentContext>(0),
             loginUseCase = get(),
             dispatchers = get(),
+            resendActivationUseCase = get(),
             onLoginSucceeded = params.get<(AuthUser) -> Unit>(1),
             onTwoFactorRequired = params.get<(String) -> Unit>(2),
             onNavigateForgotPassword = params.get<() -> Unit>(3),
