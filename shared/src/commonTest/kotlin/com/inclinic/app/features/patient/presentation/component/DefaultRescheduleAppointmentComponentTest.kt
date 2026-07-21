@@ -34,7 +34,9 @@ private fun testAppointment(): Appointment {
         id = "apt-1", doctorId = "doc-1", patientId = "pat-1", specialtyId = "sp-1",
         visitType = VisitType.VIRTUAL, status = AppointmentStatus.CONFIRMED,
         consultationFee = 120.0, commissionAmount = 18.0,
-        startsAt = now + 72.hours, endsAt = now + 73.hours,
+        // 4 días de anticipación: holgura sobre la regla de ≥3 días (72h exactas quedaban en el
+        // borde y, por el desfase de ms al releer el reloj, inWholeDays caía a 2 → test flaky).
+        startsAt = now + 96.hours, endsAt = now + 97.hours,
         rescheduleCount = 0, paymentDeadline = null, notes = null, createdAt = now,
     )
 }
