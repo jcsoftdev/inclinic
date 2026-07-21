@@ -123,6 +123,15 @@ fun AdminProfileScreen(
                         variant = AppButtonVariant.Outline,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    // Logout must stay reachable even when the profile fails to load,
+                    // otherwise a failing /users/me traps the user in the session.
+                    AppButton(
+                        text = "Cerrar sesión",
+                        onClick = component::onLogout,
+                        variant = AppButtonVariant.Outline,
+                        enabled = !state.isLoggingOut,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
 

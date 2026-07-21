@@ -68,10 +68,10 @@ fun MiPerfilScreen(
         val typography = AppTheme.typography
 
         Scaffold(
-            containerColor = Color(0xFF0A0B14),
+            containerColor = colors.sand,
             modifier = modifier.fillMaxSize(),
         ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().background(Color(0xFF0A0B14)).padding(innerPadding)) {
+        Box(modifier = Modifier.fillMaxSize().background(colors.sand).padding(innerPadding)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // ── AppHeader ──────────────────────────────────────────────────
                 Row(
@@ -79,7 +79,7 @@ fun MiPerfilScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF0A0B14))
+                        .background(colors.sand)
                         .padding(horizontal = dimens.spacingMd, vertical = dimens.spacing12),
                 ) {
                     Text(
@@ -87,7 +87,7 @@ fun MiPerfilScreen(
                         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFEDEFFF),
+                        color = colors.text,
                     )
                 }
 
@@ -109,8 +109,8 @@ fun MiPerfilScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFF1A1D2B))
-                                .border(1.dp, Color(0xFF262A3D), RoundedCornerShape(16.dp)),
+                                .background(colors.surface)
+                                .border(1.dp, colors.border, RoundedCornerShape(16.dp)),
                         ) {
                             ProfileNavRow(
                                 icon = Lucide.Settings,
@@ -132,7 +132,7 @@ fun MiPerfilScreen(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.8.sp,
-                            color = Color(0xFFA2A8C8),
+                            color = colors.muted,
                             modifier = Modifier.padding(top = dimens.spacing12 - 4.dp),
                         )
 
@@ -141,7 +141,7 @@ fun MiPerfilScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF1A1D2B)),
+                                .background(colors.surface),
                         ) {
                             ProfileNavRow(
                                 icon = Lucide.Lock,
@@ -153,7 +153,7 @@ fun MiPerfilScreen(
                                 icon = Lucide.LogOut,
                                 title = "Cerrar sesión",
                                 subtitle = "",
-                                iconBg = Color(0xFF3A1A1F),
+                                iconBg = colors.redBg,
                                 onClick = component::onLogout,
                                 showChevron = false,
                             )
@@ -184,6 +184,7 @@ private fun ProfileHeroCard(
     profile: DoctorProfile,
     onViewPublicProfile: () -> Unit,
 ) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     val typography = AppTheme.typography
 
@@ -193,7 +194,7 @@ private fun ProfileHeroCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF5B6CFF))
+            .background(colors.navy)
             .padding(20.dp),
     ) {
         // Avatar circle
@@ -202,7 +203,7 @@ private fun ProfileHeroCard(
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF4A5BE8)),
+                .background(colors.navyDark),
         ) {
             Icon(Lucide.UserRound, contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
         }
@@ -239,13 +240,14 @@ private fun ProfileHeroCard(
 
 @Composable
 private fun DatosCard(profile: DoctorProfile) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF1A1D2B)),
+            .background(colors.surface),
     ) {
         DataHeader("DATOS PERSONALES")
         Divider()
@@ -262,13 +264,14 @@ private fun ProfCard(
     profile: DoctorProfile,
     component: MiPerfilComponent,
 ) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF1A1D2B)),
+            .background(colors.surface),
     ) {
         DataHeader("DATOS PROFESIONALES")
         Divider()
@@ -326,23 +329,26 @@ private fun ProfCard(
 
 @Composable
 private fun DataHeader(title: String) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = dimens.spacingMd, vertical = dimens.spacingXs + 4.dp),
     ) {
-        Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFA2A8C8))
+        Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.muted)
     }
 }
 
 @Composable
 private fun Divider() {
+    val colors = AppTheme.colors
     Box(
-        modifier = Modifier.fillMaxWidth().size(height = 1.dp, width = 0.dp).background(Color(0xFF262A3D)),
+        modifier = Modifier.fillMaxWidth().size(height = 1.dp, width = 0.dp).background(colors.border),
     )
 }
 
 @Composable
 private fun DataRow(label: String, value: String) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -350,15 +356,16 @@ private fun DataRow(label: String, value: String) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = dimens.spacingMd, vertical = dimens.spacingXs + 4.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(label, fontSize = 12.sp, color = Color(0xFFA2A8C8))
-            Text(value, fontSize = 14.sp, color = Color(0xFFEDEFFF))
+            Text(label, fontSize = 12.sp, color = colors.muted)
+            Text(value, fontSize = 14.sp, color = colors.text)
         }
-        Icon(Lucide.ChevronRight, contentDescription = null, tint = Color(0xFF5A5F78), modifier = Modifier.size(16.dp))
+        Icon(Lucide.ChevronRight, contentDescription = null, tint = colors.muted, modifier = Modifier.size(16.dp))
     }
 }
 
 @Composable
 private fun ClickableDataRow(label: String, value: String, onClick: () -> Unit) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -369,10 +376,10 @@ private fun ClickableDataRow(label: String, value: String, onClick: () -> Unit) 
             .padding(horizontal = dimens.spacingMd, vertical = dimens.spacingXs + 4.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(label, fontSize = 12.sp, color = Color(0xFFA2A8C8))
-            Text(value, fontSize = 14.sp, color = Color(0xFFEDEFFF))
+            Text(label, fontSize = 12.sp, color = colors.muted)
+            Text(value, fontSize = 14.sp, color = colors.text)
         }
-        Icon(Lucide.ChevronRight, contentDescription = null, tint = Color(0xFF5A5F78), modifier = Modifier.size(16.dp))
+        Icon(Lucide.ChevronRight, contentDescription = null, tint = colors.muted, modifier = Modifier.size(16.dp))
     }
 }
 
@@ -381,18 +388,19 @@ private fun ProfileNavRow(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    iconBg: Color = Color(0xFF1A1D2B),
+    iconBg: Color = AppTheme.colors.surface,
     onClick: () -> Unit,
     showChevron: Boolean = true,
 ) {
+    val colors = AppTheme.colors
     val dimens = AppTheme.dimens
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(dimens.spacing12),
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF12141F))
-            .border(1.dp, Color(0xFF262A3D), RoundedCornerShape(10.dp))
+            .background(colors.surface)
+            .border(1.dp, colors.border, RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = dimens.spacingMd, vertical = 14.dp),
     ) {
@@ -400,14 +408,14 @@ private fun ProfileNavRow(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(40.dp).clip(CircleShape).background(iconBg),
         ) {
-            Icon(icon, contentDescription = null, tint = Color(0xFFA2A8C8), modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = colors.muted, modifier = Modifier.size(20.dp))
         }
         Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 14.sp, color = Color(0xFFEDEFFF))
-            if (subtitle.isNotBlank()) Text(subtitle, fontSize = 12.sp, color = Color(0xFFA2A8C8))
+            Text(title, fontSize = 14.sp, color = colors.text)
+            if (subtitle.isNotBlank()) Text(subtitle, fontSize = 12.sp, color = colors.muted)
         }
         if (showChevron) {
-            Icon(Lucide.ChevronRight, contentDescription = null, tint = Color(0xFFA2A8C8), modifier = Modifier.size(18.dp))
+            Icon(Lucide.ChevronRight, contentDescription = null, tint = colors.muted, modifier = Modifier.size(18.dp))
         }
     }
 }
