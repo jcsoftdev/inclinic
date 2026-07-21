@@ -59,7 +59,7 @@ private class FakeAppointmentDataSource(
 
     override suspend fun getAvailability(doctorId: String, date: String) = Result.success(emptyList<AvailabilitySlot>())
     override suspend fun getMonthAvailability(doctorId: String, month: String) = Result.success(emptyMap<String, String>())
-    override suspend fun createAppointment(doctorId: String, date: String, slotId: String, visitType: String, notes: String?): Result<Appointment> = Result.failure(UnsupportedOperationException())
+    override suspend fun createAppointment(doctorId: String, date: String, slotId: String, visitType: String, notes: String?, homeVisitAddress: String?, homeVisitLat: Double?, homeVisitLng: Double?): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun getPatientAppointments(patientId: String, status: String?, page: Int) = Result.success(emptyList<Appointment>())
     override suspend fun cancelAppointment(appointmentId: String, reason: String) = Result.success(Unit)
     override suspend fun rescheduleAppointment(appointmentId: String, date: String, slotId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())

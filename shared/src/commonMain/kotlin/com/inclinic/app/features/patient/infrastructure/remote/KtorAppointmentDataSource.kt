@@ -66,6 +66,11 @@ private data class AppointmentDto(
     val specialty: AppointmentSpecialtyDto? = null,
     val rescheduleRequests: List<RescheduleRequestMinDto>? = null,
     val needsClosure: Boolean = false,
+    val visitLat: Double? = null,
+    val visitLng: Double? = null,
+    val checkInLat: Double? = null,
+    val checkInLng: Double? = null,
+    val visitDistanceMeters: Double? = null,
 ) {
     fun toDomain(): Appointment {
         val now = Clock.System.now()
@@ -99,6 +104,11 @@ private data class AppointmentDto(
             specialtyName = specialty?.name,
             hasPendingReschedule = rescheduleRequests?.any { it.status == "PENDING" } == true,
             needsClosure = needsClosure,
+            visitLat = visitLat,
+            visitLng = visitLng,
+            checkInLat = checkInLat,
+            checkInLng = checkInLng,
+            visitDistanceMeters = visitDistanceMeters,
         )
     }
 }
@@ -136,6 +146,9 @@ private data class CreateAppointmentBody(
     val isHomeVisit: Boolean,
     val isTelemedicine: Boolean,
     val notes: String = "",
+    val homeVisitAddress: String? = null,
+    val homeVisitLat: Double? = null,
+    val homeVisitLng: Double? = null,
 )
 
 @Serializable
@@ -173,6 +186,9 @@ class KtorAppointmentDataSource(
         slotId: String,
         visitType: String,
         notes: String?,
+        homeVisitAddress: String?,
+        homeVisitLat: Double?,
+        homeVisitLng: Double?,
     ): Result<Appointment> = runCatching {
         val response = client.post {
             url("$baseUrl/api/appointments")
@@ -184,6 +200,9 @@ class KtorAppointmentDataSource(
                 isHomeVisit = visitType == "HOME",
                 isTelemedicine = visitType == "VIRTUAL",
                 notes = notes.orEmpty(),
+                homeVisitAddress = homeVisitAddress,
+                homeVisitLat = homeVisitLat,
+                homeVisitLng = homeVisitLng,
             ))
         }
         if (!response.status.isSuccess()) {

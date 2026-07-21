@@ -32,6 +32,7 @@ private class FakeCancelDataSource : AppointmentDataSource {
 
     override suspend fun createAppointment(
         doctorId: String, date: String, slotId: String, visitType: String, notes: String?,
+        homeVisitAddress: String?, homeVisitLat: Double?, homeVisitLng: Double?,
     ): Result<Appointment> = Result.failure(UnsupportedOperationException())
 
     override suspend fun getPatientAppointments(patientId: String, status: String?, page: Int): Result<List<Appointment>> =

@@ -24,6 +24,13 @@ data class Appointment(
     val isPackageSession: Boolean = false,
     val hasPendingReschedule: Boolean = false,
     val needsClosure: Boolean = false,
+    // Geolocalización de la visita a domicilio: coords de la dirección del paciente,
+    // check-in GPS del médico al completar, y distancia entre ambos (evidencia).
+    val visitLat: Double? = null,
+    val visitLng: Double? = null,
+    val checkInLat: Double? = null,
+    val checkInLng: Double? = null,
+    val visitDistanceMeters: Double? = null,
     // NOTE: GET /api/appointments/:id does not currently populate this relation
     // (only the list endpoint's `prescription: { select: { id: true } }` include does —
     // see ClinicAI appointment.service.ts getAppointments vs getAppointmentById). Defaults

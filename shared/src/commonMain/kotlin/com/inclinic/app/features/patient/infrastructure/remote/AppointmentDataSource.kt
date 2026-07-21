@@ -14,6 +14,9 @@ interface AppointmentDataSource {
         slotId: String,
         visitType: String,
         notes: String?,
+        homeVisitAddress: String? = null,
+        homeVisitLat: Double? = null,
+        homeVisitLng: Double? = null,
     ): Result<Appointment>
     suspend fun getPatientAppointments(patientId: String, status: String?, page: Int): Result<List<Appointment>>
     suspend fun getAppointmentById(appointmentId: String): Result<Appointment>
