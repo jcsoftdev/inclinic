@@ -155,7 +155,7 @@ val doctorModule = module {
         DefaultWeeklyScheduleComponent(ctx, doctorId, get(), get(), onOutput)
     }
     factory<DoctorAppointmentDetailComponent> { (ctx: ComponentContext, apptId: String, onOutput: (DoctorAppointmentDetailComponent.Output) -> Unit) ->
-        DefaultDoctorAppointmentDetailComponent(ctx, apptId, get(), get(), get(), get(), get(), onOutput)
+        DefaultDoctorAppointmentDetailComponent(ctx, apptId, get(), get(), get(), get(), get(), get(), onOutput)
     }
     factory<PatientDetailComponent> { (ctx: ComponentContext, patientId: String, onOutput: (PatientDetailComponent.Output) -> Unit) ->
         DefaultPatientDetailComponent(ctx, patientId, get(), get(), onOutput)

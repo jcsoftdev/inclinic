@@ -7,6 +7,8 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.doctor.appointments.application.CompleteAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.ConfirmAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.GetDoctorAppointmentDetailUseCase
@@ -23,6 +25,7 @@ class DefaultDoctorAppointmentDetailComponent(
     private val confirmAppointment: ConfirmAppointmentUseCase,
     private val completeAppointment: CompleteAppointmentUseCase,
     private val noShowUseCase: NoShowUseCase,
+    private val uploadFile: UploadFileUseCase,
     private val dispatchers: AppDispatchers,
     private val onOutput: (DoctorAppointmentDetailComponent.Output) -> Unit,
 ) : DoctorAppointmentDetailComponent, ComponentContext by componentContext {
@@ -46,13 +49,35 @@ class DefaultDoctorAppointmentDetailComponent(
         }
     }
 
-    override fun onComplete(selectedPhotos: List<ByteArray>) {
+    override fun onEvidencePhotoPicked(file: PickedFile) {
+        if (_state.value.isUploadingPhoto) return
+        _state.update { it.copy(isUploadingPhoto = true, error = null) }
+        scope.launch {
+            uploadFile(EVIDENCE_BUCKET, file.bytes, file.fileName, file.mimeType)
+                .onSuccess { url ->
+                    _state.update { it.copy(isUploadingPhoto = false, evidencePhotoUrls = it.evidencePhotoUrls + url) }
+                }
+                .onFailure { err ->
+                    _state.update { it.copy(isUploadingPhoto = false, error = err.toUserMessage("No se pudo subir la foto")) }
+                }
+        }
+    }
+
+    override fun onRemoveEvidencePhoto(index: Int) {
+        _state.update { st ->
+            if (index !in st.evidencePhotoUrls.indices) st
+            else st.copy(evidencePhotoUrls = st.evidencePhotoUrls.toMutableList().also { it.removeAt(index) })
+        }
+    }
+
+    override fun onComplete() {
         val appt = _state.value.appointment ?: return
         if (_state.value.actionInProgress) return
+        val urls = _state.value.evidencePhotoUrls
         _state.update { it.copy(actionInProgress = true, error = null) }
         scope.launch {
-            completeAppointment(appt, selectedPhotos)
-                .onSuccess { updated -> _state.update { it.copy(actionInProgress = false, appointment = updated) } }
+            completeAppointment(appt, urls)
+                .onSuccess { updated -> _state.update { it.copy(actionInProgress = false, appointment = updated, evidencePhotoUrls = emptyList()) } }
                 .onFailure { err -> _state.update { it.copy(actionInProgress = false, error = err.toUserMessage("Complete failed")) } }
         }
     }
@@ -112,5 +137,9 @@ class DefaultDoctorAppointmentDetailComponent(
                 .onSuccess { appt -> _state.update { it.copy(isLoading = false, appointment = appt) } }
                 .onFailure { err -> _state.update { it.copy(isLoading = false, error = err.toUserMessage("Error loading appointment")) } }
         }
+    }
+
+    private companion object {
+        const val EVIDENCE_BUCKET = "visit-proofs"
     }
 }

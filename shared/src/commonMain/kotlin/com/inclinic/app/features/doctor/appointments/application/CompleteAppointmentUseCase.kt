@@ -11,12 +11,13 @@ class CompleteAppointmentUseCase(
     private val dispatchers: AppDispatchers,
 ) {
     /**
-     * Phase 3 stub: photoBytes are not uploaded to Supabase yet — placeholder URLs are used.
-     * Real Supabase upload is Phase 5.
+     * Completes an appointment with the URLs of evidence photos already uploaded
+     * to the `visit-proofs` bucket (the component uploads them via UploadFileUseCase
+     * and passes the resulting URLs here). Home visits require at least one photo.
      */
     suspend operator fun invoke(
         appointment: Appointment,
-        selectedPhotos: List<ByteArray>,
+        photoUrls: List<String>,
     ): Result<Appointment> = withContext(dispatchers.io) {
         if (appointment.status != AppointmentStatus.CONFIRMED &&
             appointment.status != AppointmentStatus.IN_PROGRESS
@@ -25,12 +26,11 @@ class CompleteAppointmentUseCase(
                 IllegalStateException("Appointment must be CONFIRMED or IN_PROGRESS to complete")
             )
         }
-        if (selectedPhotos.isEmpty()) {
+        if (photoUrls.isEmpty()) {
             return@withContext Result.failure(
                 IllegalStateException("At least one evidence photo is required")
             )
         }
-        val stubUrls = selectedPhotos.mapIndexed { i, _ -> "stub-evidence-$i" }
-        dataSource.completeAppointment(appointment.id, stubUrls)
+        dataSource.completeAppointment(appointment.id, photoUrls)
     }
 }

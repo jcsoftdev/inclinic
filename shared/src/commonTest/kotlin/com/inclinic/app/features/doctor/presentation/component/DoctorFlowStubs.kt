@@ -55,7 +55,9 @@ internal class StubDoctorAppointmentDetailComponent(
 ) : DoctorAppointmentDetailComponent {
     override val state: Value<DoctorAppointmentDetailState> = MutableValue(DoctorAppointmentDetailState())
     override fun onConfirm() {}
-    override fun onComplete(selectedPhotos: List<ByteArray>) {}
+    override fun onEvidencePhotoPicked(file: com.inclinic.app.core.platform.PickedFile) {}
+    override fun onRemoveEvidencePhoto(index: Int) {}
+    override fun onComplete() {}
     override fun onNoShow() {}
     override fun onNoShowConfirmed() {}
     override fun onNoShowDismissed() {}

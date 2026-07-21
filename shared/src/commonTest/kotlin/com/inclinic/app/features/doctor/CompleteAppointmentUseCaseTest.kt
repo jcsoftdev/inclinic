@@ -37,6 +37,9 @@ private class FakeCompleteDataSource : DoctorAppointmentDataSource {
     override suspend fun getDailySchedule(doctorId: String, date: String): Result<List<Appointment>> =
         Result.success(emptyList())
 
+    override suspend fun getAvailability(doctorId: String, date: String): Result<List<com.inclinic.app.core.model.AvailabilitySlot>> =
+        Result.success(emptyList())
+
     override suspend fun getWeeklySchedule(doctorId: String, weekStart: String): Result<List<DaySummary>> =
         Result.success(emptyList())
 
@@ -98,35 +101,32 @@ class CompleteAppointmentUseCaseTest {
     }
 
     @Test
-    fun one_photo_calls_api_with_stub_url_and_returns_success() = runTest {
+    fun one_photo_url_calls_api_and_returns_success() = runTest {
         val appointment = makeAppointment(AppointmentStatus.CONFIRMED)
-        val photo = ByteArray(10) { it.toByte() }
 
-        val result = useCase(appointment, listOf(photo))
+        val result = useCase(appointment, listOf("https://cdn/visit-proofs/a.jpg"))
 
         assertTrue(result.isSuccess)
         assertEquals(1, fakeDataSource.completeCallCount)
-        // Stub URLs follow pattern "stub-evidence-{index}"
-        assertEquals(listOf("stub-evidence-0"), fakeDataSource.lastPhotoUrls)
+        assertEquals(listOf("https://cdn/visit-proofs/a.jpg"), fakeDataSource.lastPhotoUrls)
     }
 
     @Test
-    fun three_photos_produces_three_stub_urls() = runTest {
+    fun photo_urls_are_forwarded_unchanged() = runTest {
         val appointment = makeAppointment(AppointmentStatus.IN_PROGRESS)
-        val photos = List(3) { ByteArray(5) }
+        val urls = listOf("u0", "u1", "u2")
 
-        val result = useCase(appointment, photos)
+        val result = useCase(appointment, urls)
 
         assertTrue(result.isSuccess)
-        assertEquals(listOf("stub-evidence-0", "stub-evidence-1", "stub-evidence-2"), fakeDataSource.lastPhotoUrls)
+        assertEquals(urls, fakeDataSource.lastPhotoUrls)
     }
 
     @Test
     fun wrong_status_returns_failure_without_api_call() = runTest {
         val appointment = makeAppointment(AppointmentStatus.COMPLETED)
-        val photo = ByteArray(5)
 
-        val result = useCase(appointment, listOf(photo))
+        val result = useCase(appointment, listOf("u0"))
 
         assertTrue(result.isFailure)
         assertEquals(0, fakeDataSource.completeCallCount)

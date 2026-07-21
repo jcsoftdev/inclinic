@@ -2,12 +2,19 @@ package com.inclinic.app.features.doctor.presentation.component
 
 import com.arkivanov.decompose.value.Value
 import com.inclinic.app.core.model.Appointment
+import com.inclinic.app.core.platform.PickedFile
 
 interface DoctorAppointmentDetailComponent {
     val state: Value<DoctorAppointmentDetailState>
 
     fun onConfirm()
-    fun onComplete(selectedPhotos: List<ByteArray>)
+
+    /** Sube una foto de evidencia al bucket `visit-proofs`; su URL se acumula en el estado. */
+    fun onEvidencePhotoPicked(file: PickedFile)
+    fun onRemoveEvidencePhoto(index: Int)
+
+    /** Completa la cita con las fotos de evidencia ya subidas (URLs en el estado). */
+    fun onComplete()
     fun onNoShow()
     fun onNoShowConfirmed()
     fun onNoShowDismissed()
@@ -36,4 +43,8 @@ data class DoctorAppointmentDetailState(
     val actionInProgress: Boolean = false,
     val showNoShowDialog: Boolean = false,
     val error: String? = null,
+    /** URLs de las fotos de evidencia ya subidas a `visit-proofs`. */
+    val evidencePhotoUrls: List<String> = emptyList(),
+    /** True mientras una foto se está subiendo (para deshabilitar el botón). */
+    val isUploadingPhoto: Boolean = false,
 )

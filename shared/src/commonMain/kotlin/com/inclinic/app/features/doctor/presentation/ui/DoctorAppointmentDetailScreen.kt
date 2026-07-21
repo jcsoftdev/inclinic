@@ -58,6 +58,8 @@ import com.composables.icons.lucide.UserX
 import com.composables.icons.lucide.Video
 import com.inclinic.app.core.model.AppointmentStatus
 import com.inclinic.app.core.model.VisitType
+import com.inclinic.app.core.platform.PickedFile
+import com.inclinic.app.core.platform.rememberFilePicker
 import com.inclinic.app.core.util.formatDecimal
 import com.inclinic.app.features.doctor.presentation.component.DoctorAppointmentDetailComponent
 import com.inclinic.app.ui.atoms.AppBackButton
@@ -218,9 +220,13 @@ fun DoctorAppointmentDetailScreen(
                 sheetState = sheetState,
             ) {
                 EvidenceUploadSheet(
-                    onComplete = { photos ->
+                    photoUrls = state.evidencePhotoUrls,
+                    isUploading = state.isUploadingPhoto,
+                    onPickPhoto = component::onEvidencePhotoPicked,
+                    onRemovePhoto = component::onRemoveEvidencePhoto,
+                    onComplete = {
                         showEvidenceSheet = false
-                        component.onComplete(photos)
+                        component.onComplete()
                     },
                     onDismiss = { showEvidenceSheet = false },
                 )
@@ -264,48 +270,47 @@ fun NoShowConfirmationDialog(
 
 @Composable
 fun EvidenceUploadSheet(
-    onComplete: (List<ByteArray>) -> Unit,
+    photoUrls: List<String>,
+    isUploading: Boolean,
+    onPickPhoto: (PickedFile) -> Unit,
+    onRemovePhoto: (Int) -> Unit,
+    onComplete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    // Phase 3 stub: simulate photo selection with placeholder bytes
-    var selectedPhotos by remember { mutableStateOf<List<ByteArray>>(emptyList()) }
+    val picker = rememberFilePicker { file -> if (file != null) onPickPhoto(file) }
 
     Column(
         Modifier.fillMaxWidth().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text("Subir evidencia de consulta", style = MaterialTheme.typography.titleMedium)
-        Text("${selectedPhotos.size}/3 fotos seleccionadas", style = MaterialTheme.typography.bodySmall)
+        Text("${photoUrls.size}/3 fotos subidas", style = MaterialTheme.typography.bodySmall)
 
-        if (selectedPhotos.size < 3) {
+        if (photoUrls.size < 3) {
             OutlinedButton(
-                onClick = {
-                    // Phase 3 stub: add a placeholder ByteArray representing a photo
-                    selectedPhotos = selectedPhotos + ByteArray(1024) { it.toByte() }
-                },
+                onClick = { picker.launch() },
+                enabled = !isUploading,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Agregar foto")
+                Text(if (isUploading) "Subiendo…" else "Agregar foto")
             }
         }
 
-        if (selectedPhotos.isNotEmpty()) {
-            selectedPhotos.forEachIndexed { i, _ ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Foto ${i + 1}", style = MaterialTheme.typography.bodyMedium)
-                    TextButton(onClick = { selectedPhotos = selectedPhotos.toMutableList().also { it.removeAt(i) } }) {
-                        Text("Eliminar")
-                    }
+        photoUrls.forEachIndexed { i, _ ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Foto ${i + 1}", style = MaterialTheme.typography.bodyMedium)
+                TextButton(onClick = { onRemovePhoto(i) }) {
+                    Text("Eliminar")
                 }
             }
         }
 
         Button(
-            onClick = { onComplete(selectedPhotos) },
-            enabled = selectedPhotos.isNotEmpty(),
+            onClick = onComplete,
+            enabled = photoUrls.isNotEmpty() && !isUploading,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(if (selectedPhotos.isEmpty()) "Agrega al menos 1 foto de evidencia" else "Completar consulta")
+            Text(if (photoUrls.isEmpty()) "Agrega al menos 1 foto de evidencia" else "Completar consulta")
         }
         TextButton(onClick = onDismiss, Modifier.fillMaxWidth()) { Text("Cancelar") }
     }
