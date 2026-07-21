@@ -57,6 +57,7 @@ interface PatientFlowComponent {
         // Therapy packages
         class TherapyPackages(val component: TherapyPackagesListComponent) : Child
         class TherapyPackageDetail(val component: TherapyPackageDetailComponent) : Child
+        class PackageStatement(val component: PackageStatementComponent) : Child
         class TherapyOffers(val component: TherapyOffersComponent) : Child
         class Negotiation(val component: NegotiationComponent) : Child
 

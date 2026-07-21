@@ -36,6 +36,10 @@ private class FakeTherapyOffersDataSource(
 
     override suspend fun purchasePackage(offerId: String): Result<String> = purchaseResult
 
+    override suspend fun getPackageStatement(packageId: String): Result<com.inclinic.app.core.model.PackageStatement> =
+        Result.failure(UnsupportedOperationException())
+    override suspend fun payPackageInstallment(packageId: String, amount: Double): Result<Unit> =
+        Result.failure(UnsupportedOperationException())
     override suspend fun getPatientPackages(patientId: String, status: String?): Result<List<TherapyPackage>> =
         Result.success(emptyList())
 

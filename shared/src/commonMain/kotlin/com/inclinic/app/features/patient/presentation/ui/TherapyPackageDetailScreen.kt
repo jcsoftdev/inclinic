@@ -158,8 +158,9 @@ fun TherapyPackageDetailScreen(
                     item { Spacer(Modifier.height(80.dp)) }
                 }
 
-                // CTA button
-                Box(
+                // CTA buttons
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(colors.sand)
@@ -186,6 +187,23 @@ fun TherapyPackageDetailScreen(
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
+                    }
+                    // Estado de cuenta: saldo, abonos y el coste de seguir fraccionando.
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(colors.surface)
+                            .clickable { component.onViewStatement() }
+                            .padding(vertical = 14.dp),
+                    ) {
+                        Text(
+                            text = "Ver estado de cuenta y pagos",
+                            color = colors.navy,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
                     }
                 }
             }

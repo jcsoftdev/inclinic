@@ -4,7 +4,10 @@ import com.inclinic.app.core.model.NegotiationProposal
 import com.inclinic.app.core.model.NegotiationStatus
 import com.inclinic.app.core.model.PackageNegotiation
 import com.inclinic.app.core.model.PackageSession
+import com.inclinic.app.core.model.PackageStatement
 import com.inclinic.app.core.model.PackageStatus
+import com.inclinic.app.core.model.StatementPayment
+import com.inclinic.app.core.model.StatementProjection
 import com.inclinic.app.core.model.SessionStatus
 import com.inclinic.app.core.model.TherapyOffer
 import com.inclinic.app.core.model.TherapyPackage
@@ -98,6 +101,28 @@ class KtorTherapyPackageDataSource(
         client.post {
             url("$baseUrl/api/therapy-offers/$offerId/purchase")
         }.body<ApiEnvelope<PurchaseResultDto>>().data?.therapyPackageId ?: error("Purchase failed")
+    }
+
+    override suspend fun getPackageStatement(packageId: String): Result<PackageStatement> = runCatching {
+        client.get {
+            url("$baseUrl/api/therapy-packages/$packageId/statement")
+        }.body<ApiEnvelope<PackageStatementDto>>().data?.toDomain() ?: error("Statement missing")
+    }
+
+    override suspend fun payPackageInstallment(packageId: String, amount: Double): Result<Unit> = runCatching {
+        val response = client.post {
+            url("$baseUrl/api/therapy-packages/$packageId/payments")
+            contentType(ContentType.Application.Json)
+            setBody(PackageInstallmentBodyDto(amount = amount))
+        }
+        val status = response.status.value
+        if (status !in 200..299) {
+            // El backend responde 400 con un mensaje accionable (entrada/abono mínimo);
+            // lo propagamos tal cual para que la UI lo muestre.
+            val err = runCatching { response.body<PackageInstallmentErrorDto>() }.getOrNull()
+            error(err?.error ?: "No se pudo registrar el abono")
+        }
+        Unit
     }
 }
 
@@ -340,6 +365,106 @@ private data class NegotiationDto(
             finalPricePerSession = finalPricePerSession,
             finalSessions = finalSessions,
             acceptedTherapyPackageId = acceptedTherapyPackageId,
+        )
+    }
+}
+
+// ── Progressive payment DTOs ──────────────────────────────────────────────────
+
+@Serializable
+private data class PackageInstallmentBodyDto(val amount: Double)
+
+@Serializable
+private data class PackageInstallmentErrorDto(val error: String? = null, val code: String? = null)
+
+@Serializable
+private data class StatementProjectionDto(
+    val paymentsCount: Int = 0,
+    val unitPrice: Double = 0.0,
+    val total: Double = 0.0,
+    val totalIncrease: Double = 0.0,
+    val balanceAfterMinimum: Double = 0.0,
+)
+
+@Serializable
+private data class StatementPaymentDto(
+    val id: String = "",
+    val amount: Double = 0.0,
+    val paymentNumber: Int = 0,
+    val unitPriceAtPayment: Double = 0.0,
+    val totalAtPayment: Double = 0.0,
+    val isEntry: Boolean = false,
+    val createdAt: String? = null,
+)
+
+@Serializable
+private data class PackageStatementDto(
+    val packageId: String = "",
+    val packageName: String = "",
+    val status: String = "",
+    val totalSessions: Int = 0,
+    val paymentsCount: Int = 0,
+    val unitPrice: Double = 0.0,
+    val total: Double = 0.0,
+    val amountPaid: Double = 0.0,
+    val balance: Double = 0.0,
+    val discount: Double = 0.0,
+    val maxDiscount: Double = 0.0,
+    val discountLost: Double = 0.0,
+    val sessionsUnlocked: Int = 0,
+    val sessionsUsed: Int = 0,
+    val nextSession: Int = 0,
+    val minimumNextPayment: Double = 0.0,
+    val canScheduleNext: Boolean = false,
+    val entryPercent: Double = 0.0,
+    val entryAmount: Double = 0.0,
+    val payoffAmount: Double = 0.0,
+    val nextPaymentProjection: StatementProjectionDto? = null,
+    val payments: List<StatementPaymentDto> = emptyList(),
+) {
+    fun toDomain(): PackageStatement {
+        val now = Clock.System.now()
+        return PackageStatement(
+            packageId = packageId,
+            packageName = packageName,
+            status = status,
+            totalSessions = totalSessions,
+            paymentsCount = paymentsCount,
+            unitPrice = unitPrice,
+            total = total,
+            amountPaid = amountPaid,
+            balance = balance,
+            discount = discount,
+            maxDiscount = maxDiscount,
+            discountLost = discountLost,
+            sessionsUnlocked = sessionsUnlocked,
+            sessionsUsed = sessionsUsed,
+            nextSession = nextSession,
+            minimumNextPayment = minimumNextPayment,
+            canScheduleNext = canScheduleNext,
+            entryPercent = entryPercent,
+            entryAmount = entryAmount,
+            payoffAmount = payoffAmount,
+            nextPaymentProjection = nextPaymentProjection?.let {
+                StatementProjection(
+                    paymentsCount = it.paymentsCount,
+                    unitPrice = it.unitPrice,
+                    total = it.total,
+                    totalIncrease = it.totalIncrease,
+                    balanceAfterMinimum = it.balanceAfterMinimum,
+                )
+            },
+            payments = payments.map {
+                StatementPayment(
+                    id = it.id,
+                    amount = it.amount,
+                    paymentNumber = it.paymentNumber,
+                    unitPriceAtPayment = it.unitPriceAtPayment,
+                    totalAtPayment = it.totalAtPayment,
+                    isEntry = it.isEntry,
+                    createdAt = it.createdAt?.let { d -> runCatching { Instant.parse(d) }.getOrElse { now } } ?: now,
+                )
+            },
         )
     }
 }

@@ -9,11 +9,13 @@ interface TherapyPackageDetailComponent {
 
     fun onTabChange(tab: SessionsTab)
     fun onScheduleNextSession()
+    fun onViewStatement()
     fun onBack()
     fun onErrorDismissed()
 
     sealed interface Output {
         data class NavigateToScheduleSession(val packageId: String, val doctorId: String) : Output
+        data class NavigateToStatement(val packageId: String) : Output
         data object Back : Output
     }
 }

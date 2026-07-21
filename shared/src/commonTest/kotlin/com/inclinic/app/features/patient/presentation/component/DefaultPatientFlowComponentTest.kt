@@ -398,8 +398,19 @@ private class StubTherapyPackageDetailComponent : TherapyPackageDetailComponent 
     override val state: Value<TherapyPackageDetailState> = MutableValue(TherapyPackageDetailState())
     override fun onTabChange(tab: SessionsTab) = Unit
     override fun onScheduleNextSession() = Unit
+    override fun onViewStatement() = Unit
     override fun onBack() = Unit
     override fun onErrorDismissed() = Unit
+}
+
+private class StubPackageStatementComponent : PackageStatementComponent {
+    override val state: Value<PackageStatementState> = MutableValue(PackageStatementState())
+    override fun onAmountChange(text: String) = Unit
+    override fun onSubmitPayment() = Unit
+    override fun onPayoff() = Unit
+    override fun onRetry() = Unit
+    override fun onErrorDismissed() = Unit
+    override fun onBack() = Unit
 }
 
 private class StubTherapyOffersComponent : TherapyOffersComponent {
@@ -492,6 +503,7 @@ class DefaultPatientFlowComponentTest {
         symptomResultsFactory = { _, _, _ -> StubSymptomResultsComponent() },
         therapyPackagesFactory = { _, _, _ -> StubTherapyPackagesListComponent() },
         therapyPackageDetailFactory = { _, _, _ -> StubTherapyPackageDetailComponent() },
+        packageStatementFactory = { _, _, _ -> StubPackageStatementComponent() },
         therapyOffersFactory = { _, _ -> StubTherapyOffersComponent() },
         negotiationFactory = { _, _, _, _ -> StubNegotiationComponent() },
         reportUserFactory = { _, _, _, _ -> StubReportUserComponent() },

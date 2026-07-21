@@ -60,6 +60,7 @@ class DefaultPatientFlowComponent(
     private val symptomResultsFactory: (ComponentContext, String, (SymptomResultsComponent.Output) -> Unit) -> SymptomResultsComponent,
     private val therapyPackagesFactory: (ComponentContext, String, (TherapyPackagesListComponent.Output) -> Unit) -> TherapyPackagesListComponent,
     private val therapyPackageDetailFactory: (ComponentContext, String, (TherapyPackageDetailComponent.Output) -> Unit) -> TherapyPackageDetailComponent,
+    private val packageStatementFactory: (ComponentContext, String, (PackageStatementComponent.Output) -> Unit) -> PackageStatementComponent,
     private val therapyOffersFactory: (ComponentContext, (TherapyOffersComponent.Output) -> Unit) -> TherapyOffersComponent,
     private val negotiationFactory: (ComponentContext, String?, String?, (NegotiationComponent.Output) -> Unit) -> NegotiationComponent,
     private val reportUserFactory: (ComponentContext, userId: String, userName: String, (ReportUserComponent.Output) -> Unit) -> ReportUserComponent,
@@ -478,7 +479,16 @@ class DefaultPatientFlowComponent(
                     when (output) {
                         is TherapyPackageDetailComponent.Output.NavigateToScheduleSession ->
                             navigation.push(PatientConfig.Availability(output.doctorId, "office"))
+                        is TherapyPackageDetailComponent.Output.NavigateToStatement ->
+                            navigation.push(PatientConfig.PackageStatement(output.packageId))
                         TherapyPackageDetailComponent.Output.Back -> navigation.pop()
+                    }
+                }
+            )
+            is PatientConfig.PackageStatement -> PatientFlowComponent.Child.PackageStatement(
+                packageStatementFactory(ctx, config.packageId) { output ->
+                    when (output) {
+                        PackageStatementComponent.Output.Back -> navigation.pop()
                     }
                 }
             )

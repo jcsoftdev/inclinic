@@ -45,6 +45,7 @@ sealed interface PatientConfig {
     // Therapy packages
     @Serializable data object TherapyPackages : PatientConfig
     @Serializable data class TherapyPackageDetail(val packageId: String) : PatientConfig
+    @Serializable data class PackageStatement(val packageId: String) : PatientConfig
     @Serializable data object TherapyOffers : PatientConfig
     @Serializable data class Negotiation(val negotiationId: String? = null, val offerId: String? = null) : PatientConfig
 

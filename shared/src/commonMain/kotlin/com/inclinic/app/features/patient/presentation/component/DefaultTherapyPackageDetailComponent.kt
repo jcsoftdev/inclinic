@@ -39,6 +39,10 @@ class DefaultTherapyPackageDetailComponent(
         onOutput(TherapyPackageDetailComponent.Output.NavigateToScheduleSession(packageId, pkg.doctorId))
     }
 
+    override fun onViewStatement() {
+        onOutput(TherapyPackageDetailComponent.Output.NavigateToStatement(packageId))
+    }
+
     override fun onBack() {
         onOutput(TherapyPackageDetailComponent.Output.Back)
     }

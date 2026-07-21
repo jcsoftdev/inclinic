@@ -112,6 +112,7 @@ import com.inclinic.app.features.patient.presentation.component.DefaultShareRequ
 import com.inclinic.app.features.patient.presentation.component.DefaultSymptomInputComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultSymptomResultsComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultTherapyOffersComponent
+import com.inclinic.app.features.patient.presentation.component.DefaultPackageStatementComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultTherapyPackageDetailComponent
 import com.inclinic.app.features.patient.presentation.component.DefaultTherapyPackagesListComponent
 import com.inclinic.app.features.patient.presentation.component.DisputeAppointmentComponent
@@ -138,6 +139,7 @@ import com.inclinic.app.features.patient.presentation.component.ShareRequestsCom
 import com.inclinic.app.features.patient.presentation.component.SymptomInputComponent
 import com.inclinic.app.features.patient.presentation.component.SymptomResultsComponent
 import com.inclinic.app.features.patient.presentation.component.TherapyOffersComponent
+import com.inclinic.app.features.patient.presentation.component.PackageStatementComponent
 import com.inclinic.app.features.patient.presentation.component.TherapyPackageDetailComponent
 import com.inclinic.app.features.patient.presentation.component.TherapyPackagesListComponent
 import com.inclinic.app.features.patient.profile.application.GetPatientProfileUseCase
@@ -158,7 +160,9 @@ import com.inclinic.app.features.patient.therapy.application.CreateNegotiationUs
 import com.inclinic.app.features.patient.therapy.application.GetNegotiationUseCase
 import com.inclinic.app.features.patient.therapy.application.GetTherapyOfferDetailUseCase
 import com.inclinic.app.features.patient.therapy.application.GetTherapyOffersUseCase
+import com.inclinic.app.features.patient.therapy.application.GetPackageStatementUseCase
 import com.inclinic.app.features.patient.therapy.application.GetTherapyPackageDetailUseCase
+import com.inclinic.app.features.patient.therapy.application.PayPackageInstallmentUseCase
 import com.inclinic.app.features.patient.therapy.application.PurchasePackageUseCase
 import com.inclinic.app.features.patient.therapy.application.GetTherapyPackagesUseCase
 import com.inclinic.app.features.patient.therapy.application.RespondNegotiationUseCase
@@ -232,6 +236,8 @@ val patientModule = module {
     factory { UpdatePatientProfileUseCase(get(), get()) }
     factory { GetTherapyPackagesUseCase(get(), get()) }
     factory { GetTherapyPackageDetailUseCase(get(), get()) }
+    factory { GetPackageStatementUseCase(get(), get()) }
+    factory { PayPackageInstallmentUseCase(get(), get()) }
     factory { GetTherapyOffersUseCase(get(), get()) }
     factory { PurchasePackageUseCase(get(), get()) }
     factory { GetNegotiationUseCase(get(), get()) }
@@ -331,6 +337,9 @@ val patientModule = module {
     }
     factory<TherapyPackageDetailComponent> { (ctx: ComponentContext, packageId: String, onOutput: (TherapyPackageDetailComponent.Output) -> Unit) ->
         DefaultTherapyPackageDetailComponent(ctx, packageId, get(), get(), onOutput)
+    }
+    factory<PackageStatementComponent> { (ctx: ComponentContext, packageId: String, onOutput: (PackageStatementComponent.Output) -> Unit) ->
+        DefaultPackageStatementComponent(ctx, packageId, get(), get(), get(), onOutput)
     }
     factory<TherapyOffersComponent> { (ctx: ComponentContext, onOutput: (TherapyOffersComponent.Output) -> Unit) ->
         DefaultTherapyOffersComponent(ctx, get(), get(), get(), onOutput)
@@ -445,6 +454,7 @@ val patientModule = module {
             symptomResultsFactory = { c, symptoms, out -> get { parametersOf(c, symptoms, out) } },
             therapyPackagesFactory = { c, pid, out -> get { parametersOf(c, pid, out) } },
             therapyPackageDetailFactory = { c, packageId, out -> get { parametersOf(c, packageId, out) } },
+            packageStatementFactory = { c, packageId, out -> get { parametersOf(c, packageId, out) } },
             therapyOffersFactory = { c, out -> get { parametersOf(c, out) } },
             negotiationFactory = { c, negotiationId, offerId, out -> get { parametersOf(c, negotiationId, offerId, out) } },
             reportUserFactory = { c, userId, userName, out -> get { parametersOf(c, userId, userName, out) } },

@@ -75,6 +75,7 @@ fun PatientFlowContent(component: PatientFlowComponent, modifier: Modifier = Mod
                 // Therapy packages
                 is PatientFlowComponent.Child.TherapyPackages -> TherapyPackagesListScreen(c.component)
                 is PatientFlowComponent.Child.TherapyPackageDetail -> TherapyPackageDetailScreen(c.component)
+                is PatientFlowComponent.Child.PackageStatement -> PackageStatementScreen(c.component)
                 is PatientFlowComponent.Child.TherapyOffers -> TherapyOffersScreen(c.component)
                 is PatientFlowComponent.Child.Negotiation -> NegotiationScreen(c.component)
 
