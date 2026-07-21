@@ -58,15 +58,22 @@ Platform abstractions use the **expect/actual** pattern (`Platform.kt` → `Plat
 | Patient Home | `features/patient/presentation/` | Home screen + navigation flow |
 | Patient Assistant Chat | `features/patient/assistant/` | AI chat via ClinicAI Vercel AI SDK v6 stream; see `assistant/CLAUDE.md` |
 
-### Test filter — assistant package
+### Test compilation
 
-Pre-existing ~50 compile errors in other packages block full test run. Use compilation check to verify the assistant package:
+The test tree compiles cleanly on both targets. Verify with:
 
 ```bash
-JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
-  ./gradlew :shared:compileTestKotlinIosSimulatorArm64 2>&1 | grep "assistant"
-# zero output = no errors in assistant package
+# Android host tests (these actually run on the JVM)
+./gradlew :shared:testAndroidHostTest
+
+# iOS test compilation (Kotlin/Native — fails fast on the first error)
+./gradlew :shared:compileTestKotlinIosSimulatorArm64
 ```
+
+Note: Kotlin/Native forbids certain characters in backtick test names that the JVM
+accepts — `( ) [ ] < > . , : ; / \`. A test named ``fun `... (physical device)`()``
+compiles on Android but fails K/N with "Name contains illegal characters". Keep
+`commonTest` names free of those characters so both targets compile.
 
 ## Dependency Management
 

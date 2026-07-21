@@ -51,7 +51,7 @@ class ApiBaseUrlResolverTest {
     }
 
     @Test
-    fun `keeps url unchanged when host is a real LAN ip (physical device)`() {
+    fun `keeps url unchanged when host is a real LAN ip on a physical device`() {
         val result = resolveApiBaseUrl(
             rawUrl = "http://192.168.1.50:4005",
             rawEnv = "DEV",
