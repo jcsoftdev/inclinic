@@ -63,7 +63,7 @@ private class FakeListAppointmentDataSource(
     override suspend fun processPackagePayment(cardToken: String, paymentMethodId: String, therapyPackageId: String): Result<PaymentResult> = Result.failure(UnsupportedOperationException())
     override suspend fun getPendingRescheduleProposal(appointmentId: String): Result<RescheduleProposal?> = Result.success(null)
     override suspend fun respondRescheduleProposal(requestId: String, accept: Boolean, responseNote: String?) = Result.success(Unit)
-    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String) = Result.success(Unit)
+    override suspend fun disputeAppointment(appointmentId: String, reason: String, details: String, attachments: List<String>) = Result.success(Unit)
     override suspend fun confirmRating(appointmentId: String, punctuality: Int, professionalism: Int, empathy: Int, comment: String?) = Result.success(Unit)
     override suspend fun requestVisitTypeChange(appointmentId: String, newVisitType: String, address: String?, reason: String?) = Result.success(Unit)
 }
@@ -153,6 +153,30 @@ class DefaultPatientAppointmentsListComponentTest {
 
         assertEquals(1, outputs.size)
         val output = outputs.first() as PatientAppointmentsListComponent.Output.NavigateToPayment
+        assertEquals("apt-1", output.appointmentId)
+    }
+
+    @Test
+    fun onConfirmAttendance_emits_NavigateToConfirmRating() = runTest {
+        val outputs = mutableListOf<PatientAppointmentsListComponent.Output>()
+        val component = createComponent(outputs = outputs)
+
+        component.onConfirmAttendance("apt-1")
+
+        assertEquals(1, outputs.size)
+        val output = outputs.first() as PatientAppointmentsListComponent.Output.NavigateToConfirmRating
+        assertEquals("apt-1", output.appointmentId)
+    }
+
+    @Test
+    fun onReportProblem_emits_NavigateToDispute() = runTest {
+        val outputs = mutableListOf<PatientAppointmentsListComponent.Output>()
+        val component = createComponent(outputs = outputs)
+
+        component.onReportProblem("apt-1")
+
+        assertEquals(1, outputs.size)
+        val output = outputs.first() as PatientAppointmentsListComponent.Output.NavigateToDispute
         assertEquals("apt-1", output.appointmentId)
     }
 

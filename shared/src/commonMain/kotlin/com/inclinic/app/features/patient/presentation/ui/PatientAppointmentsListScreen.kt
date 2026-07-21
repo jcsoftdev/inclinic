@@ -108,6 +108,8 @@ fun PatientAppointmentsListScreen(component: PatientAppointmentsListComponent, o
                                 onCancel = { component.onCancel(appt.id) },
                                 onReschedule = { component.onReschedule(appt.id) },
                                 onRespondReschedule = { component.onRespondReschedule(appt.id) },
+                                onConfirmAttendance = { component.onConfirmAttendance(appt.id) },
+                                onReportProblem = { component.onReportProblem(appt.id) },
                             )
                         }
                     }
@@ -165,7 +167,7 @@ private fun AppointmentTabs(
 }
 
 @Composable
-private fun AppointmentCard(appt: Appointment, onClick: () -> Unit, onPayNow: () -> Unit, onCancel: () -> Unit, onReschedule: () -> Unit, onRespondReschedule: () -> Unit) {
+private fun AppointmentCard(appt: Appointment, onClick: () -> Unit, onPayNow: () -> Unit, onCancel: () -> Unit, onReschedule: () -> Unit, onRespondReschedule: () -> Unit, onConfirmAttendance: () -> Unit, onReportProblem: () -> Unit) {
     val colors = AppTheme.colors
     val now = kotlin.time.Clock.System.now()
     val isPaymentExpired = appt.status == AppointmentStatus.PENDING_PAYMENT &&
@@ -218,6 +220,8 @@ private fun AppointmentCard(appt: Appointment, onClick: () -> Unit, onPayNow: ()
                 when {
                     isPaymentExpired -> ExpiredPaymentNotice()
                     appt.status == AppointmentStatus.PENDING_PAYMENT -> PendingPaymentActions(appt, onPayNow = onPayNow)
+                    appt.needsClosure ->
+                        NeedsClosureActions(onConfirmAttendance = onConfirmAttendance, onReportProblem = onReportProblem)
                     appt.status == AppointmentStatus.CONFIRMED || appt.status == AppointmentStatus.SCHEDULED ->
                         ConfirmedActions(appt, onCancel = onCancel, onReschedule = onReschedule)
                     else -> Unit
@@ -312,6 +316,29 @@ private fun PendingRescheduleActions(onRespond: () -> Unit) {
         ) {
             Text("Ver propuesta", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun NeedsClosureActions(onConfirmAttendance: () -> Unit, onReportProblem: () -> Unit) {
+    val colors = AppTheme.colors
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text("¿El especialista te atendió?", color = colors.text, fontSize = 12.sp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(colors.navy)
+                .clickable(onClick = onConfirmAttendance)
+                .padding(vertical = 10.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("Sí, me atendieron", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
+        OutlineAction("Tuve un problema", colors.red, colors.red, Modifier.fillMaxWidth(), onClick = onReportProblem)
     }
 }
 

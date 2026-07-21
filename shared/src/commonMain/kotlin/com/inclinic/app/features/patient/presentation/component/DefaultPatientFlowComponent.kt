@@ -203,6 +203,10 @@ class DefaultPatientFlowComponent(
                             navigation.push(PatientConfig.Availability(output.doctorId, output.consultType))
                         is PatientAppointmentsListComponent.Output.NavigateToRescheduleResponse ->
                             navigation.push(PatientConfig.RescheduleResponse(output.appointmentId))
+                        is PatientAppointmentsListComponent.Output.NavigateToConfirmRating ->
+                            navigation.push(PatientConfig.ConfirmRating(output.appointmentId))
+                        is PatientAppointmentsListComponent.Output.NavigateToDispute ->
+                            navigation.push(PatientConfig.DisputeAppointment(output.appointmentId))
                         PatientAppointmentsListComponent.Output.NavigateToSearch ->
                             navigation.bringToFront(PatientConfig.Search)
                     }
@@ -297,7 +301,7 @@ class DefaultPatientFlowComponent(
                 rescheduleAppointmentFactory(ctx, config.appointmentId) { output ->
                     when (output) {
                         RescheduleAppointmentComponent.Output.Back -> navigation.pop()
-                        RescheduleAppointmentComponent.Output.Rescheduled -> {
+                        RescheduleAppointmentComponent.Output.RescheduleRequested -> {
                             navigation.navigate { stack ->
                                 stack.filter { it !is PatientConfig.RescheduleAppointment && it !is PatientConfig.AppointmentDetail }
                             }

@@ -14,6 +14,12 @@ interface PatientAppointmentsListComponent {
     fun onCancel(appointmentId: String)
     fun onReschedule(appointmentId: String)
     fun onRespondReschedule(appointmentId: String)
+
+    /** "Me atendieron" → califica al médico (y libera el pago retenido). */
+    fun onConfirmAttendance(appointmentId: String)
+
+    /** "Tuve un problema" → abre la disputa con evidencia. */
+    fun onReportProblem(appointmentId: String)
     fun onErrorDismissed()
     fun onSearchDoctors()
 
@@ -23,6 +29,8 @@ interface PatientAppointmentsListComponent {
         data class NavigateToCancel(val appointmentId: String) : Output
         data class NavigateToReschedule(val appointmentId: String, val doctorId: String, val consultType: String) : Output
         data class NavigateToRescheduleResponse(val appointmentId: String) : Output
+        data class NavigateToConfirmRating(val appointmentId: String) : Output
+        data class NavigateToDispute(val appointmentId: String) : Output
         data object NavigateToSearch : Output
     }
 }

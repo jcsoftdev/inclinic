@@ -72,6 +72,14 @@ class DefaultPatientAppointmentsListComponent(
         onOutput(PatientAppointmentsListComponent.Output.NavigateToRescheduleResponse(appointmentId))
     }
 
+    override fun onConfirmAttendance(appointmentId: String) {
+        onOutput(PatientAppointmentsListComponent.Output.NavigateToConfirmRating(appointmentId))
+    }
+
+    override fun onReportProblem(appointmentId: String) {
+        onOutput(PatientAppointmentsListComponent.Output.NavigateToDispute(appointmentId))
+    }
+
     override fun onErrorDismissed() { _state.update { it.copy(error = null) } }
 
     override fun onSearchDoctors() {
