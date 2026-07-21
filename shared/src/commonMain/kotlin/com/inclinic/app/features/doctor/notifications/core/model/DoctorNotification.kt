@@ -18,4 +18,7 @@ data class DoctorNotification(
     val isRead: Boolean,
     /** Navigation link from the backend (e.g. /doctor/appointments/123) */
     val link: String?,
+    /** Deep-link target: qué recurso abre la notificación (ej. "ModalityRequest", "PackageNegotiation"). */
+    val resourceType: String? = null,
+    val resourceId: String? = null,
 )

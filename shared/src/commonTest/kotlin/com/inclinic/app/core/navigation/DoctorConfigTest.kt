@@ -16,7 +16,6 @@ class DoctorConfigTest {
             DoctorConfig.Schedule,
             DoctorConfig.DailySchedule(date = "2026-05-20"),
             DoctorConfig.AppointmentDetail(appointmentId = "a1"),
-            DoctorConfig.CompleteWithEvidence(appointmentId = "a1"),
             DoctorConfig.PatientDetail(patientId = "p1"),
             DoctorConfig.MedicalRecordsList(patientId = "p1"),
             DoctorConfig.MedicalRecordEditor(patientId = "p1"),
@@ -25,7 +24,7 @@ class DoctorConfigTest {
             DoctorConfig.ScheduleConfig,
             DoctorConfig.PriceConfig,
         )
-        assertEquals(12, existing.size)
+        assertEquals(11, existing.size)
     }
 
     @Test

@@ -199,6 +199,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onNavigateRequestSpecialty() { out(MiPerfilComponent.Output.RequestSpecialty) }
                 override fun onNavigateMySpecialtyRequests() { out(MiPerfilComponent.Output.MySpecialtyRequests) }
                 override fun onNavigateIncome() { out(MiPerfilComponent.Output.Income) }
+                override fun onNavigatePriceConfig() { out(MiPerfilComponent.Output.PriceConfig) }
                 override fun onNavigateReviews() { out(MiPerfilComponent.Output.Reviews) }
                 override fun onNavigatePublicProfile() { out(MiPerfilComponent.Output.PublicProfile) }
                 override fun onNavigateEditHorarios() { out(MiPerfilComponent.Output.EditHorarios) }
@@ -248,6 +249,7 @@ class DefaultDoctorFlowComponentTest {
                 override fun onFilterChange(filter: NotificationFilter) {}
                 override fun onMarkRead(id: String) {}
                 override fun onMarkAllRead() {}
+                override fun onNotificationClick(notification: com.inclinic.app.features.doctor.notifications.core.model.DoctorNotification) {}
                 override fun onBack() { out(DoctorNotificationsComponent.Output.Back) }
             }
         },

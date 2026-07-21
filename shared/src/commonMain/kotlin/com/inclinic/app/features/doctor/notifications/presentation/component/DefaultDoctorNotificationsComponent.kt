@@ -10,6 +10,7 @@ import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.features.doctor.notifications.application.GetDoctorNotificationsUseCase
 import com.inclinic.app.features.doctor.notifications.application.MarkAllNotificationsReadUseCase
 import com.inclinic.app.features.doctor.notifications.application.MarkNotificationReadUseCase
+import com.inclinic.app.features.doctor.notifications.core.model.DoctorNotification
 import com.inclinic.app.features.doctor.notifications.core.port.NotificationFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -60,6 +61,17 @@ class DefaultDoctorNotificationsComponent(
                     state.copy(notifications = state.notifications.map { it.copy(isRead = true) })
                 }
             }
+        }
+    }
+
+    override fun onNotificationClick(notification: DoctorNotification) {
+        if (!notification.isRead) onMarkRead(notification.id)
+        val id = notification.resourceId ?: return
+        when (notification.resourceType) {
+            "ModalityRequest" -> onOutput(DoctorNotificationsComponent.Output.OpenModalityRequest(id))
+            "PackageNegotiation" -> onOutput(DoctorNotificationsComponent.Output.OpenPackageNegotiation(id))
+            "Appointment" -> onOutput(DoctorNotificationsComponent.Output.OpenAppointment(id))
+            else -> Unit // sin deep-link específico: solo se marcó leída
         }
     }
 

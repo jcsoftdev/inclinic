@@ -235,6 +235,12 @@ class DefaultDoctorFlowComponent(
                 notificationsFactory(ctx) { output ->
                     when (output) {
                         DoctorNotificationsComponent.Output.Back -> inicioNav.pop()
+                        is DoctorNotificationsComponent.Output.OpenModalityRequest ->
+                            inicioNav.push(DoctorConfig.RespondModality(output.requestId))
+                        is DoctorNotificationsComponent.Output.OpenPackageNegotiation ->
+                            inicioNav.push(DoctorConfig.RespondPackageNegotiation(output.negotiationId))
+                        is DoctorNotificationsComponent.Output.OpenAppointment ->
+                            inicioNav.push(DoctorConfig.AppointmentDetail(output.appointmentId))
                     }
                 }
             )
@@ -279,34 +285,6 @@ class DefaultDoctorFlowComponent(
                             agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             // Real appointmentId from the loaded appointment — links the new record.
-                            _currentTab.value = DoctorTab.Pacientes
-                            pacientesNav.push(
-                                DoctorConfig.MedicalRecordEditor(
-                                    patientId = output.patientId,
-                                    appointmentId = output.appointmentId,
-                                ),
-                            )
-                        }
-                        DoctorAppointmentDetailComponent.Output.Back -> agendaNav.pop()
-                    }
-                }
-            )
-            is DoctorConfig.CompleteWithEvidence -> DoctorFlowComponent.Child.AppointmentDetail(
-                appointmentDetailFactory(ctx, config.appointmentId) { output ->
-                    when (output) {
-                        is DoctorAppointmentDetailComponent.Output.NavigateToPatientDetail -> {
-                            _currentTab.value = DoctorTab.Pacientes
-                            pacientesNav.push(DoctorConfig.PatientDetail(output.patientId))
-                        }
-                        is DoctorAppointmentDetailComponent.Output.NavigateToChat ->
-                            agendaNav.push(DoctorConfig.Chat(output.appointmentId))
-                        is DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule ->
-                            agendaNav.push(DoctorConfig.RequestReschedule(output.appointmentId))
-                        is DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription ->
-                            agendaNav.push(DoctorConfig.CreatePrescription(output.appointmentId))
-                        is DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription ->
-                            agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
-                        is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             _currentTab.value = DoctorTab.Pacientes
                             pacientesNav.push(
                                 DoctorConfig.MedicalRecordEditor(
@@ -433,6 +411,8 @@ class DefaultDoctorFlowComponent(
                             perfilNav.push(DoctorConfig.PublicProfile)
                         MiPerfilComponent.Output.EditHorarios ->
                             perfilNav.push(DoctorConfig.ScheduleConfig)
+                        MiPerfilComponent.Output.PriceConfig ->
+                            perfilNav.push(DoctorConfig.PriceConfig)
                         MiPerfilComponent.Output.Packages ->
                             perfilNav.push(DoctorConfig.Packages)
                         MiPerfilComponent.Output.Sharing ->

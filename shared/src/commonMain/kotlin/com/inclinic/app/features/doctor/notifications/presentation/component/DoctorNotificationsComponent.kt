@@ -12,10 +12,16 @@ interface DoctorNotificationsComponent {
     fun onFilterChange(filter: NotificationFilter)
     fun onMarkRead(id: String)
     fun onMarkAllRead()
+
+    /** Al tocar una notificación: la marca leída y navega a su recurso (deep-link). */
+    fun onNotificationClick(notification: DoctorNotification)
     fun onBack()
 
     sealed interface Output {
         data object Back : Output
+        data class OpenModalityRequest(val requestId: String) : Output
+        data class OpenPackageNegotiation(val negotiationId: String) : Output
+        data class OpenAppointment(val appointmentId: String) : Output
     }
 }
 

@@ -36,6 +36,8 @@ class DefaultDoctorNotificationsRepository(
         createdAt = runCatching { Instant.parse(createdAt) }.getOrElse { Instant.fromEpochMilliseconds(0) },
         isRead = isRead,
         link = link,
+        resourceType = resourceType,
+        resourceId = resourceId,
     )
 
     private fun typeToKind(type: String): NotificationKind = when {

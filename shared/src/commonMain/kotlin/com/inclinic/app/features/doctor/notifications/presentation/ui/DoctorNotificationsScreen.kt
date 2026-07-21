@@ -120,7 +120,7 @@ fun DoctorNotificationsScreen(
                 verticalArrangement = Arrangement.spacedBy(dimens.spacingSm),
             ) {
                 items(state.filteredNotifications, key = { it.id }) { notification ->
-                    NotificationCard(notification = notification, onMarkRead = { component.onMarkRead(notification.id) })
+                    NotificationCard(notification = notification, onClick = { component.onNotificationClick(notification) })
                 }
             }
         }
@@ -146,7 +146,7 @@ private fun FilterPill(label: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 private fun NotificationCard(
     notification: DoctorNotification,
-    onMarkRead: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = AppTheme.colors
@@ -162,7 +162,7 @@ private fun NotificationCard(
             .shadow(2.dp, RoundedCornerShape(dimens.radiusLarge), ambientColor = Color(0x0A000000), spotColor = Color(0x0A000000))
             .clip(RoundedCornerShape(dimens.radiusLarge))
             .background(if (notification.isRead) AppTheme.colors.surface.copy(alpha = 0.8f) else AppTheme.colors.surface)
-            .clickable(enabled = !notification.isRead, onClick = onMarkRead)
+            .clickable(onClick = onClick)
             .padding(14.dp),
     ) {
         Box(

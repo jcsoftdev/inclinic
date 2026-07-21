@@ -42,6 +42,7 @@ class DefaultMiPerfilComponent(
     override fun onNavigateReviews() = onOutput(MiPerfilComponent.Output.Reviews)
     override fun onNavigatePublicProfile() = onOutput(MiPerfilComponent.Output.PublicProfile)
     override fun onNavigateEditHorarios() = onOutput(MiPerfilComponent.Output.EditHorarios)
+    override fun onNavigatePriceConfig() = onOutput(MiPerfilComponent.Output.PriceConfig)
     override fun onNavigatePackages() = onOutput(MiPerfilComponent.Output.Packages)
     override fun onNavigateSharing() = onOutput(MiPerfilComponent.Output.Sharing)
     override fun onNavigateSettings() = onOutput(MiPerfilComponent.Output.Settings)

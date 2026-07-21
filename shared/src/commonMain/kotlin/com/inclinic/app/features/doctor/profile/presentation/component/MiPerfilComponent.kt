@@ -14,6 +14,7 @@ interface MiPerfilComponent {
     fun onNavigateReviews()
     fun onNavigatePublicProfile()
     fun onNavigateEditHorarios()
+    fun onNavigatePriceConfig()
     fun onNavigatePackages()
     fun onNavigateSharing()
     fun onNavigateSettings()
@@ -31,6 +32,7 @@ interface MiPerfilComponent {
         data object Reviews : Output
         data object PublicProfile : Output
         data object EditHorarios : Output
+        data object PriceConfig : Output
         data object Packages : Output
         data object Sharing : Output
         data object Settings : Output

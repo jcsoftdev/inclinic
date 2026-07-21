@@ -8,7 +8,6 @@ sealed interface DoctorConfig {
     @Serializable data object Schedule : DoctorConfig
     @Serializable data class DailySchedule(val date: String) : DoctorConfig
     @Serializable data class AppointmentDetail(val appointmentId: String) : DoctorConfig
-    @Serializable data class CompleteWithEvidence(val appointmentId: String) : DoctorConfig
     @Serializable data class PatientDetail(val patientId: String) : DoctorConfig
     @Serializable data class MedicalRecordsList(val patientId: String) : DoctorConfig
     @Serializable data class MedicalRecordEditor(val patientId: String, val appointmentId: String? = null) : DoctorConfig

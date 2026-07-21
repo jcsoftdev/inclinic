@@ -298,7 +298,11 @@ private fun ProfCard(
             onClick = component::onNavigateEditSpecialties,
         )
         Divider()
-        DataRow(label = "Precio consulta", value = "S/. ${profile.consultationFee.toInt()}")
+        ClickableDataRow(
+            label = "Precio consulta",
+            value = "S/. ${profile.consultationFee.toInt()} · Configurar precios",
+            onClick = component::onNavigatePriceConfig,
+        )
         Divider()
         DataRow(
             label = "Modalidad",
