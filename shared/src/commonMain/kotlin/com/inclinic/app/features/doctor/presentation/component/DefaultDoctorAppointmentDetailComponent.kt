@@ -13,6 +13,7 @@ import com.inclinic.app.core.upload.UploadFileUseCase
 import com.inclinic.app.features.doctor.appointments.application.CompleteAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.ConfirmAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.GetDoctorAppointmentDetailUseCase
+import com.inclinic.app.features.doctor.appointments.application.MarkSeriousNoShowUseCase
 import com.inclinic.app.features.doctor.appointments.application.NoShowUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -26,6 +27,7 @@ class DefaultDoctorAppointmentDetailComponent(
     private val confirmAppointment: ConfirmAppointmentUseCase,
     private val completeAppointment: CompleteAppointmentUseCase,
     private val noShowUseCase: NoShowUseCase,
+    private val markSeriousNoShow: MarkSeriousNoShowUseCase,
     private val uploadFile: UploadFileUseCase,
     private val dispatchers: AppDispatchers,
     private val onOutput: (DoctorAppointmentDetailComponent.Output) -> Unit,
@@ -80,6 +82,18 @@ class DefaultDoctorAppointmentDetailComponent(
             completeAppointment(appt, urls, checkIn)
                 .onSuccess { updated -> _state.update { it.copy(actionInProgress = false, appointment = updated, evidencePhotoUrls = emptyList()) } }
                 .onFailure { err -> _state.update { it.copy(actionInProgress = false, error = err.toUserMessage("Complete failed")) } }
+        }
+    }
+
+    override fun onSeriousNoShow(checkIn: GpsFix) {
+        val appt = _state.value.appointment ?: return
+        if (_state.value.actionInProgress) return
+        val urls = _state.value.evidencePhotoUrls
+        _state.update { it.copy(actionInProgress = true, error = null) }
+        scope.launch {
+            markSeriousNoShow(appt, urls, checkIn)
+                .onSuccess { updated -> _state.update { it.copy(actionInProgress = false, appointment = updated, evidencePhotoUrls = emptyList()) } }
+                .onFailure { err -> _state.update { it.copy(actionInProgress = false, error = err.toUserMessage("No se pudo registrar la falta grave")) } }
         }
     }
 

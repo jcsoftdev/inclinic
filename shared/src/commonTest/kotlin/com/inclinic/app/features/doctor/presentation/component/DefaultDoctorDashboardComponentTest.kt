@@ -28,6 +28,7 @@ private class StubDashboardDataSource(
     override suspend fun getAppointmentById(appointmentId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun confirmAppointment(appointmentId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>, checkInLat: Double?, checkInLng: Double?, checkInAccuracyM: Double?): Result<Appointment> = Result.failure(UnsupportedOperationException())
+    override suspend fun markSeriousNoShow(appointmentId: String, photoUrls: List<String>, checkInLat: Double, checkInLng: Double, checkInAccuracyM: Double?, note: String?): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun getNoShowAppointments(from: String?, to: String?) =
         Result.success(emptyList<com.inclinic.app.features.doctor.no_shows.core.model.NoShowItem>())

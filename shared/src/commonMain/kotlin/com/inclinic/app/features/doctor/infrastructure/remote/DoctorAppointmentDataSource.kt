@@ -22,6 +22,16 @@ interface DoctorAppointmentDataSource {
     ): Result<Appointment>
     suspend fun markNoShow(appointmentId: String): Result<Appointment>
 
+    /** Falta grave: el médico fue a domicilio y el paciente no estaba (con foto + GPS). */
+    suspend fun markSeriousNoShow(
+        appointmentId: String,
+        photoUrls: List<String>,
+        checkInLat: Double,
+        checkInLng: Double,
+        checkInAccuracyM: Double? = null,
+        note: String? = null,
+    ): Result<Appointment>
+
     /**
      * Fetch all no-show appointments for the authenticated doctor.
      *

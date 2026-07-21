@@ -129,6 +129,16 @@ private data class CompleteAppointmentBody(
     val checkInAccuracyM: Double? = null,
 )
 
+/** Body de PATCH /serious-no-show: evidencia obligatoria de la falta grave (F5). */
+@Serializable
+private data class SeriousNoShowBody(
+    val visitProofPhotos: List<String>,
+    val checkInLat: Double,
+    val checkInLng: Double,
+    val checkInAccuracyM: Double? = null,
+    val note: String? = null,
+)
+
 class KtorDoctorAppointmentDataSource(
     private val client: HttpClient,
     private val baseUrl: String,
@@ -210,6 +220,29 @@ class KtorDoctorAppointmentDataSource(
                 ),
             )
         }.body<ApiEnvelope<Appointment>>().data ?: error("Complete failed")
+    }
+
+    override suspend fun markSeriousNoShow(
+        appointmentId: String,
+        photoUrls: List<String>,
+        checkInLat: Double,
+        checkInLng: Double,
+        checkInAccuracyM: Double?,
+        note: String?,
+    ): Result<Appointment> = runCatching {
+        client.patch {
+            url("$baseUrl/api/appointments/$appointmentId/serious-no-show")
+            contentType(ContentType.Application.Json)
+            setBody(
+                SeriousNoShowBody(
+                    visitProofPhotos = photoUrls,
+                    checkInLat = checkInLat,
+                    checkInLng = checkInLng,
+                    checkInAccuracyM = checkInAccuracyM,
+                    note = note,
+                ),
+            )
+        }.body<ApiEnvelope<Appointment>>().data ?: error("Serious no-show failed")
     }
 
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> = runCatching {

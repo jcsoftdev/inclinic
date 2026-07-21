@@ -50,6 +50,7 @@ class FakeNoShowAppointmentDataSource : DoctorAppointmentDataSource {
     override suspend fun completeAppointment(appointmentId: String, photoUrls: List<String>, checkInLat: Double?, checkInLng: Double?, checkInAccuracyM: Double?): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
 
+    override suspend fun markSeriousNoShow(appointmentId: String, photoUrls: List<String>, checkInLat: Double, checkInLng: Double, checkInAccuracyM: Double?, note: String?): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
 

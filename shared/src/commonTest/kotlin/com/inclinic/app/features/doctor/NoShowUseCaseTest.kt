@@ -26,6 +26,7 @@ private class FakeNoShowDataSource : DoctorAppointmentDataSource {
     ))
     var noShowCallCount = 0
 
+    override suspend fun markSeriousNoShow(appointmentId: String, photoUrls: List<String>, checkInLat: Double, checkInLng: Double, checkInAccuracyM: Double?, note: String?): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> {
         noShowCallCount++
         return noShowResult

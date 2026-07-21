@@ -234,6 +234,10 @@ fun DoctorAppointmentDetailScreen(
                         showEvidenceSheet = false
                         component.onComplete(checkIn)
                     },
+                    onSeriousNoShow = { checkIn ->
+                        showEvidenceSheet = false
+                        component.onSeriousNoShow(checkIn)
+                    },
                     onDismiss = { showEvidenceSheet = false },
                 )
             }
@@ -282,6 +286,7 @@ fun EvidenceUploadSheet(
     onPickPhoto: (PickedFile) -> Unit,
     onRemovePhoto: (Int) -> Unit,
     onComplete: (GpsFix?) -> Unit,
+    onSeriousNoShow: (GpsFix) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val picker = rememberFilePicker { file -> if (file != null) onPickPhoto(file) }
@@ -290,6 +295,28 @@ fun EvidenceUploadSheet(
 
     var isCapturingLocation by remember { mutableStateOf(false) }
     var locationError by remember { mutableStateOf<String?>(null) }
+
+    // Captura el fix GPS y, si lo obtiene, invoca [onFix]. Compartido por completar y falta grave.
+    fun captureThen(onFix: (GpsFix) -> Unit) {
+        locationError = null
+        isCapturingLocation = true
+        scope.launch {
+            when (val result = locationProvider.getCurrentLocation()) {
+                is LocationResult.Success -> {
+                    isCapturingLocation = false
+                    onFix(result.fix)
+                }
+                is LocationResult.PermissionDenied -> {
+                    isCapturingLocation = false
+                    locationError = "Necesitas conceder el permiso de ubicación para una visita a domicilio."
+                }
+                is LocationResult.Unavailable -> {
+                    isCapturingLocation = false
+                    locationError = "No se pudo obtener tu ubicación: ${result.reason}"
+                }
+            }
+        }
+    }
 
     Column(
         Modifier.fillMaxWidth().padding(16.dp),
@@ -330,29 +357,7 @@ fun EvidenceUploadSheet(
 
         Button(
             onClick = {
-                if (!isHomeVisit) {
-                    onComplete(null)
-                    return@Button
-                }
-                // Visita a domicilio: capturar GPS antes de completar (obligatorio).
-                locationError = null
-                isCapturingLocation = true
-                scope.launch {
-                    when (val result = locationProvider.getCurrentLocation()) {
-                        is LocationResult.Success -> {
-                            isCapturingLocation = false
-                            onComplete(result.fix)
-                        }
-                        is LocationResult.PermissionDenied -> {
-                            isCapturingLocation = false
-                            locationError = "Necesitas conceder el permiso de ubicación para completar una visita a domicilio."
-                        }
-                        is LocationResult.Unavailable -> {
-                            isCapturingLocation = false
-                            locationError = "No se pudo obtener tu ubicación: ${result.reason}"
-                        }
-                    }
-                }
+                if (!isHomeVisit) onComplete(null) else captureThen { fix -> onComplete(fix) }
             },
             enabled = photoUrls.isNotEmpty() && !isUploading && !isCapturingLocation,
             modifier = Modifier.fillMaxWidth(),
@@ -364,6 +369,17 @@ fun EvidenceUploadSheet(
                     else -> "Completar consulta"
                 },
             )
+        }
+
+        // Falta grave: solo en visitas a domicilio, con la misma evidencia (fotos + GPS).
+        if (isHomeVisit) {
+            OutlinedButton(
+                onClick = { captureThen { fix -> onSeriousNoShow(fix) } },
+                enabled = photoUrls.isNotEmpty() && !isUploading && !isCapturingLocation,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Fui y el paciente no estaba (falta grave)")
+            }
         }
         TextButton(onClick = onDismiss, Modifier.fillMaxWidth()) { Text("Cancelar") }
     }

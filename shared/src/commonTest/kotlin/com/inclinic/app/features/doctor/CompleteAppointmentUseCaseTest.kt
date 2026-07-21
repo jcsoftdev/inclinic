@@ -53,6 +53,7 @@ private class FakeCompleteDataSource : DoctorAppointmentDataSource {
     override suspend fun confirmAppointment(appointmentId: String): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
 
+    override suspend fun markSeriousNoShow(appointmentId: String, photoUrls: List<String>, checkInLat: Double, checkInLng: Double, checkInAccuracyM: Double?, note: String?): Result<Appointment> = Result.failure(UnsupportedOperationException())
     override suspend fun markNoShow(appointmentId: String): Result<Appointment> =
         Result.failure(UnsupportedOperationException())
 

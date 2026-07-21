@@ -7,6 +7,7 @@ import com.inclinic.app.features.auth.di.APP_HTTP_CLIENT
 import com.inclinic.app.features.doctor.appointments.application.CompleteAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.ConfirmAppointmentUseCase
 import com.inclinic.app.features.doctor.appointments.application.GetDoctorAppointmentDetailUseCase
+import com.inclinic.app.features.doctor.appointments.application.MarkSeriousNoShowUseCase
 import com.inclinic.app.features.doctor.appointments.application.NoShowUseCase
 import com.inclinic.app.features.doctor.chat.application.GetDoctorChatMessagesUseCase
 import com.inclinic.app.features.doctor.chat.application.SendDoctorChatMessageUseCase
@@ -124,6 +125,7 @@ val doctorModule = module {
     factory { ConfirmAppointmentUseCase(get(), get()) }
     factory { CompleteAppointmentUseCase(get(), get()) }
     factory { NoShowUseCase(get(), get()) }
+    factory { MarkSeriousNoShowUseCase(get(), get()) }
     factory { GetPatientDetailUseCase(get(), get()) }
     factory { GetDoctorMedicalRecordsUseCase(get(), get()) }
     factory { GetMedicalRecordDetailUseCase(get(), get()) }
@@ -155,7 +157,7 @@ val doctorModule = module {
         DefaultWeeklyScheduleComponent(ctx, doctorId, get(), get(), onOutput)
     }
     factory<DoctorAppointmentDetailComponent> { (ctx: ComponentContext, apptId: String, onOutput: (DoctorAppointmentDetailComponent.Output) -> Unit) ->
-        DefaultDoctorAppointmentDetailComponent(ctx, apptId, get(), get(), get(), get(), get(), get(), onOutput)
+        DefaultDoctorAppointmentDetailComponent(ctx, apptId, get(), get(), get(), get(), get(), get(), get(), onOutput)
     }
     factory<PatientDetailComponent> { (ctx: ComponentContext, patientId: String, onOutput: (PatientDetailComponent.Output) -> Unit) ->
         DefaultPatientDetailComponent(ctx, patientId, get(), get(), onOutput)

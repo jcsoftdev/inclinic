@@ -20,6 +20,12 @@ interface DoctorAppointmentDetailComponent {
      * la pantalla lo captura antes de invocar.
      */
     fun onComplete(checkIn: GpsFix? = null)
+
+    /**
+     * Falta grave: el médico fue a la visita a domicilio y el paciente no estaba.
+     * Reusa las fotos de evidencia ya subidas + el check-in GPS que captura la pantalla.
+     */
+    fun onSeriousNoShow(checkIn: GpsFix)
     fun onNoShow()
     fun onNoShowConfirmed()
     fun onNoShowDismissed()
