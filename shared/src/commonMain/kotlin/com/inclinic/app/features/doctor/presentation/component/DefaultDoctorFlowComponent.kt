@@ -275,14 +275,17 @@ class DefaultDoctorFlowComponent(
                             _currentTab.value = DoctorTab.Pacientes
                             pacientesNav.push(DoctorConfig.PatientDetail(output.patientId))
                         }
+                        // Sub-navegación dentro del mismo stack donde se abrió el detalle
+                        // (agenda, o inicio si vino de una notificación). Usa activeNav()
+                        // para no empujar al stack equivocado.
                         is DoctorAppointmentDetailComponent.Output.NavigateToChat ->
-                            agendaNav.push(DoctorConfig.Chat(output.appointmentId))
+                            activeNav().push(DoctorConfig.Chat(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToRequestReschedule ->
-                            agendaNav.push(DoctorConfig.RequestReschedule(output.appointmentId))
+                            activeNav().push(DoctorConfig.RequestReschedule(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreatePrescription ->
-                            agendaNav.push(DoctorConfig.CreatePrescription(output.appointmentId))
+                            activeNav().push(DoctorConfig.CreatePrescription(output.appointmentId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToEditPrescription ->
-                            agendaNav.push(DoctorConfig.EditPrescription(output.prescriptionId))
+                            activeNav().push(DoctorConfig.EditPrescription(output.prescriptionId))
                         is DoctorAppointmentDetailComponent.Output.NavigateToCreateMedicalRecord -> {
                             // Real appointmentId from the loaded appointment — links the new record.
                             _currentTab.value = DoctorTab.Pacientes
@@ -293,7 +296,7 @@ class DefaultDoctorFlowComponent(
                                 ),
                             )
                         }
-                        DoctorAppointmentDetailComponent.Output.Back -> agendaNav.pop()
+                        DoctorAppointmentDetailComponent.Output.Back -> activeNav().pop()
                     }
                 }
             )
@@ -548,8 +551,8 @@ class DefaultDoctorFlowComponent(
             is DoctorConfig.RequestReschedule -> DoctorFlowComponent.Child.RequestReschedule(
                 requestRescheduleFactory(ctx, config.appointmentId) { output ->
                     when (output) {
-                        RequestRescheduleComponent.Output.Success -> agendaNav.pop()
-                        RequestRescheduleComponent.Output.Back -> agendaNav.pop()
+                        RequestRescheduleComponent.Output.Success -> activeNav().pop()
+                        RequestRescheduleComponent.Output.Back -> activeNav().pop()
                     }
                 }
             )
@@ -617,9 +620,8 @@ class DefaultDoctorFlowComponent(
                     when (output) {
                         PendingClosureQueueComponent.Output.Back -> activeNav().pop()
                         is PendingClosureQueueComponent.Output.NavigateToDetail -> {
-                            // Cross-tab: AppointmentDetail's Back handler is hardcoded to
-                            // agendaNav.pop(), so it must always be pushed onto agendaNav
-                            // (mirrors DoctorDashboardComponent.Output.NavigateToAppointmentDetail).
+                            // Se muestra la cita en el tab Agenda (su contexto natural). El Back
+                            // del detalle usa activeNav().pop(), así que vuelve aquí correctamente.
                             _currentTab.value = DoctorTab.Agenda
                             agendaNav.push(DoctorConfig.AppointmentDetail(output.appointmentId))
                         }
