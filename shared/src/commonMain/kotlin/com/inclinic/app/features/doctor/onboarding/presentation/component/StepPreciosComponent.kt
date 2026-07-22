@@ -24,4 +24,8 @@ interface StepPreciosComponent {
     fun onToggleVirtual(enabled: Boolean)
     fun onContinueClicked()
     fun onErrorDismissed()
+
+    /** El padre reporta el resultado del envío del onboarding (este es el último paso). */
+    fun setSubmitting(submitting: Boolean)
+    fun setSubmitError(message: String)
 }

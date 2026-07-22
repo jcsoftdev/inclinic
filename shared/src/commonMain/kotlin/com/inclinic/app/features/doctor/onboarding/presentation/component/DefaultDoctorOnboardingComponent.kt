@@ -14,6 +14,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
+import com.inclinic.app.core.error.toUserMessage
 import com.inclinic.app.core.model.OnboardingStatus
 import com.inclinic.app.features.doctor.onboarding.application.GetOnboardingStatusUseCase
 import com.inclinic.app.features.doctor.onboarding.application.ResubmitOnboardingUseCase
@@ -63,6 +64,9 @@ class DefaultDoctorOnboardingComponent(
     private var selectedSpecialties: List<String> = emptyList()
     private var weeklySchedule: WeeklySchedule? = null
 
+    // Referencia al último paso (precios) para reportarle el resultado del envío.
+    private var preciosComponent: StepPreciosComponent? = null
+
     private val _stack = childStack(
         source = navigation,
         serializer = OnboardingNavConfig.serializer(),
@@ -108,7 +112,7 @@ class DefaultDoctorOnboardingComponent(
         OnboardingNavConfig.StepPrecios -> DoctorOnboardingComponent.Child.StepPrecios(
             DefaultStepPreciosComponent(ctx, dispatchers) { priceConfig ->
                 submitDraft(priceConfig)
-            }
+            }.also { preciosComponent = it }
         )
 
         OnboardingNavConfig.Enviado -> DoctorOnboardingComponent.Child.Enviado(
@@ -133,23 +137,33 @@ class DefaultDoctorOnboardingComponent(
     }
 
     private fun submitDraft(priceConfig: PriceConfig) {
+        val pd = personalData
+        val sched = weeklySchedule
+        if (pd == null || sched == null) {
+            // No debería ocurrir (el wizard es lineal), pero si faltan datos avisamos
+            // en vez de quedarnos en silencio.
+            preciosComponent?.setSubmitError("Faltan datos de pasos anteriores. Vuelve atrás y complétalos.")
+            return
+        }
         val draft = DoctorOnboardingDraft(
-            personalData = personalData ?: return,
+            personalData = pd,
             documents = uploadedDocs,
             specialties = selectedSpecialties,
-            schedule = weeklySchedule ?: return,
+            schedule = sched,
             prices = priceConfig,
         )
 
+        preciosComponent?.setSubmitting(true)
         scope.launch {
             submitOnboardingUseCase(draft)
                 .onSuccess {
+                    preciosComponent?.setSubmitting(false)
                     navigation.replaceAll(OnboardingNavConfig.Enviado)
                 }
-                .onFailure {
-                    // The StepPrecios component would surface the error — in a real
-                    // implementation we'd forward the error back; for now we just
-                    // stay on the current step (the stack doesn't change).
+                .onFailure { err ->
+                    preciosComponent?.setSubmitError(
+                        err.toUserMessage("No se pudo enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo."),
+                    )
                 }
         }
     }

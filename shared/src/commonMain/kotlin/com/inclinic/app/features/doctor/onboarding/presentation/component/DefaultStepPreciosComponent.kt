@@ -65,4 +65,12 @@ class DefaultStepPreciosComponent(
     override fun onErrorDismissed() {
         _state.update { it.copy(error = null) }
     }
+
+    override fun setSubmitting(submitting: Boolean) {
+        _state.update { it.copy(isLoading = submitting, error = if (submitting) null else it.error) }
+    }
+
+    override fun setSubmitError(message: String) {
+        _state.update { it.copy(isLoading = false, error = message) }
+    }
 }
