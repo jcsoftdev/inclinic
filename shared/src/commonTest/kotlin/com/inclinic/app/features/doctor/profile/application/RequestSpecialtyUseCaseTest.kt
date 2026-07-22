@@ -15,7 +15,7 @@ class RequestSpecialtyUseCaseTest {
     private val useCase = RequestSpecialtyUseCase(repository = fakeRepo, dispatchers = dispatchers)
 
     private val sampleRequest = SpecialtyRequest(
-        specialtyName = "Neurología",
+        specialtyId = "sp-neuro",
         documentUrls = listOf("https://cdn.inclinic.com/doc-a"),
         comment = "Tengo 10 años de experiencia.",
     )

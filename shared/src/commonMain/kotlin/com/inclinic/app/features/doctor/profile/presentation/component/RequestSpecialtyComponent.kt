@@ -1,12 +1,15 @@
 package com.inclinic.app.features.doctor.profile.presentation.component
 
 import com.arkivanov.decompose.value.Value
+import com.inclinic.app.core.model.Specialty
 import com.inclinic.app.core.platform.PickedFile
 
 interface RequestSpecialtyComponent {
     val state: Value<RequestSpecialtyState>
 
-    fun onSpecialtyNameChange(name: String)
+    /** Selecciona una especialidad del catálogo por su id. */
+    fun onSpecialtySelected(specialtyId: String)
+    fun onRetryCatalog()
     fun onAddDocumentUrl(url: String)
     fun onRemoveDocumentUrl(url: String)
     fun onCommentChange(comment: String)
@@ -26,7 +29,11 @@ interface RequestSpecialtyComponent {
 }
 
 data class RequestSpecialtyState(
-    val specialtyName: String = "",
+    /** Catálogo de especialidades disponibles para solicitar. */
+    val catalog: List<Specialty> = emptyList(),
+    val isLoadingCatalog: Boolean = false,
+    val catalogError: String? = null,
+    val selectedSpecialtyId: String? = null,
     val documentUrls: List<String> = emptyList(),
     val comment: String = "",
     val isSubmitting: Boolean = false,

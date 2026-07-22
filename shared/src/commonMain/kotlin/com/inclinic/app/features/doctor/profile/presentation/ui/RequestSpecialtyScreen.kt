@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,8 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,6 +56,7 @@ import com.inclinic.app.ui.theme.AppTheme
  *   "Comentario para admin" label + text area
  *   spacer + "Enviar solicitud" CTA
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RequestSpecialtyScreen(
     component: RequestSpecialtyComponent,
@@ -114,13 +120,33 @@ fun RequestSpecialtyScreen(
                         )
                     }
 
-                    AppTextField(
-                        value = state.specialtyName,
-                        onValueChange = component::onSpecialtyNameChange,
-                        label = "Especialidad",
-                        placeholder = "Ej. Cardiología Intervencionista",
-                        modifier = Modifier.fillMaxWidth(),
+                    Text(
+                        text = "Especialidad",
+                        style = typography.subtitle.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.text,
                     )
+                    when {
+                        state.isLoadingCatalog -> {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                        state.catalogError != null -> {
+                            Column {
+                                Text(state.catalogError!!, color = colors.error, style = typography.subtitle)
+                                TextButton(onClick = component::onRetryCatalog) { Text("Reintentar") }
+                            }
+                        }
+                        else -> {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                state.catalog.forEach { specialty ->
+                                    FilterChip(
+                                        selected = state.selectedSpecialtyId == specialty.id,
+                                        onClick = { component.onSpecialtySelected(specialty.id) },
+                                        label = { Text(specialty.name) },
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Text(
                         text = "Documentos de respaldo",

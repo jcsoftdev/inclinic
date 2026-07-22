@@ -9,10 +9,12 @@ import com.inclinic.app.features.doctor.profile.core.model.IncomeBreakdown
 import com.inclinic.app.features.doctor.profile.core.model.IncomeSummary
 import com.inclinic.app.features.doctor.profile.core.model.MySpecialtyRequest
 import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequest
+import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequestStatus
 import com.inclinic.app.features.doctor.profile.core.port.DoctorProfileRepository
 import com.inclinic.app.features.doctor.profile.infrastructure.remote.DoctorProfileDto
 import com.inclinic.app.features.doctor.profile.infrastructure.remote.DoctorProfileExtendedDataSource
 import com.inclinic.app.features.doctor.profile.infrastructure.remote.ReviewItemDto
+import com.inclinic.app.features.doctor.profile.infrastructure.remote.SpecialtyRequestItemDto
 import com.inclinic.app.features.doctor.profile.infrastructure.remote.UpdateProfileRequestDto
 import kotlinx.coroutines.withContext
 
@@ -44,15 +46,30 @@ class DefaultDoctorProfileRepository(
     override suspend fun editSpecialties(specialtyIds: List<String>): Result<Unit> =
         withContext(dispatchers.io) { remote.editSpecialties(doctorId, specialtyIds) }
 
-    override suspend fun requestSpecialty(request: SpecialtyRequest): Result<Unit> {
-        // No backend endpoint exists yet for specialty accreditation requests.
-        return Result.failure(NotImplementedError("Endpoint de solicitud de especialidad no disponible aun"))
-    }
+    override suspend fun requestSpecialty(request: SpecialtyRequest): Result<Unit> =
+        withContext(dispatchers.io) {
+            remote.requestSpecialty(request.specialtyId, request.documentUrls, request.comment.ifBlank { null })
+        }
 
-    override suspend fun getMySpecialtyRequests(): Result<List<MySpecialtyRequest>> {
-        // No backend endpoint exists yet for listing specialty requests.
-        return Result.success(emptyList())
-    }
+    override suspend fun getMySpecialtyRequests(): Result<List<MySpecialtyRequest>> =
+        withContext(dispatchers.io) {
+            remote.getMySpecialtyRequests().map { items -> items.map { it.toDomain() } }
+        }
+
+    private fun SpecialtyRequestItemDto.toDomain() = MySpecialtyRequest(
+        id = id,
+        specialtyName = specialty?.name ?: "—",
+        status = when (status.uppercase()) {
+            "PENDING" -> SpecialtyRequestStatus.Pending
+            "APPROVED" -> SpecialtyRequestStatus.Approved
+            "REJECTED" -> SpecialtyRequestStatus.Rejected
+            "EXPIRED" -> SpecialtyRequestStatus.Expired
+            else -> SpecialtyRequestStatus.Unknown
+        },
+        createdAt = createdAt,
+        documentCount = documents.size,
+        rejectionReason = rejectionReason,
+    )
 
     override suspend fun getIncome(): Result<IncomeSummary> =
         withContext(dispatchers.io) {

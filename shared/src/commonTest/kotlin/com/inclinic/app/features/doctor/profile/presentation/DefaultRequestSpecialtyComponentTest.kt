@@ -6,7 +6,10 @@ import com.arkivanov.essenty.lifecycle.resume
 import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.core.upload.FakeUploadDataSource
 import com.inclinic.app.core.upload.UploadFileUseCase
+import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
+import com.inclinic.app.features.auth.fakes.FakeAuthRemoteDataSource
 import com.inclinic.app.features.auth.fakes.TestAppDispatchers
+import com.inclinic.app.features.auth.infrastructure.local.SpecialtyCacheDataSource
 import com.inclinic.app.features.doctor.profile.application.RequestSpecialtyUseCase
 import com.inclinic.app.features.doctor.profile.fakes.FakeDoctorProfileRepository
 import com.inclinic.app.features.doctor.profile.presentation.component.DefaultRequestSpecialtyComponent
@@ -35,6 +38,10 @@ class DefaultRequestSpecialtyComponentTest {
         return DefaultRequestSpecialtyComponent(
             componentContext = ctx,
             requestSpecialty = RequestSpecialtyUseCase(fakeRepo, dispatchers),
+            getSpecialties = GetSpecialtiesUseCase(
+                cache = SpecialtyCacheDataSource(remote = FakeAuthRemoteDataSource()),
+                dispatchers = dispatchers,
+            ),
             uploadFileUseCase = UploadFileUseCase(dataSource = fakeUpload, dispatchers = dispatchers),
             dispatchers = dispatchers,
             onOutput = onOutput,
@@ -49,17 +56,17 @@ class DefaultRequestSpecialtyComponentTest {
     fun initial_state_is_blank() {
         val component = makeComponent()
         val s = component.state.value
-        assertEquals("", s.specialtyName)
+        assertNull(s.selectedSpecialtyId)
         assertEquals("", s.comment)
         assertTrue(s.documentUrls.isEmpty())
         assertNull(s.error)
     }
 
     @Test
-    fun onSpecialtyNameChange_updates_state() {
+    fun onSpecialtySelected_updates_state() {
         val component = makeComponent()
-        component.onSpecialtyNameChange("Neurología")
-        assertEquals("Neurología", component.state.value.specialtyName)
+        component.onSpecialtySelected("sp-neuro")
+        assertEquals("sp-neuro", component.state.value.selectedSpecialtyId)
     }
 
     @Test
@@ -85,7 +92,7 @@ class DefaultRequestSpecialtyComponentTest {
     }
 
     @Test
-    fun onSubmit_sets_error_when_specialtyName_is_blank() = runTest {
+    fun onSubmit_sets_error_when_no_specialty_selected() = runTest {
         val component = makeComponent()
 
         component.onSubmit()
@@ -95,15 +102,27 @@ class DefaultRequestSpecialtyComponentTest {
     }
 
     @Test
-    fun onSubmit_calls_repository_with_trimmed_values() = runTest {
+    fun onSubmit_sets_error_when_no_documents() = runTest {
         val component = makeComponent()
-        component.onSpecialtyNameChange("  Neurología  ")
+        component.onSpecialtySelected("sp-neuro")
+
+        component.onSubmit()
+
+        assertNotNull(component.state.value.error)
+        assertEquals(0, fakeRepo.requestSpecialtyCallCount)
+    }
+
+    @Test
+    fun onSubmit_calls_repository_with_selected_id_and_trimmed_comment() = runTest {
+        val component = makeComponent()
+        component.onSpecialtySelected("sp-neuro")
+        component.onAddDocumentUrl("https://cdn/doc-a")
         component.onCommentChange("  Experiencia.  ")
 
         component.onSubmit()
 
         assertEquals(1, fakeRepo.requestSpecialtyCallCount)
-        assertEquals("Neurología", fakeRepo.lastSpecialtyRequest?.specialtyName)
+        assertEquals("sp-neuro", fakeRepo.lastSpecialtyRequest?.specialtyId)
         assertEquals("Experiencia.", fakeRepo.lastSpecialtyRequest?.comment)
     }
 
@@ -111,7 +130,8 @@ class DefaultRequestSpecialtyComponentTest {
     fun onSubmit_emits_Submitted_output_on_success() = runTest {
         var output: RequestSpecialtyComponent.Output? = null
         val component = makeComponent(onOutput = { output = it })
-        component.onSpecialtyNameChange("Neurología")
+        component.onSpecialtySelected("sp-neuro")
+        component.onAddDocumentUrl("https://cdn/doc-a")
 
         component.onSubmit()
 
@@ -122,7 +142,8 @@ class DefaultRequestSpecialtyComponentTest {
     fun onSubmit_sets_error_on_failure() = runTest {
         fakeRepo.requestSpecialtyResult = Result.failure(RuntimeException("Server error"))
         val component = makeComponent()
-        component.onSpecialtyNameChange("Neurología")
+        component.onSpecialtySelected("sp-neuro")
+        component.onAddDocumentUrl("https://cdn/doc-a")
 
         component.onSubmit()
 

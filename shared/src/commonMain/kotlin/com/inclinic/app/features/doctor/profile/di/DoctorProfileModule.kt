@@ -86,7 +86,7 @@ fun doctorProfileModule() = module {
         val onOutput = params[2] as (RequestSpecialtyComponent.Output) -> Unit
         val dispatchers = get<AppDispatchers>()
         val repo = DefaultDoctorProfileRepository(get(), dispatchers, doctorId)
-        DefaultRequestSpecialtyComponent(ctx, RequestSpecialtyUseCase(repo, dispatchers), get<UploadFileUseCase>(), dispatchers, onOutput)
+        DefaultRequestSpecialtyComponent(ctx, RequestSpecialtyUseCase(repo, dispatchers), get(), get<UploadFileUseCase>(), dispatchers, onOutput)
     }
 
     factory<IncomeComponent> { params ->

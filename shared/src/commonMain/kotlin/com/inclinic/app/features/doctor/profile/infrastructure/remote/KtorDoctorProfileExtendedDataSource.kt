@@ -5,6 +5,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
+import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
@@ -57,6 +58,25 @@ data class UpdateProfileRequestDto(
 
 @Serializable
 data class EditSpecialtiesRequestDto(val specialtyIds: List<String>)
+
+/** Body de POST /api/specialties/request (crear solicitud de acreditación). */
+@Serializable
+data class CreateSpecialtyRequestDto(
+    val specialtyId: String,
+    val documents: List<String>,
+    val comment: String? = null,
+)
+
+/** Item de GET /api/specialties/request (las solicitudes del médico). */
+@Serializable
+data class SpecialtyRequestItemDto(
+    val id: String = "",
+    val status: String = "",
+    val createdAt: String = "",
+    val rejectionReason: String? = null,
+    val documents: List<String> = emptyList(),
+    val specialty: SpecialtyDto? = null,
+)
 
 /**
  * Income summary from GET /api/doctors/me/metrics (monthRevenue section).
@@ -121,6 +141,13 @@ interface DoctorProfileExtendedDataSource {
     suspend fun getProfile(doctorId: String): Result<DoctorProfileDto>
     suspend fun updateProfile(doctorId: String, request: UpdateProfileRequestDto): Result<DoctorProfileDto>
     suspend fun editSpecialties(doctorId: String, specialtyIds: List<String>): Result<Unit>
+
+    /** Crea una solicitud de acreditación de especialidad (POST /api/specialties/request). */
+    suspend fun requestSpecialty(specialtyId: String, documents: List<String>, comment: String?): Result<Unit>
+
+    /** Lista las solicitudes de especialidad del médico (GET /api/specialties/request). */
+    suspend fun getMySpecialtyRequests(): Result<List<SpecialtyRequestItemDto>>
+
     suspend fun getMetrics(): Result<DoctorMetricsDto>
     suspend fun getReviews(doctorId: String, limit: Int): Result<DoctorReviewsDto>
     /**
@@ -171,6 +198,23 @@ class KtorDoctorProfileExtendedDataSource(
         if (response.status.value !in 200..299) {
             error("Edit specialties failed with status ${response.status.value}")
         }
+    }
+
+    override suspend fun requestSpecialty(specialtyId: String, documents: List<String>, comment: String?): Result<Unit> = runCatching {
+        val response = client.post {
+            url("$baseUrl/api/specialties/request")
+            contentType(ContentType.Application.Json)
+            setBody(CreateSpecialtyRequestDto(specialtyId = specialtyId, documents = documents, comment = comment))
+        }
+        if (response.status.value !in 200..299) {
+            error("Request specialty failed with status ${response.status.value}")
+        }
+    }
+
+    override suspend fun getMySpecialtyRequests(): Result<List<SpecialtyRequestItemDto>> = runCatching {
+        client.get {
+            url("$baseUrl/api/specialties/request")
+        }.body<ApiEnvelope<List<SpecialtyRequestItemDto>>>().data ?: emptyList()
     }
 
     override suspend fun getMetrics(): Result<DoctorMetricsDto> = runCatching {

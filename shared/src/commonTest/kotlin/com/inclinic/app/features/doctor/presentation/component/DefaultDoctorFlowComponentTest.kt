@@ -225,7 +225,8 @@ class DefaultDoctorFlowComponentTest {
         requestSpecialtyFactory = { ctx, out ->
             object : RequestSpecialtyComponent {
                 override val state: Value<RequestSpecialtyState> = MutableValue(RequestSpecialtyState())
-                override fun onSpecialtyNameChange(name: String) {}
+                override fun onSpecialtySelected(specialtyId: String) {}
+                override fun onRetryCatalog() {}
                 override fun onAddDocumentUrl(url: String) {}
                 override fun onRemoveDocumentUrl(url: String) {}
                 override fun onCommentChange(comment: String) {}

@@ -9,6 +9,7 @@ import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.inclinic.app.core.concurrency.AppDispatchers
 import com.inclinic.app.core.platform.PickedFile
 import com.inclinic.app.core.upload.UploadFileUseCase
+import com.inclinic.app.features.auth.application.GetSpecialtiesUseCase
 import com.inclinic.app.features.doctor.profile.application.RequestSpecialtyUseCase
 import com.inclinic.app.features.doctor.profile.core.model.SpecialtyRequest
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 class DefaultRequestSpecialtyComponent(
     componentContext: ComponentContext,
     private val requestSpecialty: RequestSpecialtyUseCase,
+    private val getSpecialties: GetSpecialtiesUseCase,
     private val uploadFileUseCase: UploadFileUseCase,
     private val dispatchers: AppDispatchers,
     private val onOutput: (RequestSpecialtyComponent.Output) -> Unit,
@@ -31,8 +33,21 @@ class DefaultRequestSpecialtyComponent(
     private val _state = MutableValue(RequestSpecialtyState())
     override val state: Value<RequestSpecialtyState> = _state
 
-    override fun onSpecialtyNameChange(name: String) {
-        _state.update { it.copy(specialtyName = name, error = null) }
+    init { loadCatalog() }
+
+    private fun loadCatalog() {
+        _state.update { it.copy(isLoadingCatalog = true, catalogError = null) }
+        scope.launch {
+            getSpecialties()
+                .onSuccess { list -> _state.update { it.copy(isLoadingCatalog = false, catalog = list) } }
+                .onFailure { err -> _state.update { it.copy(isLoadingCatalog = false, catalogError = err.toUserMessage("No se pudo cargar el catálogo")) } }
+        }
+    }
+
+    override fun onRetryCatalog() = loadCatalog()
+
+    override fun onSpecialtySelected(specialtyId: String) {
+        _state.update { it.copy(selectedSpecialtyId = specialtyId, error = null) }
     }
 
     override fun onAddDocumentUrl(url: String) {
@@ -50,15 +65,20 @@ class DefaultRequestSpecialtyComponent(
     override fun onSubmit() {
         val s = _state.value
         if (s.isSubmitting) return
-        if (s.specialtyName.isBlank()) {
-            _state.update { it.copy(error = "Specialty name is required") }
+        val specialtyId = s.selectedSpecialtyId
+        if (specialtyId.isNullOrBlank()) {
+            _state.update { it.copy(error = "Selecciona una especialidad") }
+            return
+        }
+        if (s.documentUrls.isEmpty()) {
+            _state.update { it.copy(error = "Sube al menos un documento de respaldo") }
             return
         }
         _state.update { it.copy(isSubmitting = true, error = null) }
         scope.launch {
             requestSpecialty(
                 SpecialtyRequest(
-                    specialtyName = s.specialtyName.trim(),
+                    specialtyId = specialtyId,
                     documentUrls = s.documentUrls,
                     comment = s.comment.trim(),
                 )
